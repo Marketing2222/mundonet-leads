@@ -514,7 +514,22 @@
       transition: border-color 0.2s; background: var(--bg-elevated);
       margin-bottom: 10px;
     }
-    .logo-upload-area:hover { border-color: var(--accent-blue); }
+      .logo-upload-area:hover { border-color: var(--accent-blue); }
+      .tpl-bar { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+      .tpl-btn {
+        padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600;
+        background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.25);
+        color: #60a5fa; cursor: pointer; transition: all 0.2s; white-space: nowrap;
+      }
+      .tpl-btn:hover { background: rgba(59,130,246,0.25); border-color: rgba(59,130,246,0.5); color: #93bbfd; }
+      .tpl-item {
+        display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+        background: var(--bg-elevated); border: 1px solid var(--border);
+        border-radius: 8px; margin-bottom: 6px;
+      }
+      .tpl-item-label { font-size: 12px; font-weight: 600; color: var(--text-primary); flex: 1; }
+      .tpl-item-text { font-size: 11px; color: var(--text-secondary); flex: 2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .tpl-item-btns { display: flex; gap: 4px; }
     .logo-preview {
       width: 64px; height: 64px; border-radius: 14px;
       background: linear-gradient(135deg, #1d4ed8, #06b6d4);
@@ -827,6 +842,7 @@
       <div class="form-group" style="margin-bottom:10px">
         <label class="form-label">Comentários</label>
         <textarea id="lead-comentarios" class="form-control" style="min-height:60px" placeholder="Quer documentar informações sobre esse lead?"></textarea>
+        <div class="tpl-bar" id="tpl-buttons"></div>
       </div>
 
       <div class="section-title">Acompanhar tratativas</div>
@@ -1095,6 +1111,15 @@
         <div class="toggle-switch" id="theme-toggle" onclick="toggleTheme()"></div>
       </div>
 
+      <!-- Templates de Comentário -->
+      <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px">Templates de Comentário</p>
+      <div id="tpl-manage-list"></div>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <input type="text" id="tpl-new-label" class="form-control" placeholder="Nome do botão" style="flex:1;font-size:12px;padding:7px 10px">
+        <input type="text" id="tpl-new-text" class="form-control" placeholder="Texto do template" style="flex:2;font-size:12px;padding:7px 10px">
+        <button class="btn btn-primary" onclick="addTemplate()" style="font-size:11px;padding:7px 12px">＋</button>
+      </div>
+
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-personalize')">Cancelar</button>
@@ -1274,6 +1299,11 @@ const DEFAULT_COLUMNS = [
 ];
 
 let state = { leads:[], columns:[...DEFAULT_COLUMNS], prefs:{} };
+const DEFAULT_TEMPLATES = [
+  { label:'Desconto', text:'Desconto de R$40 no mês' },
+  { label:'Lead ganho', text:'Lead ganho. Instalação concluída, dia 00/00/2026.' },
+  { label:'Via PIX', text:'Comissão via PIX:' },
+];
 let users = [];
 let currentUser = null;
 let clients = [];
@@ -1550,6 +1580,7 @@ function openLead(id){
     editable?el.removeAttribute('disabled'):el.setAttribute('disabled','');
   });
   document.getElementById('btn-save-lead').style.display=editable?'':'none';
+  renderTemplateButtons();
   openModal('modal-lead');
 }
 
@@ -1564,6 +1595,7 @@ function openAddLeadInCol(colId){
   populateEtapa(colId);
   renderTimeline([]);
   document.getElementById('btn-save-lead').style.display='';
+  renderTemplateButtons();
   openModal('modal-lead');
 }
 
@@ -1842,6 +1874,7 @@ function openPersonalize(){
   // theme toggle
   const isLight=document.documentElement.getAttribute('data-theme')==='light';
   document.getElementById('theme-toggle').classList.toggle('on',isLight);
+  renderTemplateManage();
   openModal('modal-personalize');
 }
 
@@ -1903,6 +1936,67 @@ function applyPrefs(){
   document.getElementById('btn-theme').textContent=(document.documentElement.getAttribute('data-theme')==='light')?'☀️':'🌙';
   // Title
   if(prefs.nome) document.title=`${prefs.nome} — Painel de Indicações`;
+}
+
+// ===== TEMPLATES =====
+function getTemplates(){ return (state.prefs&&state.prefs.templates)||DEFAULT_TEMPLATES; }
+function renderTemplateButtons(){
+  const el=document.getElementById('tpl-buttons'); if(!el) return;
+  const tpls=getTemplates();
+  if(!tpls.length){ el.innerHTML=''; return; }
+  el.innerHTML=tpls.map(t=>`<button class="tpl-btn" onclick="applyTemplate('${escHtml(t.text.replace(/'/g,"\\'"))}')">${escHtml(t.label)}</button>`).join('');
+}
+function applyTemplate(text){
+  const ta=document.getElementById('lead-comentarios');
+  if(ta.value.trim()){ ta.value=ta.value.trim()+'\n'+text; }
+  else { ta.value=text; }
+}
+function renderTemplateManage(){
+  const el=document.getElementById('tpl-manage-list'); if(!el) return;
+  const tpls=getTemplates();
+  if(!tpls.length){ el.innerHTML='<div style="font-size:11px;color:var(--text-muted);margin-bottom:8px">Nenhum template adicionado.</div>'; return; }
+  el.innerHTML=tpls.map((t,i)=>`
+    <div class="tpl-item">
+      <span class="tpl-item-label">${escHtml(t.label)}</span>
+      <span class="tpl-item-text">${escHtml(t.text)}</span>
+      <div class="tpl-item-btns">
+        <button class="col-manage-btn" onclick="editTemplate(${i})" title="Editar" style="color:var(--accent-amber)">✏</button>
+        <button class="col-manage-btn" onclick="removeTemplate(${i})" title="Excluir" style="color:var(--accent-red)">🗑</button>
+      </div>
+    </div>`).join('');
+}
+function addTemplate(){
+  const label=document.getElementById('tpl-new-label').value.trim();
+  const text=document.getElementById('tpl-new-text').value.trim();
+  if(!label||!text){ toast('Preencha nome e texto','error'); return; }
+  state.prefs=state.prefs||{};
+  state.prefs.templates=getTemplates();
+  state.prefs.templates.push({label,text});
+  document.getElementById('tpl-new-label').value='';
+  document.getElementById('tpl-new-text').value='';
+  renderTemplateManage();
+  toast('Template adicionado!','success');
+}
+function removeTemplate(i){
+  state.prefs=state.prefs||{};
+  state.prefs.templates=getTemplates();
+  state.prefs.templates.splice(i,1);
+  renderTemplateManage();
+  toast('Template removido!','info');
+}
+function editTemplate(i){
+  const tpls=getTemplates();
+  const t=tpls[i]; if(!t) return;
+  const newLabel=prompt('Nome do botão:',t.label);
+  if(newLabel===null) return;
+  const newText=prompt('Texto do template:',t.text);
+  if(newText===null) return;
+  if(!newLabel.trim()||!newText.trim()){ toast('Nome e texto são obrigatórios','error'); return; }
+  state.prefs=state.prefs||{};
+  state.prefs.templates=getTemplates();
+  state.prefs.templates[i]={label:newLabel.trim(),text:newText.trim()};
+  renderTemplateManage();
+  toast('Template atualizado!','success');
 }
 
 // ===== MODALS =====
@@ -2218,6 +2312,7 @@ async function init(){
     clients=clnts;
     apiConfig={ixc:{url:cfg.ixc_url||'',token:cfg.ixc_token||''},zapisp:{url:cfg.zapisp_url||'',token:cfg.zapisp_token||''}};
     state.prefs=toCamel(prfs);
+    if(!state.prefs.templates) state.prefs.templates=DEFAULT_TEMPLATES;
   } catch(e) {
     console.error('Erro ao carregar dados:',e);
     state.columns=[...DEFAULT_COLUMNS];

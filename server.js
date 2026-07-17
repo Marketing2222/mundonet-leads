@@ -64,9 +64,13 @@ CREATE TABLE IF NOT EXISTS prefs (
   nome TEXT,
   sub TEXT,
   logo TEXT,
-  theme TEXT
+  theme TEXT,
+  templates TEXT
 );
 `);
+
+// add templates column if missing (migrate old DB)
+try { await db.exec(`ALTER TABLE prefs ADD COLUMN templates TEXT`); } catch(e) { /* column already exists */ }
 
 // default admin
 const adminExists = await db.get('SELECT 1 FROM users WHERE username = ?', ['admin']);
@@ -241,12 +245,21 @@ app.put('/api/config', async (req, res) => {
 // ---------- PREFS ----------
 app.get('/api/prefs', async (req, res) => {
   const row = await db.get('SELECT * FROM prefs WHERE id=1');
+  if (row && row.templates) {
+    try { row.templates = JSON.parse(row.templates); } catch { row.templates = []; }
+  }
   res.json(row || {});
 });
 app.put('/api/prefs', async (req, res) => {
-  const { nome, sub, logo, theme } = req.body;
-  await db.run('INSERT OR REPLACE INTO prefs (id, nome, sub, logo, theme) VALUES (1,?,?,?,?)', [nome, sub, logo, theme]);
-  res.json({ ok: true });
+  try {
+    const { nome, sub, logo, theme, templates } = req.body;
+    const tpl = templates ? JSON.stringify(templates) : '[]';
+    await db.run('INSERT OR REPLACE INTO prefs (id, nome, sub, logo, theme, templates) VALUES (1,?,?,?,?,?)', [nome||'', sub||'', logo||'', theme||'', tpl]);
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('PUT /api/prefs error:', e.message);
+    res.status(500).json({ error: e.message });
+  }
 });
 
 // ---------- SPA fallback ----------
