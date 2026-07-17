@@ -6,6 +6,6 @@
   "scripts": { "start": "node server.js" },
   "dependencies": {
     "express": "^4.19.2",
-    "better-sqlite3": "^11.0.0"
+    "sql.js": "^1.11.0"
   }
 }

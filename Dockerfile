@@ -1,8 +1,12 @@
-FROM node:20
+FROM node:20-alpine
+
 WORKDIR /app
+
 COPY package*.json ./
 RUN npm install --production
+
 COPY . .
-ENV DB_PATH=/data/mundonet.db
+
 EXPOSE 3737
+
 CMD ["node", "server.js"]
