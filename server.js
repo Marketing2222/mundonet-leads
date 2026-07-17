@@ -1,6 +1,5 @@
 import express from 'express';
-import sqlite3 from 'sqlite3';
-import { open } from 'sqlite';
+import Database from 'better-sqlite3';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import crypto from 'crypto';
@@ -15,9 +14,10 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.static(__dirname));
 
 // ---------- DB ----------
-const db = await open({ filename: DB_PATH, driver: sqlite3.Database });
+const db = new Database(DB_PATH);
+db.pragma('journal_mode = WAL');
 
-await db.exec(`
+db.exec(`
 CREATE TABLE IF NOT EXISTS users (
   id TEXT PRIMARY KEY,
   username TEXT UNIQUE NOT NULL,
@@ -69,18 +69,16 @@ CREATE TABLE IF NOT EXISTS prefs (
 );
 `);
 
-// add templates column if missing (migrate old DB)
-try { await db.exec(`ALTER TABLE prefs ADD COLUMN templates TEXT`); } catch(e) { /* column already exists */ }
+try { db.exec(`ALTER TABLE prefs ADD COLUMN templates TEXT`); } catch(e) {}
 
 // default admin
-const adminExists = await db.get('SELECT 1 FROM users WHERE username = ?', ['admin']);
+const adminExists = db.prepare('SELECT 1 FROM users WHERE username = ?').get('admin');
 if (!adminExists) {
-  await db.run('INSERT INTO users (id, username, password, display_name) VALUES (?,?,?,?)',
-    ['u1', 'admin', hashPass('mundonet@2026'), 'Administrador']);
+  db.prepare('INSERT INTO users (id, username, password, display_name) VALUES (?,?,?,?)').run('u1', 'admin', hashPass('mundonet@2026'), 'Administrador');
 }
 
 // default columns
-const colCount = await db.get('SELECT COUNT(*) as c FROM columns');
+const colCount = db.prepare('SELECT COUNT(*) as c FROM columns').get();
 if (colCount.c === 0) {
   const defaults = [
     ['pendentes','Pendentes','#3b82f6',0],
@@ -98,8 +96,9 @@ if (colCount.c === 0) {
     ['ganho','Ganho','#059669',12],
     ['perdido','Perdido','#dc2626',13],
   ];
+  const stmt = db.prepare('INSERT INTO columns (id,name,color,"order") VALUES (?,?,?,?)');
   for (const [id,name,color,order] of defaults) {
-    await db.run('INSERT INTO columns (id,name,color,"order") VALUES (?,?,?,?)', [id,name,color,order]);
+    stmt.run(id,name,color,order);
   }
 }
 
@@ -107,154 +106,159 @@ function hashPass(p) { return crypto.createHash('sha256').update(p).digest('hex'
 function uuid() { return crypto.randomUUID(); }
 
 // ---------- AUTH ----------
-app.post('/api/login', async (req, res) => {
+app.post('/api/login', (req, res) => {
   const { username, password } = req.body;
-  const row = await db.get('SELECT * FROM users WHERE username = ?', [username]);
+  const row = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
   if (!row || row.password !== hashPass(password)) return res.status(401).json({ error: 'Credenciais inválidas' });
   res.json({ id: row.id, username: row.username, display_name: row.display_name });
 });
 
-app.post('/api/switch-user', async (req, res) => {
+app.post('/api/switch-user', (req, res) => {
   const { username, password } = req.body;
-  const row = await db.get('SELECT * FROM users WHERE username = ?', [username]);
+  const row = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
   if (!row || row.password !== hashPass(password)) return res.status(401).json({ error: 'Credenciais inválidas' });
   res.json({ id: row.id, username: row.username, display_name: row.display_name });
 });
 
 // ---------- USERS ----------
-app.get('/api/users', async (req, res) => {
-  const rows = await db.all('SELECT id, username, display_name FROM users');
+app.get('/api/users', (req, res) => {
+  const rows = db.prepare('SELECT id, username, display_name FROM users').all();
   res.json(rows);
 });
-app.post('/api/users', async (req, res) => {
+app.post('/api/users', (req, res) => {
   const { display_name, username, password } = req.body;
   if (!display_name || !username || !password) return res.status(400).json({ error: 'Campos obrigatórios' });
   try {
     const id = uuid();
-    await db.run('INSERT INTO users (id, username, password, display_name) VALUES (?,?,?,?)', [id, username, hashPass(password), display_name]);
+    db.prepare('INSERT INTO users (id, username, password, display_name) VALUES (?,?,?,?)').run(id, username, hashPass(password), display_name);
     res.json({ id, username, display_name });
   } catch { res.status(400).json({ error: 'Usuário já existe' }); }
 });
-app.put('/api/users/:id', async (req, res) => {
+app.put('/api/users/:id', (req, res) => {
   const { display_name, username, password } = req.body;
   if (!display_name || !username) return res.status(400).json({ error: 'Nome e login obrigatórios' });
   if (password) {
-    await db.run('UPDATE users SET display_name=?, username=?, password=? WHERE id=?', [display_name, username, hashPass(password), req.params.id]);
+    db.prepare('UPDATE users SET display_name=?, username=?, password=? WHERE id=?').run(display_name, username, hashPass(password), req.params.id);
   } else {
-    await db.run('UPDATE users SET display_name=?, username=? WHERE id=?', [display_name, username, req.params.id]);
+    db.prepare('UPDATE users SET display_name=?, username=? WHERE id=?').run(display_name, username, req.params.id);
   }
   res.json({ ok: true });
 });
-app.delete('/api/users/:id', async (req, res) => {
-  await db.run('DELETE FROM users WHERE id=?', [req.params.id]);
+app.delete('/api/users/:id', (req, res) => {
+  db.prepare('DELETE FROM users WHERE id=?').run(req.params.id);
   res.json({ ok: true });
 });
 
 // ---------- COLUMNS ----------
-app.get('/api/columns', async (req, res) => {
-  const rows = await db.all('SELECT * FROM columns ORDER BY "order"');
+app.get('/api/columns', (req, res) => {
+  const rows = db.prepare('SELECT * FROM columns ORDER BY "order"').all();
   res.json(rows);
 });
-app.post('/api/columns', async (req, res) => {
+app.post('/api/columns', (req, res) => {
   const { name, color } = req.body;
   const id = name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'').substring(0,30) + '_' + Date.now().toString(36);
-  const row = await db.get('SELECT MAX("order") as m FROM columns');
+  const row = db.prepare('SELECT MAX("order") as m FROM columns').get();
   const order = (row?.m || 0) + 1;
-  await db.run('INSERT INTO columns (id,name,color,"order") VALUES (?,?,?,?)', [id,name,color,order]);
+  db.prepare('INSERT INTO columns (id,name,color,"order") VALUES (?,?,?,?)').run(id,name,color,order);
   res.json({ id, name, color, order });
 });
-app.put('/api/columns/:id', async (req, res) => {
+app.put('/api/columns/:id', (req, res) => {
   const { name, color, order } = req.body;
-  await db.run('UPDATE columns SET name=COALESCE(?,name), color=COALESCE(?,color), "order"=COALESCE(?,order) WHERE id=?', [name, color, order, req.params.id]);
+  db.prepare('UPDATE columns SET name=COALESCE(?,name), color=COALESCE(?,color), "order"=COALESCE(?,order) WHERE id=?').run(name, color, order, req.params.id);
   res.json({ ok: true });
 });
-app.delete('/api/columns/:id', async (req, res) => {
-  await db.run('DELETE FROM columns WHERE id=?', [req.params.id]);
+app.delete('/api/columns/:id', (req, res) => {
+  db.prepare('DELETE FROM columns WHERE id=?').run(req.params.id);
   res.json({ ok: true });
 });
 
 // ---------- LEADS ----------
-app.get('/api/leads', async (req, res) => {
-  const rows = await db.all('SELECT * FROM leads');
-  rows.forEach(r => { try { r.historico = JSON.parse(r.historico || '[]'); } catch {} });
+app.get('/api/leads', (req, res) => {
+  const rows = db.prepare('SELECT * FROM leads').all();
+  rows.forEach(r => { try { r.historico = JSON.parse(r.historico || '[]'); } catch(e) {} });
   res.json(rows);
 });
-app.post('/api/leads', async (req, res) => {
+app.post('/api/leads', (req, res) => {
   const l = req.body;
   const now = new Date().toISOString();
   const mesRef = l.mes_referencia || now.substring(0,7);
   const id = l.id || uuid();
   const hist = l.historico ? JSON.stringify(l.historico) : '[]';
-  await db.run(`INSERT INTO leads (id, column_id, etapa, cliente_nome, cliente_pix, lead_nome, lead_whatsapp, comentarios, data_convite, mes_referencia, historico, criado_em)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`, [id, l.column_id, l.etapa, l.cliente_nome, l.cliente_pix, l.lead_nome, l.lead_whatsapp, l.comentarios, l.data_convite, mesRef, hist, now]);
+  db.prepare(`INSERT INTO leads (id, column_id, etapa, cliente_nome, cliente_pix, lead_nome, lead_whatsapp, comentarios, data_convite, mes_referencia, historico, criado_em)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`).run(id, l.column_id, l.etapa, l.cliente_nome, l.cliente_pix, l.lead_nome, l.lead_whatsapp, l.comentarios, l.data_convite, mesRef, hist, now);
   res.json({ id });
 });
-app.put('/api/leads/:id', async (req, res) => {
+app.put('/api/leads/:id', (req, res) => {
   const l = req.body;
   const hist = l.historico ? JSON.stringify(l.historico) : '[]';
-  await db.run(`UPDATE leads SET column_id=?, etapa=?, cliente_nome=?, cliente_pix=?, lead_nome=?, lead_whatsapp=?, comentarios=?, data_convite=?, mes_referencia=?, historico=? WHERE id=?`,
-    [l.column_id, l.etapa, l.cliente_nome, l.cliente_pix, l.lead_nome, l.lead_whatsapp, l.comentarios, l.data_convite, l.mes_referencia, hist, req.params.id]);
+  db.prepare(`UPDATE leads SET column_id=?, etapa=?, cliente_nome=?, cliente_pix=?, lead_nome=?, lead_whatsapp=?, comentarios=?, data_convite=?, mes_referencia=?, historico=? WHERE id=?`)
+    .run(l.column_id, l.etapa, l.cliente_nome, l.cliente_pix, l.lead_nome, l.lead_whatsapp, l.comentarios, l.data_convite, l.mes_referencia, hist, req.params.id);
   res.json({ ok: true });
 });
-app.delete('/api/leads/:id', async (req, res) => {
-  await db.run('DELETE FROM leads WHERE id=?', [req.params.id]);
+app.delete('/api/leads/:id', (req, res) => {
+  db.prepare('DELETE FROM leads WHERE id=?').run(req.params.id);
   res.json({ ok: true });
 });
 
 // ---------- CLIENTS ----------
-app.get('/api/clients', async (req, res) => {
-  const rows = await db.all('SELECT * FROM clients ORDER BY nome');
+app.get('/api/clients', (req, res) => {
+  const rows = db.prepare('SELECT * FROM clients ORDER BY nome').all();
   res.json(rows);
 });
-app.post('/api/clients', async (req, res) => {
+app.post('/api/clients', (req, res) => {
   const c = req.body;
   const id = c.id || uuid();
-  await db.run('INSERT INTO clients (id, nome, whatsapp, link_indicacao, editado) VALUES (?,?,?,?,?)', [id, c.nome, c.whatsapp, c.link_indicacao, c.editado ? 1 : 0]);
+  db.prepare('INSERT INTO clients (id, nome, whatsapp, link_indicacao, editado) VALUES (?,?,?,?,?)').run(id, c.nome, c.whatsapp, c.link_indicacao, c.editado ? 1 : 0);
   res.json({ id });
 });
-app.put('/api/clients/:id', async (req, res) => {
+app.put('/api/clients/:id', (req, res) => {
   const c = req.body;
-  await db.run('UPDATE clients SET nome=?, whatsapp=?, link_indicacao=?, editado=? WHERE id=?', [c.nome, c.whatsapp, c.link_indicacao, c.editado ? 1 : 0, req.params.id]);
+  db.prepare('UPDATE clients SET nome=?, whatsapp=?, link_indicacao=?, editado=? WHERE id=?').run(c.nome, c.whatsapp, c.link_indicacao, c.editado ? 1 : 0, req.params.id);
   res.json({ ok: true });
 });
-app.delete('/api/clients/:id', async (req, res) => {
-  await db.run('DELETE FROM clients WHERE id=?', [req.params.id]);
+app.delete('/api/clients/:id', (req, res) => {
+  db.prepare('DELETE FROM clients WHERE id=?').run(req.params.id);
   res.json({ ok: true });
 });
-app.post('/api/clients/sync', async (req, res) => {
+app.post('/api/clients/sync', (req, res) => {
   const { clients } = req.body;
   if (!Array.isArray(clients)) return res.status(400).json({ error: 'Array de clientes esperado' });
-  await db.run('DELETE FROM clients');
-  for (const c of clients) {
-    await db.run('INSERT INTO clients (id,nome,whatsapp,link_indicacao,editado) VALUES (?,?,?,?,?)', [c.id, c.nome, c.whatsapp || '', c.link_indicacao || '', c.editado ? 1 : 0]);
-  }
+  const del = db.prepare('DELETE FROM clients');
+  const ins = db.prepare('INSERT INTO clients (id,nome,whatsapp,link_indicacao,editado) VALUES (?,?,?,?,?)');
+  const tx = db.transaction(() => {
+    del.run();
+    for (const c of clients) {
+      ins.run(c.id, c.nome, c.whatsapp || '', c.link_indicacao || '', c.editado ? 1 : 0);
+    }
+  });
+  tx();
   res.json({ ok: true, count: clients.length });
 });
 
 // ---------- API CONFIG ----------
-app.get('/api/config', async (req, res) => {
-  const row = await db.get('SELECT * FROM api_config WHERE id=1');
+app.get('/api/config', (req, res) => {
+  const row = db.prepare('SELECT * FROM api_config WHERE id=1').get();
   res.json(row || {});
 });
-app.put('/api/config', async (req, res) => {
+app.put('/api/config', (req, res) => {
   const { ixc_url, ixc_token, zapisp_url, zapisp_token } = req.body;
-  await db.run('INSERT OR REPLACE INTO api_config (id, ixc_url, ixc_token, zapisp_url, zapisp_token) VALUES (1,?,?,?,?)', [ixc_url, ixc_token, zapisp_url, zapisp_token]);
+  db.prepare('INSERT OR REPLACE INTO api_config (id, ixc_url, ixc_token, zapisp_url, zapisp_token) VALUES (1,?,?,?,?)').run(ixc_url, ixc_token, zapisp_url, zapisp_token);
   res.json({ ok: true });
 });
 
 // ---------- PREFS ----------
-app.get('/api/prefs', async (req, res) => {
-  const row = await db.get('SELECT * FROM prefs WHERE id=1');
+app.get('/api/prefs', (req, res) => {
+  const row = db.prepare('SELECT * FROM prefs WHERE id=1').get();
   if (row && row.templates) {
-    try { row.templates = JSON.parse(row.templates); } catch { row.templates = []; }
+    try { row.templates = JSON.parse(row.templates); } catch(e) { row.templates = []; }
   }
   res.json(row || {});
 });
-app.put('/api/prefs', async (req, res) => {
+app.put('/api/prefs', (req, res) => {
   try {
     const { nome, sub, logo, theme, templates } = req.body;
     const tpl = templates ? JSON.stringify(templates) : '[]';
-    await db.run('INSERT OR REPLACE INTO prefs (id, nome, sub, logo, theme, templates) VALUES (1,?,?,?,?,?)', [nome||'', sub||'', logo||'', theme||'', tpl]);
+    db.prepare('INSERT OR REPLACE INTO prefs (id, nome, sub, logo, theme, templates) VALUES (1,?,?,?,?,?)').run(nome||'', sub||'', logo||'', theme||'', tpl);
     res.json({ ok: true });
   } catch (e) {
     console.error('PUT /api/prefs error:', e.message);
