@@ -166,6 +166,40 @@ app.delete('/api/leads/:id', (req, res) => {
   res.json({ ok: true });
 });
 
+// ---------- TRASH ----------
+app.get('/api/trash', (req, res) => { res.json(readStore('trash')); });
+app.post('/api/trash', (req, res) => {
+  const lead = req.body;
+  lead._deleted_at = new Date().toISOString();
+  const trash = readStore('trash');
+  trash.push(lead);
+  writeStore('trash', trash);
+  res.json({ ok: true });
+});
+app.post('/api/trash/:id/restore', (req, res) => {
+  let trash = readStore('trash');
+  const idx = trash.findIndex(x => x.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: 'Não encontrado' });
+  const lead = trash[idx];
+  delete lead._deleted_at;
+  trash.splice(idx, 1);
+  writeStore('trash', trash);
+  const leads = readStore('leads');
+  leads.push(lead);
+  writeStore('leads', leads);
+  res.json({ ok: true });
+});
+app.delete('/api/trash/:id', (req, res) => {
+  let trash = readStore('trash');
+  trash = trash.filter(x => x.id !== req.params.id);
+  writeStore('trash', trash);
+  res.json({ ok: true });
+});
+app.delete('/api/trash', (req, res) => {
+  writeStore('trash', []);
+  res.json({ ok: true });
+});
+
 // ---------- CLIENTS ----------
 app.get('/api/clients', (req, res) => {
   res.json(readStore('clients').sort((a,b) => (a.nome||'').localeCompare(b.nome||'')));

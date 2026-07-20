@@ -682,6 +682,12 @@
       .filter-input { width: 140px; }
       #clients-panel { width: 100%; right: -100%; }
     }
+    .trash-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: var(--radius-sm); background: var(--bg-card); border: 1px solid var(--border); margin-bottom: 6px; }
+    .trash-item:hover { background: var(--bg-elevated); border-color: var(--border-light); }
+    .trash-item-info { flex: 1; min-width: 0; }
+    .trash-item-name { font-size: 12px; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .trash-item-meta { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+    .trash-item-btns { display: flex; gap: 4px; flex-shrink: 0; margin-left: 8px; }
   </style>
 </head>
 <body>
@@ -780,6 +786,8 @@
       <button class="toolbar-btn" onclick="if(!isAdminMode){toast('Faça login primeiro','error');return}openPersonalize()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Personalizar Painel</button>
     </div>
   </div>
+
+  <button class="toolbar-btn" onclick="if(!isAdminMode){toast('Faça login primeiro','error');return}openTrash()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg> Lixeira</button>
 
   <div class="dropdown">
     <button class="toolbar-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg> Configurações</button>
@@ -1216,6 +1224,21 @@
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-api-config')">Fechar</button>
       <button class="btn btn-success" onclick="saveApiConfig()">💾 Salvar Config</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: LIXEIRA ===== -->
+<div class="modal-overlay" id="modal-trash">
+  <div class="modal-box" style="max-width:600px">
+    <div class="modal-header">
+      <h2 class="modal-title">🗑️ Lixeira</h2>
+      <button class="modal-close" onclick="closeModal('modal-trash')">✕</button>
+    </div>
+    <div class="modal-body" id="trash-list" style="max-height:60vh;overflow-y:auto"></div>
+    <div class="modal-footer">
+      <button class="btn btn-danger" onclick="confirmEmptyTrash()">🗑️ Esvaziar Lixeira</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-trash')">Fechar</button>
     </div>
   </div>
 </div>
@@ -1681,10 +1704,10 @@ function renderTimeline(hist){
 function confirmDelete(id){
   const lead=getLead(id); if(!lead) return;
   document.getElementById('confirm-icon').textContent='🗑️';
-  document.getElementById('confirm-title').textContent='Excluir Lead';
-  document.getElementById('confirm-msg').textContent=`Excluir "${lead.leadNome||'sem nome'}"? Essa ação não pode ser desfeita.`;
-  document.getElementById('confirm-ok-btn').textContent='Excluir';
-  confirmCallback=async ()=>{ await api('DELETE', `/api/leads/${id}`); state.leads=state.leads.filter(l=>l.id!==id); render(); toast('Lead excluído','info'); };
+  document.getElementById('confirm-title').textContent='Mover para Lixeira';
+  document.getElementById('confirm-msg').textContent=`Mover "${lead.leadNome||'sem nome'}" para a lixeira? Você pode recuperar depois.`;
+  document.getElementById('confirm-ok-btn').textContent='Mover para Lixeira';
+  confirmCallback=async ()=>{ await api('POST', '/api/trash', lead); await api('DELETE', `/api/leads/${id}`); state.leads=state.leads.filter(l=>l.id!==id); render(); toast('Lead movido para lixeira','info'); };
   openModal('modal-confirm');
 }
 async function confirmAction(){ if(typeof confirmCallback==='function') await confirmCallback(); confirmCallback=null; closeModal('modal-confirm'); }
@@ -2292,6 +2315,49 @@ function confirmDeleteUser(id){
   document.getElementById('confirm-msg').textContent=`Excluir "${u.nome||u.user}"? Essa ação não pode ser desfeita.`;
   document.getElementById('confirm-ok-btn').textContent='Excluir';
   confirmCallback=async ()=>{ await api('DELETE', `/api/users/${id}`); users=users.filter(x=>x.id!==id); renderUsersList(); toast('Usuário excluído','info'); };
+  openModal('modal-confirm');
+}
+
+// ===== TRASH =====
+let trashData=[];
+async function openTrash(){
+  trashData=await api('GET','/api/trash');
+  renderTrashList();
+  openModal('modal-trash');
+}
+function renderTrashList(){
+  const el=document.getElementById('trash-list');
+  if(!trashData.length){ el.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-muted)">🗑️ A lixeira está vazia</div>'; return; }
+  el.innerHTML=trashData.map(l=>{
+    const dt=l._deleted_at?new Date(l._deleted_at).toLocaleString('pt-BR'):'';
+    const col=l.column_id?(sortedCols().find(c=>c.id===l.column_id)||{}).name||l.column_id:'';
+    return `<div class="trash-item"><div class="trash-item-info"><div class="trash-item-name">${escHtml(l.leadNome||'Sem nome')}</div><div class="trash-item-meta">Cliente: ${escHtml(l.clienteNome||'—')} · Coluna: ${escHtml(col)} · Excluído: ${escHtml(dt)}</div></div><div class="trash-item-btns"><button class="btn btn-success" style="padding:5px 12px;font-size:11px" onclick="restoreLead('${l.id}')">♻️ Recuperar</button><button class="btn btn-danger" style="padding:5px 12px;font-size:11px" onclick="permanentDelete('${l.id}')">🗑️ Deletar</button></div></div>`;
+  }).join('');
+}
+async function restoreLead(id){
+  await api('POST',`/api/trash/${id}/restore`);
+  const lead=trashData.find(x=>x.id===id);
+  if(lead){ delete lead._deleted_at; state.leads.push(lead); }
+  trashData=trashData.filter(x=>x.id!==id);
+  renderTrashList(); render();
+  toast('Lead recuperado!','success');
+}
+function permanentDelete(id){
+  const lead=trashData.find(x=>x.id===id);
+  document.getElementById('confirm-icon').textContent='⚠️';
+  document.getElementById('confirm-title').textContent='Excluir Permanentemente';
+  document.getElementById('confirm-msg').textContent=`Excluir "${lead?.leadNome||'sem nome'}" permanentemente? Essa ação NÃO pode ser desfeita.`;
+  document.getElementById('confirm-ok-btn').textContent='Excluir para sempre';
+  confirmCallback=async ()=>{ await api('DELETE',`/api/trash/${id}`); trashData=trashData.filter(x=>x.id!==id); renderTrashList(); toast('Excluído permanentemente','info'); };
+  openModal('modal-confirm');
+}
+function confirmEmptyTrash(){
+  if(!trashData.length){ toast('Lixeira já está vazia','info'); return; }
+  document.getElementById('confirm-icon').textContent='⚠️';
+  document.getElementById('confirm-title').textContent='Esvaziar Lixeira';
+  document.getElementById('confirm-msg').textContent=`Excluir permanentemente todos os ${trashData.length} leads da lixeira? Essa ação NÃO pode ser desfeita.`;
+  document.getElementById('confirm-ok-btn').textContent='Esvaziar';
+  confirmCallback=async ()=>{ await api('DELETE','/api/trash'); trashData=[]; renderTrashList(); toast('Lixeira esvaziada','info'); };
   openModal('modal-confirm');
 }
 
