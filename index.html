@@ -989,7 +989,7 @@
       <div class="form-row-3" style="margin-bottom:10px">
         <div class="form-group">
           <label class="form-label">Cliente dono do convite</label>
-          <input type="text" id="lead-cliente" class="form-control" placeholder="Nome do cliente">
+          <input type="text" id="lead-cliente" class="form-control" placeholder="Nome do cliente" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
         </div>
         <div class="form-group">
           <label class="form-label">Número do cliente</label>
@@ -1004,7 +1004,7 @@
       <div class="form-row-3" style="margin-bottom:10px">
         <div class="form-group">
           <label class="form-label">Nome do lead</label>
-          <input type="text" id="lead-nome" class="form-control" placeholder="Nome completo">
+          <input type="text" id="lead-nome" class="form-control" placeholder="Nome completo" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
         </div>
         <div class="form-group">
           <label class="form-label">WhatsApp do lead</label>
@@ -1508,7 +1508,7 @@
     <div class="modal-body" id="pagar-tab-comissao" style="padding:20px">
       <div class="form-group" style="margin-bottom:14px">
         <label class="form-label" style="color:var(--accent-blue);font-weight:700">Cliente dono do convite</label>
-        <div style="padding:10px 12px;border-radius:var(--radius-sm);background:var(--bg-elevated);border:1px solid var(--border);font-size:13px;color:var(--text-primary);font-weight:600" id="pagar-cliente-info">—</div>
+        <div style="padding:10px 12px;border-radius:var(--radius-sm);background:var(--bg-elevated);border:1px solid var(--border);font-size:13px;color:var(--text-primary);font-weight:600;text-transform:uppercase" id="pagar-cliente-info">—</div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px">
         <div class="form-group">
@@ -1554,7 +1554,7 @@
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
         <div class="form-group">
           <label class="form-label">Nome do Lead</label>
-          <input type="text" id="pagar-ind-nome" class="form-control" style="font-size:12px">
+          <input type="text" id="pagar-ind-nome" class="form-control" style="font-size:12px;text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
         </div>
         <div class="form-group">
           <label class="form-label">WhatsApp do Lead</label>
@@ -1564,7 +1564,7 @@
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
         <div class="form-group">
           <label class="form-label">Cliente</label>
-          <input type="text" id="pagar-ind-cliente" class="form-control" style="font-size:12px">
+          <input type="text" id="pagar-ind-cliente" class="form-control" style="font-size:12px;text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
         </div>
         <div class="form-group">
           <label class="form-label">Número do Cliente</label>
@@ -2162,10 +2162,10 @@ async function saveLead(){
     if(currentLeadId){
       const lead=getLead(currentLeadId); if(!lead) return;
       const oldEtapa=lead.etapa||lead.columnId;
-      lead.clienteNome=document.getElementById('lead-cliente').value.trim();
+      lead.clienteNome=document.getElementById('lead-cliente').value.trim().toUpperCase();
       lead.clienteNumero=document.getElementById('lead-numero-cliente').value.trim();
       lead.clientePix=document.getElementById('lead-pix').value.trim();
-      lead.leadNome=nome;
+      lead.leadNome=nome.toUpperCase();
       lead.leadWhatsapp=document.getElementById('lead-whatsapp').value.trim();
       lead.comentarios=comment;
       lead.dataConvite=document.getElementById('lead-data').value||lead.dataConvite;
@@ -2177,7 +2177,7 @@ async function saveLead(){
     } else {
       const nowDate=new Date();
       const mesRef=nowDate.getFullYear()+'-'+String(nowDate.getMonth()+1).padStart(2,'0');
-      const nl={id:uuid(),columnId:etapa,etapa,clienteNome:document.getElementById('lead-cliente').value.trim(),clienteNumero:document.getElementById('lead-numero-cliente').value.trim(),clientePix:document.getElementById('lead-pix').value.trim(),leadNome:nome,leadWhatsapp:document.getElementById('lead-whatsapp').value.trim(),comentarios:comment,dataConvite:document.getElementById('lead-data').value||now(),mesReferencia:mesRef,historico:[],criadoEm:now()};
+      const nl={id:uuid(),columnId:etapa,etapa,clienteNome:document.getElementById('lead-cliente').value.trim().toUpperCase(),clienteNumero:document.getElementById('lead-numero-cliente').value.trim(),clientePix:document.getElementById('lead-pix').value.trim(),leadNome:nome.toUpperCase(),leadWhatsapp:document.getElementById('lead-whatsapp').value.trim(),comentarios:comment,dataConvite:document.getElementById('lead-data').value||now(),mesReferencia:mesRef,historico:[],criadoEm:now()};
       addHistory(nl,'Lead criado',null,etapa);
       const resp=await api('POST','/api/leads',toSnake(nl));
       nl.id=resp.id;
@@ -2767,9 +2767,9 @@ async function finalizarComissao(){
 async function salvarIndicacao(){
   if(!pagarLeadId) return;
   const lead=state.leads.find(l=>l.id===pagarLeadId); if(!lead) return;
-  lead.leadNome=document.getElementById('pagar-ind-nome').value.trim();
+  lead.leadNome=document.getElementById('pagar-ind-nome').value.trim().toUpperCase();
   lead.leadWhatsapp=document.getElementById('pagar-ind-whatsapp').value.trim();
-  lead.clienteNome=document.getElementById('pagar-ind-cliente').value.trim();
+  lead.clienteNome=document.getElementById('pagar-ind-cliente').value.trim().toUpperCase();
   lead.clienteNumero=document.getElementById('pagar-ind-numero').value.trim();
   lead.dataConvite=document.getElementById('pagar-ind-data').value;
   lead.clientePix=document.getElementById('pagar-ind-pix').value.trim();
