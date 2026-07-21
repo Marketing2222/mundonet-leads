@@ -474,11 +474,11 @@
       border-left: 1px solid var(--border);
     }
     .login-form-logo {
-      width: 56px; height: 56px; border-radius: 14px;
+      width: 44px; height: 44px; border-radius: 12px;
       background: linear-gradient(135deg, #1d4ed8, #06b6d4);
       display: flex; align-items: center; justify-content: center;
-      font-size: 22px; font-weight: 900; color: #fff; margin-bottom: 16px;
-      box-shadow: 0 0 24px rgba(6,182,212,0.3); overflow: hidden;
+      font-size: 18px; font-weight: 900; color: #fff; margin-bottom: 14px;
+      box-shadow: 0 0 20px rgba(6,182,212,0.3); overflow: hidden;
     }
     .login-form-logo img { width: 100%; height: 100%; object-fit: cover; }
     .login-form-title { font-size: 22px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px; }
@@ -780,15 +780,14 @@
   <div class="login-right">
     <div class="login-form-logo" id="login-page-logo">M</div>
     <div class="login-form-title" id="login-page-title">Painel de Indicações</div>
-    <div class="login-form-subtitle" id="login-page-subtitle">Mundonet — Sistema de Indicações</div>
     <div id="login-page-error">Usuário ou senha incorretos</div>
     <div class="login-form-group">
       <label>Email ou Usuário</label>
-      <input type="text" id="login-page-user" placeholder="Digite seu usuário" autocomplete="username">
+      <input type="text" id="login-page-user" placeholder="Digite seu usuário" autocomplete="off">
     </div>
     <div class="login-form-group">
       <label>Senha</label>
-      <input type="password" id="login-page-pass" placeholder="Digite sua senha" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLoginPage()">
+      <input type="password" id="login-page-pass" placeholder="Digite sua senha" autocomplete="off" onkeydown="if(event.key==='Enter')doLoginPage()">
     </div>
     <button class="login-form-btn" onclick="doLoginPage()">Entrar</button>
   </div>
@@ -1280,6 +1279,14 @@
         <div class="toggle-switch on" id="pers-login-show-text" onclick="this.classList.toggle('on')"></div>
       </div>
 
+      <div class="toggle-row" style="margin-top:10px">
+        <div>
+          <div class="toggle-label">Tema da tela de login</div>
+          <div class="toggle-sub">Modo claro ou escuro para a tela de login</div>
+        </div>
+        <div class="toggle-switch" id="pers-login-theme" onclick="this.classList.toggle('on')"></div>
+      </div>
+
       <!-- Tema -->
       <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;padding-top:12px;border-top:1px solid var(--border)">Tema</p>
       <div class="toggle-row">
@@ -1759,7 +1766,6 @@ function applyLoginPagePrefs(){
   document.getElementById('login-page-left-title').textContent=title;
   document.getElementById('login-page-left-sub').textContent=sub;
   document.getElementById('login-page-title').textContent=title;
-  document.getElementById('login-page-subtitle').textContent=title+' — '+sub;
   const logoEl=document.getElementById('login-page-logo');
   const leftEl=document.getElementById('login-page-left');
   if(prefs.loginLogo){
@@ -1793,7 +1799,27 @@ function applyLoginPagePrefs(){
   }
   if(prefs.loginTextColor){
     document.querySelector('.login-form-title').style.color=prefs.loginTextColor;
-    document.querySelector('.login-form-subtitle').style.color=prefs.loginTextColor+'aa';
+  }
+  const isLoginLight=prefs.loginTheme==='light';
+  const loginRight=document.querySelector('.login-right');
+  const loginTitle=document.querySelector('.login-form-title');
+  const loginInputs=loginRight.querySelectorAll('.login-form-group input');
+  const loginLabels=loginRight.querySelectorAll('.login-form-group label');
+  const loginBtn=document.querySelector('.login-form-btn');
+  if(isLoginLight){
+    loginRight.style.background=prefs.loginCardBg||'#ffffff';
+    loginRight.style.borderLeftColor='rgba(0,0,0,0.1)';
+    loginTitle.style.color=prefs.loginTextColor||'#0f172a';
+    loginBtn.style.color='#ffffff';
+    loginInputs.forEach(inp=>{ inp.style.background='#f1f5f9'; inp.style.borderColor='rgba(0,0,0,0.12)'; inp.style.color='#0f172a'; });
+    loginLabels.forEach(l=>l.style.color='#475569');
+  } else {
+    loginRight.style.background='';
+    loginRight.style.borderLeftColor='';
+    loginTitle.style.color='';
+    loginBtn.style.color='';
+    loginInputs.forEach(inp=>{ inp.style.background=''; inp.style.borderColor=''; inp.style.color=''; });
+    loginLabels.forEach(l=>l.style.color='');
   }
 }
 function enableAdmin(){
@@ -2151,6 +2177,8 @@ function openPersonalize(){
   document.getElementById('pers-login-overlay-val').textContent=overlayVal+'%';
   const showText=prefs.loginShowText!==false;
   document.getElementById('pers-login-show-text').classList.toggle('on',showText);
+  const loginLight=prefs.loginTheme==='light';
+  document.getElementById('pers-login-theme').classList.toggle('on',loginLight);
   const bgPreview=document.getElementById('login-bg-preview');
   const bgRemoveBtn=document.getElementById('login-bg-remove-btn');
   if(prefs.loginBgImage){ bgPreview.style.display='block'; bgPreview.querySelector('img').src=prefs.loginBgImage; bgRemoveBtn.style.display='inline-block'; }
@@ -2230,6 +2258,7 @@ async function savePersonalize(){
   state.prefs.loginTextColor=document.getElementById('pers-login-text-color').value;
   state.prefs.loginBgOverlay=parseInt(document.getElementById('pers-login-overlay').value)/100;
   state.prefs.loginShowText=document.getElementById('pers-login-show-text').classList.contains('on');
+  state.prefs.loginTheme=document.getElementById('pers-login-theme').classList.contains('on')?'light':'dark';
   try { await api('PUT','/api/prefs',state.prefs); } catch(ex) { toast('Erro: '+ex.message,'error'); }
   applyPrefs();
   closeModal('modal-personalize');
