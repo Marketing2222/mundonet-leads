@@ -765,6 +765,58 @@
     .trash-item-meta { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
     .trash-item-btns { display: flex; gap: 4px; flex-shrink: 0; margin-left: 8px; }
 
+    /* ===== COMISSÕES ===== */
+    #btn-comissoes {
+      display: flex; align-items: center; gap: 5px;
+      padding: 6px 12px; border-radius: var(--radius-sm);
+      background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3);
+      color: #34d399; font-size: 11px; font-weight: 600; transition: all 0.2s;
+    }
+    #btn-comissoes:hover { background: rgba(16,185,129,0.22); color: #fff; }
+    .comissoes-modal { max-width: 1100px; width: 95vw; }
+    .comissoes-filters { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 14px; }
+    .comissoes-filters .form-group { margin-bottom: 0; }
+    .comissoes-filters .form-label { font-size: 10px; margin-bottom: 4px; }
+    .comissoes-filters input, .comissoes-filters select {
+      padding: 7px 10px; border-radius: var(--radius-sm);
+      background: var(--bg-elevated); border: 1px solid var(--border-light);
+      color: var(--text-primary); font-size: 12px;
+    }
+    .comissoes-filters input:focus, .comissoes-filters select:focus { outline: none; border-color: var(--accent-blue); }
+    .comissoes-table-wrap { overflow-x: auto; max-height: 55vh; overflow-y: auto; }
+    .comissoes-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .comissoes-table th {
+      text-align: left; padding: 8px 10px; font-weight: 700; font-size: 10px;
+      text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-secondary);
+      border-bottom: 2px solid var(--border-light); position: sticky; top: 0;
+      background: var(--bg-surface); z-index: 1;
+    }
+    .comissoes-table td {
+      padding: 8px 10px; border-bottom: 1px solid var(--border); color: var(--text-primary);
+      vertical-align: middle;
+    }
+    .comissoes-table tr:hover td { background: var(--bg-elevated); }
+    .comissoes-status {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
+    }
+    .comissoes-status.pendente { background: rgba(239,68,68,0.12); color: #ef4444; }
+    .comissoes-status.pago { background: rgba(16,185,129,0.12); color: #10b981; }
+    .comissoes-upload-btn {
+      padding: 4px 10px; border-radius: var(--radius-sm); font-size: 10px; font-weight: 600;
+      background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.3);
+      color: #60a5fa; cursor: pointer; transition: all 0.15s;
+    }
+    .comissoes-upload-btn:hover { background: rgba(59,130,246,0.25); color: #fff; }
+    .comissoes-delete-btn {
+      width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border);
+      background: var(--bg-elevated); color: var(--text-muted); font-size: 12px;
+      display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s;
+    }
+    .comissoes-delete-btn:hover { background: rgba(239,68,68,0.12); border-color: var(--accent-red); color: var(--accent-red); }
+    .comissoes-total { font-size: 12px; color: var(--text-secondary); margin-bottom: 10px; }
+    .comissoes-total strong { color: var(--text-primary); }
+
     /* Hide panel until login to prevent flash */
     body:not(.ready) #app-header,
     body:not(.ready) #filter-bar,
@@ -881,6 +933,7 @@
     <span class="filter-label">Ano</span>
     <select class="filter-select" id="filter-year" onchange="applyFilters()"></select>
   </div>
+  <button id="btn-comissoes" onclick="openComissoes()">💲 Comissões</button>
   <button id="btn-clients-panel" onclick="openClientsPanel()">📋 Clientes IXC</button>
 </div>
 
@@ -1362,6 +1415,63 @@
   <div class="client-edit-footer">
     <button class="btn btn-ghost" onclick="closeClientEdit()">Cancelar</button>
     <button class="btn btn-primary" onclick="saveClientEdit()">Salvar</button>
+  </div>
+</div>
+
+<!-- ===== MODAL: COMISSÕES ===== -->
+<div class="modal-overlay" id="modal-comissoes">
+  <div class="modal-box comissoes-modal">
+    <div class="modal-header">
+      <h2 class="modal-title">💲 Comissões</h2>
+      <button class="modal-close" onclick="closeModal('modal-comissoes')">✕</button>
+    </div>
+    <div class="modal-body" style="padding:20px">
+
+      <div class="comissoes-filters">
+        <div class="form-group" style="flex:2;min-width:200px">
+          <label class="form-label">Busque pelo nome do cliente ou lead</label>
+          <input type="text" id="comissoes-search" placeholder="Buscar..." oninput="renderComissoes()" style="width:100%">
+        </div>
+        <div class="form-group" style="flex:1;min-width:140px">
+          <label class="form-label">Data do convite</label>
+          <input type="text" id="comissoes-data-convite" placeholder="DD/MM/AAAA a DD/MM/AAAA" style="width:100%">
+        </div>
+        <div class="form-group" style="flex:1;min-width:140px">
+          <label class="form-label">Data do pagamento</label>
+          <input type="text" id="comissoes-data-pagamento" placeholder="Filtrar por data" style="width:100%">
+        </div>
+        <div class="form-group" style="flex:0.6;min-width:110px">
+          <label class="form-label">Status</label>
+          <select id="comissoes-status-filter" style="width:100%" onchange="renderComissoes()">
+            <option value="">Todos</option>
+            <option value="pago">Pago</option>
+            <option value="pendente">Pendente</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="renderComissoes()" style="height:34px;align-self:flex-end">Aplicar filtros</button>
+      </div>
+
+      <div class="comissoes-total" id="comissoes-total">Total de comissões = 0</div>
+
+      <div class="comissoes-table-wrap">
+        <table class="comissoes-table">
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Lead</th>
+              <th>Data da comissão</th>
+              <th>Data do pagamento</th>
+              <th>Status</th>
+              <th>Valor pago ao cliente(R$)</th>
+              <th>Comprovante</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="comissoes-tbody"></tbody>
+        </table>
+      </div>
+
+    </div>
   </div>
 </div>
 
@@ -2399,6 +2509,109 @@ function populateFilterYears(){
   sel.innerHTML='<option value="">Todos</option>'+years.map(y=>`<option value="${y}" ${y===curYear?'selected':''}>${y}</option>`).join('');
 }
 function applyFilters(){ render(); }
+
+// ===== COMISSÕES =====
+function getGanhoColumnId(){
+  const col=state.columns.find(c=>c.name&&c.name.toLowerCase().replace(/\s+/g,'').includes('ganho'));
+  return col?col.id:'ganho';
+}
+function openComissoes(){
+  openModal('modal-comissoes');
+  renderComissoes();
+}
+function renderComissoes(){
+  const ganhoId=getGanhoColumnId();
+  const ganhoLeads=state.leads.filter(l=>l.columnId===ganhoId);
+  const search=(document.getElementById('comissoes-search')?.value||'').toLowerCase();
+  const dateConvite=(document.getElementById('comissoes-data-convite')?.value||'').trim().toLowerCase();
+  const datePagamento=(document.getElementById('comissoes-data-pagamento')?.value||'').trim().toLowerCase();
+  const statusFilter=document.getElementById('comissoes-status-filter')?.value||'';
+  let filtered=ganhoLeads;
+  if(search){
+    filtered=filtered.filter(l=>(l.clienteNome||'').toLowerCase().includes(search)||(l.leadNome||'').toLowerCase().includes(search));
+  }
+  if(dateConvite){
+    filtered=filtered.filter(l=>(l.dataConvite||'').toLowerCase().includes(dateConvite));
+  }
+  if(datePagamento){
+    filtered=filtered.filter(l=>(l.comissaoDataPagamento||'').toLowerCase().includes(datePagamento));
+  }
+  if(statusFilter){
+    filtered=filtered.filter(l=>(l.comissaoStatus||'pendente')===statusFilter);
+  }
+  filtered.sort((a,b)=>(b.dataConvite||b.criadoEm||'').localeCompare(a.dataConvite||a.criadoEm||''));
+  document.getElementById('comissoes-total').innerHTML='Total de comissões = <strong>'+filtered.length+'</strong>';
+  const tbody=document.getElementById('comissoes-tbody');
+  if(!filtered.length){
+    tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-muted)">Nenhuma comissão encontrada</td></tr>';
+    return;
+  }
+  tbody.innerHTML=filtered.map(l=>{
+    const status=l.comissaoStatus||'pendente';
+    const statusClass=status==='pago'?'pago':'pendente';
+    const valor=l.comissaoValor||'R$ 0';
+    const dataPag=l.comissaoDataPagamento||'-';
+    const hasProof=l.comissaoComprovante?'✅':'';
+    return `<tr>
+      <td style="font-weight:600;white-space:nowrap">${escHtml(l.clienteNome||'—')}</td>
+      <td>${escHtml(l.leadNome||'—')}</td>
+      <td>${fmtDate(l.dataConvite||l.criadoEm||'')}</td>
+      <td>${escHtml(dataPag)}</td>
+      <td><span class="comissoes-status ${statusClass}">${status==='pago'?'Pago':'Pendente'}</span></td>
+      <td>${escHtml(valor)}</td>
+      <td>
+        <label class="comissoes-upload-btn">${hasProof?'✅ Comprovante':'+ Upload'}
+          <input type="file" accept="image/*" style="display:none" onchange="uploadComprovante('${l.id}',this)">
+        </label>
+      </td>
+      <td><button class="comissoes-delete-btn" onclick="deleteComissaoLead('${l.id}')" title="Remover lead">🗑</button></td>
+    </tr>`;
+  }).join('');
+}
+async function toggleComissaoStatus(leadId){
+  const lead=state.leads.find(l=>l.id===leadId); if(!lead) return;
+  lead.comissaoStatus=lead.comissaoStatus==='pago'?'pendente':'pago';
+  try { await api('PUT','/api/leads/'+leadId,toSnake(lead)); } catch(ex){ toast('Erro: '+ex.message,'error'); }
+  renderComissoes();
+}
+async function updateComissaoPagamento(leadId,value){
+  const lead=state.leads.find(l=>l.id===leadId); if(!lead) return;
+  lead.comissaoDataPagamento=value;
+  try { await api('PUT','/api/leads/'+leadId,toSnake(lead)); } catch(ex){ toast('Erro: '+ex.message,'error'); }
+}
+async function updateComissaoValor(leadId,value){
+  const lead=state.leads.find(l=>l.id===leadId); if(!lead) return;
+  lead.comissaoValor=value;
+  try { await api('PUT','/api/leads/'+leadId,toSnake(lead)); } catch(ex){ toast('Erro: '+ex.message,'error'); }
+}
+async function uploadComprovante(leadId,input){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=async (e)=>{
+    const lead=state.leads.find(l=>l.id===leadId); if(!lead) return;
+    lead.comissaoComprovante=e.target.result;
+    try { await api('PUT','/api/leads/'+leadId,toSnake(lead)); toast('Comprovante salvo!','success'); } catch(ex){ toast('Erro: '+ex.message,'error'); }
+    renderComissoes();
+  };
+  reader.readAsDataURL(file);
+}
+function deleteComissaoLead(leadId){
+  const lead=state.leads.find(l=>l.id===leadId); if(!lead) return;
+  document.getElementById('confirm-icon').textContent='⚠️';
+  document.getElementById('confirm-title').textContent='Remover comissão';
+  document.getElementById('confirm-msg').textContent='Remover este lead da lista de comissões? (O lead continuará no kanban)';
+  document.getElementById('confirm-yes').onclick=async ()=>{
+    const ganhoId=getGanhoColumnId();
+    const otherCols=state.columns.filter(c=>c.id!==ganhoId);
+    const targetCol=otherCols.length?otherCols[0].id:state.columns[0].id;
+    lead.columnId=targetCol; lead.etapa=targetCol;
+    try { await api('PUT','/api/leads/'+leadId,toSnake(lead)); } catch(ex){ toast('Erro: '+ex.message,'error'); }
+    closeModal('modal-confirm');
+    renderComissoes(); render();
+    toast('Lead removido das comissões','info');
+  };
+  openModal('modal-confirm');
+}
 
 // ===== CLIENTS PANEL =====
 function openClientsPanel(){
