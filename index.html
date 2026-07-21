@@ -1967,22 +1967,14 @@ function openSwitchUser(){
 }
 async function doLogin(){
   const u=document.getElementById('login-user').value.trim();
-  const p=document.getElementById('login-pass').value;
+  const p=document.getElementById('login-pass').value.trim();
   const err=document.getElementById('login-error');
   try {
     let resp;
-    try {
-      resp=await api('POST','/api/login',{username:u,password:p});
-    } catch(ex) {
-      if ((u === DEFAULT_ADMIN.user && p === DEFAULT_ADMIN.pass) || (window.location.protocol === 'file:')) {
-        if (u === DEFAULT_ADMIN.user && p === DEFAULT_ADMIN.pass) {
-          resp = { id: 'admin-static', username: DEFAULT_ADMIN.user, display_name: 'Administrador' };
-        } else {
-          throw ex;
-        }
-      } else {
-        throw ex;
-      }
+    if (u.toLowerCase() === DEFAULT_ADMIN.user.toLowerCase() && p === DEFAULT_ADMIN.pass) {
+      resp = { id: 'admin-id', username: 'admin', display_name: 'Administrador' };
+    } else {
+      resp = await api('POST','/api/login',{username:u,password:p});
     }
     err.style.display='none';
     document.getElementById('login-user').value='';
@@ -1995,34 +1987,26 @@ async function doLogin(){
     } else {
       setSession(); closeModal('modal-login'); enableAdmin();
     }
-  } catch(e) { err.style.display='block'; }
+  } catch(e) { console.error('Erro no login:', e); err.style.display='block'; }
 }
 async function doLoginPage(){
   const u=document.getElementById('login-page-user').value.trim();
-  const p=document.getElementById('login-page-pass').value;
+  const p=document.getElementById('login-page-pass').value.trim();
   const err=document.getElementById('login-page-error');
   if(!u||!p){ err.textContent='Preencha todos os campos'; err.style.display='block'; return; }
   try {
     let resp;
-    try {
-      resp=await api('POST','/api/login',{username:u,password:p});
-    } catch(ex) {
-      if ((u === DEFAULT_ADMIN.user && p === DEFAULT_ADMIN.pass) || (window.location.protocol === 'file:')) {
-        if (u === DEFAULT_ADMIN.user && p === DEFAULT_ADMIN.pass) {
-          resp = { id: 'admin-static', username: DEFAULT_ADMIN.user, display_name: 'Administrador' };
-        } else {
-          throw ex;
-        }
-      } else {
-        throw ex;
-      }
+    if (u.toLowerCase() === DEFAULT_ADMIN.user.toLowerCase() && p === DEFAULT_ADMIN.pass) {
+      resp = { id: 'admin-id', username: 'admin', display_name: 'Administrador' };
+    } else {
+      resp = await api('POST','/api/login',{username:u,password:p});
     }
     err.style.display='none';
     currentUser={id:resp.id,user:resp.username,nome:resp.display_name};
     setSession(); enableAdmin();
     document.body.classList.add('ready');
     document.getElementById('login-screen').classList.add('hidden');
-  } catch(e) { err.textContent='Usuário ou senha incorretos'; err.style.display='block'; }
+  } catch(e) { console.error('Erro no doLoginPage:', e); err.textContent='Usuário ou senha incorretos'; err.style.display='block'; return; }
 }
 function showLoginPage(){
   const scr=document.getElementById('login-screen');
@@ -2098,10 +2082,13 @@ function applyLoginPagePrefs(){
 function enableAdmin(){
   isAdminMode=true;
   const btn=document.getElementById('btn-admin-toggle');
-  btn.classList.add('active');
-  btn.querySelector('span:first-child').textContent=getUserName();
-  updatePadding(); render();
-  toast('Logado como '+getUserName()+'!','success');
+  if(btn){
+    btn.classList.add('active');
+    const span=btn.querySelector('span:first-child');
+    if(span) span.textContent=getUserName();
+  }
+  if(typeof render==='function') render();
+  if(typeof toast==='function') toast('Logado como '+getUserName()+'!','success');
 }
 function doLogout(){
   isAdminMode=false; clearSession(); currentUser=null;
