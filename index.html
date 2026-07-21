@@ -468,9 +468,9 @@
       font-size: 16px; color: rgba(255,255,255,0.85); margin-top: 8px;
     }
     .login-right {
-      width: 440px; min-width: 380px;
+      width: 380px; min-width: 340px;
       background: var(--bg-surface); display: flex; flex-direction: column;
-      align-items: center; justify-content: center; padding: 40px;
+      align-items: center; justify-content: center; padding: 36px 32px;
       border-left: 1px solid var(--border);
     }
     .login-form-logo {
@@ -764,6 +764,14 @@
     .trash-item-name { font-size: 12px; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .trash-item-meta { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
     .trash-item-btns { display: flex; gap: 4px; flex-shrink: 0; margin-left: 8px; }
+
+    /* Hide panel until login to prevent flash */
+    body:not(.ready) #app-header,
+    body:not(.ready) #filter-bar,
+    body:not(.ready) #kanban-board,
+    body:not(.ready) .bg-glow,
+    body:not(.ready) #clients-panel,
+    body:not(.ready) #trash-panel { display: none !important; }
   </style>
 </head>
 <body>
@@ -1749,6 +1757,7 @@ async function doLoginPage(){
     err.style.display='none';
     currentUser={id:resp.id,user:resp.username,nome:resp.display_name};
     setSession(); enableAdmin();
+    document.body.classList.add('ready');
     document.getElementById('login-screen').classList.add('hidden');
   } catch(e) { err.textContent='Usuário ou senha incorretos'; err.style.display='block'; }
 }
@@ -1835,7 +1844,8 @@ function doLogout(){
   const btn=document.getElementById('btn-admin-toggle');
   btn.classList.remove('active');
   btn.querySelector('span:first-child').textContent='⚙️ Admin';
-  showLoginPage(); render();
+  document.body.classList.remove('ready');
+  showLoginPage();
   toast('Sessão encerrada','info');
 }
 
@@ -2717,9 +2727,11 @@ async function init(){
   applyLoginPagePrefs();
   initFilterBar();
   if(checkSession()){
+    document.body.classList.add('ready');
     document.getElementById('login-screen').classList.add('hidden');
     enableAdmin();
   } else {
+    document.body.classList.add('ready');
     render();
   }
   setTimeout(initKanbanDrag, 50);
