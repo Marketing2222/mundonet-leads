@@ -2662,6 +2662,9 @@ function renderComissoes(){
     const status=l.comissaoStatus||'pendente';
     const statusClass=status==='pago'?'pago':'pendente';
     const valor=l.comissaoValor||'R$ 0';
+    const forma=l.comissaoFormaPagamento||'';
+    const formaLabel=forma==='pix'?'PIX':forma==='desconto'?'Desconto na fatura':forma==='outros'?'Outros':'';
+    const valorDisplay=formaLabel?(formaLabel+' '+valor):valor;
     const dataPag=l.comissaoDataPagamento?fmtDateBR(l.comissaoDataPagamento):'-';
     const dataConv=fmtDateBR(l.dataConvite||l.criadoEm||'');
     const payBtn=status==='pendente'?`<button class="btn btn-primary" style="font-size:10px;padding:4px 10px;white-space:nowrap" onclick="openPagarComissao('${l.id}')">💲 Pagar</button>`:`<span style="color:var(--accent-green);font-size:11px;font-weight:600">✅ Pago</span>`;
@@ -2671,7 +2674,7 @@ function renderComissoes(){
       <td>${dataConv}</td>
       <td>${dataPag}</td>
       <td><span class="comissoes-status ${statusClass}">${status==='pago'?'Pago':'Pendente'}</span></td>
-      <td>${escHtml(valor)}</td>
+      <td>${escHtml(valorDisplay)}</td>
       <td>${payBtn}</td>
     </tr>`;
   }).join('');
