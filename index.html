@@ -1813,6 +1813,14 @@ function getCol(id)  { return state.columns.find(c=>c.id===id); }
 function getLead(id) { return state.leads.find(l=>l.id===id); }
 function sortedCols(){ return [...state.columns].sort((a,b)=>(a.order||0)-(b.order||0)); }
 function escHtml(s)  { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function timeAgo(from,to){
+  const diff=Math.max(0,(to||Date.now())-new Date(from).getTime());
+  const s=Math.floor(diff/1000), m=Math.floor(s/60), h=Math.floor(m/60), d=Math.floor(h/24);
+  if(d>0) return d+'d';
+  if(h>0) return h+'h';
+  if(m>0) return m+'min';
+  return s+'s';
+}
 
 // ===== TOAST =====
 function toast(msg, type='info', ms=3000) {
@@ -1906,7 +1914,7 @@ function renderCard(lead,col){
       style="--col-color:${col.color}">
       <div class="card-top">
         <span class="card-lead-name">${escHtml(lead.leadNome||'Lead sem nome')}</span>
-        <span class="card-badge" style="background:${col.color}1a;color:${col.color}">${lead.historico?.length||0}h</span>
+        <span class="card-badge" style="background:${col.color}1a;color:${col.color};${lead.comissaoStatus==='pago'?'display:flex;flex-direction:column;line-height:1.1':''}">${lead.comissaoStatus==='pago'?'<span style="font-size:8px;letter-spacing:.05em">PAGO</span><span>'+timeAgo(lead.criadoEm,lead.comissaoDataPagamento?new Date(lead.comissaoDataPagamento).getTime():null)+'</span>':timeAgo(lead.criadoEm)}</span>
       </div>
       <div class="card-info">
         ${lead.clienteNome?`<div class="card-row"><span class="card-row-icon">👤</span><span class="card-row-text">${escHtml(lead.clienteNome)}</span></div>`:''}
@@ -3128,6 +3136,7 @@ async function init(){
     render();
   }
   setTimeout(initKanbanDrag, 50);
+  setInterval(()=>{ if(isAdminMode) render(); },60000);
 }
 
 // ===== KANBAN DRAG SCROLL =====
