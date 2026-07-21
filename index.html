@@ -474,11 +474,11 @@
       border-left: 1px solid var(--border);
     }
     .login-form-logo {
-      width: 72px; height: 72px; border-radius: 18px;
+      width: 56px; height: 56px; border-radius: 14px;
       background: linear-gradient(135deg, #1d4ed8, #06b6d4);
       display: flex; align-items: center; justify-content: center;
-      font-size: 30px; font-weight: 900; color: #fff; margin-bottom: 20px;
-      box-shadow: 0 0 30px rgba(6,182,212,0.3); overflow: hidden;
+      font-size: 22px; font-weight: 900; color: #fff; margin-bottom: 16px;
+      box-shadow: 0 0 24px rgba(6,182,212,0.3); overflow: hidden;
     }
     .login-form-logo img { width: 100%; height: 100%; object-fit: cover; }
     .login-form-title { font-size: 22px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px; }
@@ -1272,6 +1272,14 @@
         </div>
       </div>
 
+      <div class="toggle-row">
+        <div>
+          <div class="toggle-label">Mostrar texto na imagem</div>
+          <div class="toggle-sub">Exibe título e subtítulo sobre a imagem de fundo</div>
+        </div>
+        <div class="toggle-switch on" id="pers-login-show-text" onclick="this.classList.toggle('on')"></div>
+      </div>
+
       <!-- Tema -->
       <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;padding-top:12px;border-top:1px solid var(--border)">Tema</p>
       <div class="toggle-row">
@@ -1764,6 +1772,8 @@ function applyLoginPagePrefs(){
     logoEl.textContent=title.charAt(0);
     logoEl.style.cssText='';
   }
+  const leftContent=leftEl.querySelector('.login-left-content');
+  if(leftContent) leftContent.style.display=prefs.loginShowText!==false?'block':'none';
   if(prefs.loginBgImage){
     let bgImg=leftEl.querySelector('img');
     if(!bgImg){ bgImg=document.createElement('img'); leftEl.prepend(bgImg); }
@@ -2139,6 +2149,8 @@ function openPersonalize(){
   const overlayVal=prefs.loginBgOverlay!==undefined?Math.round(prefs.loginBgOverlay*100):40;
   document.getElementById('pers-login-overlay').value=overlayVal;
   document.getElementById('pers-login-overlay-val').textContent=overlayVal+'%';
+  const showText=prefs.loginShowText!==false;
+  document.getElementById('pers-login-show-text').classList.toggle('on',showText);
   const bgPreview=document.getElementById('login-bg-preview');
   const bgRemoveBtn=document.getElementById('login-bg-remove-btn');
   if(prefs.loginBgImage){ bgPreview.style.display='block'; bgPreview.querySelector('img').src=prefs.loginBgImage; bgRemoveBtn.style.display='inline-block'; }
@@ -2217,6 +2229,7 @@ async function savePersonalize(){
   state.prefs.loginCardBg=document.getElementById('pers-login-card-bg').value;
   state.prefs.loginTextColor=document.getElementById('pers-login-text-color').value;
   state.prefs.loginBgOverlay=parseInt(document.getElementById('pers-login-overlay').value)/100;
+  state.prefs.loginShowText=document.getElementById('pers-login-show-text').classList.contains('on');
   try { await api('PUT','/api/prefs',state.prefs); } catch(ex) { toast('Erro: '+ex.message,'error'); }
   applyPrefs();
   closeModal('modal-personalize');
