@@ -879,7 +879,6 @@
     <div class="header-stat"><span class="header-stat-label">Pendentes</span><span class="header-stat-val" style="color:#60a5fa" id="stat-pendentes">0</span></div>
   </div>
   <div class="header-right">
-    <button id="btn-search" onclick="toggleSearch()">🔍 Buscar</button>
     <button id="btn-theme" onclick="toggleTheme()" title="Alternar tema">☀️</button>
     <button id="btn-admin-toggle" onclick="toggleAdmin()">
       <span>⚙️ Admin</span><span class="admin-dot"></span>
@@ -906,17 +905,7 @@
 
 <!-- FILTER BAR -->
 <div id="filter-bar">
-  <div class="filter-group">
-    <span class="filter-label">Cliente</span>
-    <select class="filter-select" id="filter-cliente" onchange="applyFilters()">
-      <option value="">Todos</option>
-    </select>
-  </div>
-  <div class="filter-divider"></div>
-  <div class="filter-group">
-    <span class="filter-label">Nome do lead</span>
-    <input type="text" class="filter-input" id="filter-lead-nome" placeholder="Filtrar por nome..." oninput="applyFilters()">
-  </div>
+  <button id="btn-search" onclick="toggleSearch()" style="display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:var(--radius-sm);background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-primary);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Buscar</button>
   <div class="filter-divider"></div>
   <div class="filter-group">
     <span class="filter-label">Mês</span>
