@@ -1995,12 +1995,7 @@ async function doLoginPage(){
   const err=document.getElementById('login-page-error');
   if(!u||!p){ err.textContent='Preencha todos os campos'; err.style.display='block'; return; }
   try {
-    let resp;
-    if (u.toLowerCase() === DEFAULT_ADMIN.user.toLowerCase() && p === DEFAULT_ADMIN.pass) {
-      resp = { id: 'admin-id', username: 'admin', display_name: 'Administrador' };
-    } else {
-      resp = await api('POST','/api/login',{username:u,password:p});
-    }
+    const resp=await api('POST','/api/login',{username:u,password:p});
     err.style.display='none';
     currentUser={id:resp.id,user:resp.username,nome:resp.display_name};
     setSession(); enableAdmin();
