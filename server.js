@@ -37,13 +37,14 @@ function writeObj(name, data) {
 function uuid() { return crypto.randomUUID(); }
 function hashPass(p) { return crypto.createHash('sha256').update(p).digest('hex'); }
 
-// ---------- init defaults ----------
 const users = readStore('users');
-if (users.length === 0) {
-  users.push({ id: uuid(), username: 'admin', password: hashPass('mundonet@2026'), display_name: 'Administrador' });
+const adminPassHash = hashPass('mundonet@2026');
+const existingAdmin = users.find(u => u.username === 'admin');
+if (existingAdmin) {
+  existingAdmin.password = adminPassHash;
   writeStore('users', users);
-} else if (!users.find(u => u.username === 'admin')) {
-  users.push({ id: uuid(), username: 'admin', password: hashPass('mundonet@2026'), display_name: 'Administrador' });
+} else {
+  users.push({ id: uuid(), username: 'admin', password: adminPassHash, display_name: 'Administrador' });
   writeStore('users', users);
 }
 
