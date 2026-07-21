@@ -37,16 +37,20 @@ function writeObj(name, data) {
 function uuid() { return crypto.randomUUID(); }
 function hashPass(p) { return crypto.createHash('sha256').update(p).digest('hex'); }
 
-const users = readStore('users');
-const adminPassHash = hashPass('mundonet@2026');
-const existingAdmin = users.find(u => u.username === 'admin');
-if (existingAdmin) {
-  existingAdmin.password = adminPassHash;
-  writeStore('users', users);
-} else {
-  users.push({ id: uuid(), username: 'admin', password: adminPassHash, display_name: 'Administrador' });
-  writeStore('users', users);
+// Ensure admin user exists
+function ensureAdminUser() {
+  const usersList = readStore('users');
+  const adminPassHash = hashPass('mundonet@2026');
+  const existingAdmin = usersList.find(u => u.username.toLowerCase() === 'admin');
+  if (existingAdmin) {
+    existingAdmin.password = adminPassHash;
+    writeStore('users', usersList);
+  } else {
+    usersList.push({ id: uuid(), username: 'admin', password: adminPassHash, display_name: 'Administrador' });
+    writeStore('users', usersList);
+  }
 }
+ensureAdminUser();
 
 const columns = readStore('columns');
 if (columns.length === 0) {
@@ -71,15 +75,23 @@ if (columns.length === 0) {
 
 // ---------- AUTH ----------
 app.post('/api/login', (req, res) => {
-  const { username, password } = req.body;
-  const row = users.find(u => u.username === username);
-  if (!row || row.password !== hashPass(password)) return res.status(401).json({ error: 'Credenciais inválidas' });
+  const { username, password } = req.body || {};
+  if (!username || !password) return res.status(401).json({ error: 'Credenciais inválidas' });
+  const cleanUsername = String(username).trim().toLowerCase();
+  const cleanPassword = String(password).trim();
+  const usersList = readStore('users');
+  const row = usersList.find(u => (u.username || '').trim().toLowerCase() === cleanUsername);
+  if (!row || row.password !== hashPass(cleanPassword)) return res.status(401).json({ error: 'Credenciais inválidas' });
   res.json({ id: row.id, username: row.username, display_name: row.display_name });
 });
 app.post('/api/switch-user', (req, res) => {
-  const { username, password } = req.body;
-  const row = users.find(u => u.username === username);
-  if (!row || row.password !== hashPass(password)) return res.status(401).json({ error: 'Credenciais inválidas' });
+  const { username, password } = req.body || {};
+  if (!username || !password) return res.status(401).json({ error: 'Credenciais inválidas' });
+  const cleanUsername = String(username).trim().toLowerCase();
+  const cleanPassword = String(password).trim();
+  const usersList = readStore('users');
+  const row = usersList.find(u => (u.username || '').trim().toLowerCase() === cleanUsername);
+  if (!row || row.password !== hashPass(cleanPassword)) return res.status(401).json({ error: 'Credenciais inválidas' });
   res.json({ id: row.id, username: row.username, display_name: row.display_name });
 });
 
