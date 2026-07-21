@@ -170,7 +170,9 @@
       border-bottom: 1px solid rgba(255,255,255,0.06);
       padding: 8px 20px;
       display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      display: none;
     }
+    body.admin-mode #admin-toolbar { display: flex; }
     .toolbar-label {
       font-size: 11px; font-weight: 700; color: #f1f5f9;
       text-transform: uppercase; letter-spacing: 0.05em;
@@ -436,7 +438,81 @@
     .stage-arrow { color: var(--text-muted); font-size: 12px; }
     .timeline-empty { text-align: center; padding: 28px 16px; color: var(--text-muted); font-size: 12px; }
 
-    /* ===== LOGIN MODAL ===== */
+    /* ===== FULL-SCREEN LOGIN ===== */
+    #login-screen {
+      position: fixed; inset: 0; z-index: 9999;
+      display: flex; transition: opacity 0.4s ease;
+    }
+    #login-screen.hidden { opacity: 0; pointer-events: none; }
+    .login-left {
+      flex: 1.2; position: relative; overflow: hidden;
+      background: linear-gradient(135deg, #1d4ed8 0%, #0ea5e9 50%, #06b6d4 100%);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .login-left img {
+      width: 100%; height: 100%; object-fit: cover;
+      position: absolute; inset: 0;
+    }
+    .login-left-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(29,78,216,0.85), rgba(6,182,212,0.7));
+    }
+    .login-left-content {
+      position: relative; z-index: 2; text-align: center; padding: 40px;
+    }
+    .login-left-content h2 {
+      font-size: 32px; font-weight: 900; color: #fff;
+      text-shadow: 0 2px 20px rgba(0,0,0,0.3);
+    }
+    .login-left-content p {
+      font-size: 16px; color: rgba(255,255,255,0.85); margin-top: 8px;
+    }
+    .login-right {
+      width: 440px; min-width: 380px;
+      background: var(--bg-surface); display: flex; flex-direction: column;
+      align-items: center; justify-content: center; padding: 40px;
+      border-left: 1px solid var(--border);
+    }
+    .login-form-logo {
+      width: 72px; height: 72px; border-radius: 18px;
+      background: linear-gradient(135deg, #1d4ed8, #06b6d4);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 30px; font-weight: 900; color: #fff; margin-bottom: 20px;
+      box-shadow: 0 0 30px rgba(6,182,212,0.3); overflow: hidden;
+    }
+    .login-form-logo img { width: 100%; height: 100%; object-fit: cover; }
+    .login-form-title { font-size: 22px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px; }
+    .login-form-subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 28px; }
+    .login-form-group { width: 100%; margin-bottom: 16px; }
+    .login-form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+    .login-form-group input {
+      width: 100%; padding: 12px 14px; border-radius: var(--radius-sm);
+      background: var(--bg-elevated); border: 1px solid var(--border-light);
+      color: var(--text-primary); font-size: 14px; outline: none; transition: border-color 0.2s;
+    }
+    .login-form-group input:focus { border-color: #3b82f6; }
+    .login-form-group input::placeholder { color: var(--text-muted); }
+    #login-page-error {
+      background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3);
+      border-radius: var(--radius-sm); padding: 10px 14px;
+      font-size: 12px; color: var(--accent-red); display: none; margin-bottom: 16px; width: 100%; text-align: center;
+    }
+    .login-form-btn {
+      width: 100%; padding: 13px; border-radius: var(--radius-sm); border: none;
+      background: linear-gradient(135deg, #1d4ed8, #3b82f6); color: #fff;
+      font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+      box-shadow: 0 4px 16px rgba(29,78,216,0.3);
+    }
+    .login-form-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(29,78,216,0.4); }
+    .login-form-btn:active { transform: translateY(0); }
+    @media (max-width: 768px) {
+      #login-screen { flex-direction: column; }
+      .login-left { flex: none; height: 200px; }
+      .login-left-content h2 { font-size: 22px; }
+      .login-right { width: 100%; min-width: 0; padding: 30px 20px; }
+    }
+
+    /* ===== LEGACY LOGIN MODAL (kept for switch-user) ===== */
     #modal-login { max-width: 360px; }
     #modal-login .modal-overlay { align-items: flex-start; padding-top: calc(var(--header-h) + 8px); padding-right: 20px; justify-content: flex-end; }
     .login-logo-icon {
@@ -691,6 +767,32 @@
   </style>
 </head>
 <body>
+
+<!-- ===== FULL-SCREEN LOGIN ===== -->
+<div id="login-screen">
+  <div class="login-left" id="login-page-left">
+    <div class="login-left-overlay"></div>
+    <div class="login-left-content">
+      <h2 id="login-page-left-title">MUNDONET</h2>
+      <p id="login-page-left-sub">Sistema de Indicações</p>
+    </div>
+  </div>
+  <div class="login-right">
+    <div class="login-form-logo" id="login-page-logo">M</div>
+    <div class="login-form-title" id="login-page-title">Painel de Indicações</div>
+    <div class="login-form-subtitle" id="login-page-subtitle">Mundonet — Sistema de Indicações</div>
+    <div id="login-page-error">Usuário ou senha incorretos</div>
+    <div class="login-form-group">
+      <label>Email ou Usuário</label>
+      <input type="text" id="login-page-user" placeholder="Digite seu usuário" autocomplete="username">
+    </div>
+    <div class="login-form-group">
+      <label>Senha</label>
+      <input type="password" id="login-page-pass" placeholder="Digite sua senha" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLoginPage()">
+    </div>
+    <button class="login-form-btn" onclick="doLoginPage()">Entrar</button>
+  </div>
+</div>
 
 <div class="bg-glow" id="glow1"></div>
 <div class="bg-glow" id="glow2"></div>
@@ -1082,7 +1184,7 @@
 
 <!-- ===== MODAL: PERSONALIZAR ===== -->
 <div class="modal-overlay" id="modal-personalize">
-  <div class="modal-box" style="max-width:480px">
+  <div class="modal-box" style="max-width:520px;max-height:90vh;overflow-y:auto">
     <div class="modal-header">
       <h2 class="modal-title">🎨 Personalizar Painel</h2>
       <button class="modal-close" onclick="closeModal('modal-personalize')">✕</button>
@@ -1090,7 +1192,7 @@
     <div class="modal-body">
 
       <!-- Logo -->
-      <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Logo</p>
+      <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Logo do Painel</p>
       <div class="logo-upload-area" onclick="document.getElementById('logo-file-input').click()">
         <div class="logo-preview" id="logo-preview-box">M</div>
         <div style="font-size:12px;color:var(--text-secondary)">Clique para fazer upload do logo</div>
@@ -1109,8 +1211,69 @@
       </div>
       <button class="btn btn-danger" onclick="removeLogo()" style="margin-bottom:18px;font-size:11px;padding:6px 12px">🗑 Remover logo personalizado</button>
 
+      <!-- Tela de Login -->
+      <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;padding-top:12px;border-top:1px solid var(--border)">🖼 Tela de Login</p>
+
+      <div class="form-group" style="margin-bottom:12px">
+        <label class="form-label">Imagem de fundo (lado esquerdo)</label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn btn-ghost" onclick="document.getElementById('login-bg-file').click()" style="font-size:12px;padding:8px 14px">📤 Upload de imagem</button>
+          <input type="file" id="login-bg-file" accept="image/*" style="display:none" onchange="handleLoginBgUpload(this)">
+          <button class="btn btn-danger" onclick="removeLoginBg()" style="font-size:11px;padding:6px 12px;display:none" id="login-bg-remove-btn">🗑 Remover</button>
+        </div>
+        <div id="login-bg-preview" style="margin-top:8px;border-radius:8px;overflow:hidden;display:none;height:100px;background:var(--bg-elevated);border:1px solid var(--border)"><img style="width:100%;height:100%;object-fit:cover"></div>
+      </div>
+
+      <div class="form-group" style="margin-bottom:12px">
+        <label class="form-label">Logo da tela de login (opcional)</label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn btn-ghost" onclick="document.getElementById('login-logo-file').click()" style="font-size:12px;padding:8px 14px">📤 Upload de logo</button>
+          <input type="file" id="login-logo-file" accept="image/*" style="display:none" onchange="handleLoginLogoUpload(this)">
+          <button class="btn btn-danger" onclick="removeLoginLogo()" style="font-size:11px;padding:6px 12px;display:none" id="login-logo-remove-btn">🗑 Remover</button>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+        <div class="form-group">
+          <label class="form-label">Cor do fundo esquerdo</label>
+          <div style="display:flex;gap:6px;align-items:center">
+            <input type="color" id="pers-login-bg-color" value="#1d4ed8" style="width:36px;height:32px;border:none;border-radius:6px;cursor:pointer;background:transparent" oninput="document.getElementById('pers-login-bg-color-hex').textContent=this.value">
+            <span style="font-size:11px;color:var(--text-muted)" id="pers-login-bg-color-hex">#1d4ed8</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Cor do botão Entrar</label>
+          <div style="display:flex;gap:6px;align-items:center">
+            <input type="color" id="pers-login-btn-color" value="#1d4ed8" style="width:36px;height:32px;border:none;border-radius:6px;cursor:pointer;background:transparent" oninput="document.getElementById('pers-login-btn-color-hex').textContent=this.value">
+            <span style="font-size:11px;color:var(--text-muted)" id="pers-login-btn-color-hex">#1d4ed8</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Cor do card (lado direito)</label>
+          <div style="display:flex;gap:6px;align-items:center">
+            <input type="color" id="pers-login-card-bg" value="#111827" style="width:36px;height:32px;border:none;border-radius:6px;cursor:pointer;background:transparent" oninput="document.getElementById('pers-login-card-bg-hex').textContent=this.value">
+            <span style="font-size:11px;color:var(--text-muted)" id="pers-login-card-bg-hex">#111827</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Cor do texto do login</label>
+          <div style="display:flex;gap:6px;align-items:center">
+            <input type="color" id="pers-login-text-color" value="#f0f4ff" style="width:36px;height:32px;border:none;border-radius:6px;cursor:pointer;background:transparent" oninput="document.getElementById('pers-login-text-color-hex').textContent=this.value">
+            <span style="font-size:11px;color:var(--text-muted)" id="pers-login-text-color-hex">#f0f4ff</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom:16px">
+        <label class="form-label">Opacidade do overlay escuro sobre a imagem</label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="range" id="pers-login-overlay" min="0" max="100" value="40" style="flex:1;accent-color:var(--accent-blue)" oninput="document.getElementById('pers-login-overlay-val').textContent=this.value+'%'">
+          <span style="font-size:12px;color:var(--text-muted);min-width:35px;text-align:right" id="pers-login-overlay-val">40%</span>
+        </div>
+      </div>
+
       <!-- Tema -->
-      <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Tema</p>
+      <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;padding-top:12px;border-top:1px solid var(--border)">Tema</p>
       <div class="toggle-row">
         <div>
           <div class="toggle-label">Modo Claro</div>
@@ -1120,7 +1283,7 @@
       </div>
 
       <!-- Templates de Comentário -->
-      <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px">Templates de Comentário</p>
+      <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px;padding-top:12px;border-top:1px solid var(--border)">Templates de Comentário</p>
       <div id="tpl-manage-list"></div>
       <div style="display:flex;gap:6px;margin-top:8px">
         <input type="text" id="tpl-new-label" class="form-control" placeholder="Nome do botão" style="flex:1;font-size:12px;padding:7px 10px">
@@ -1526,7 +1689,7 @@ function toggleAdmin(){
       document.getElementById('dropdown-user-name').textContent=getUserName();
       dd.style.display='block';
     }
-  } else { if(checkSession()){ enableAdmin(); } else { openModal('modal-login'); setTimeout(()=>document.getElementById('login-user').focus(),80); } }
+  } else { showLoginPage(); }
 }
 function closeAdminDropdown(){ document.getElementById('admin-user-dropdown').style.display='none'; }
 document.addEventListener('click',e=>{
@@ -1536,11 +1699,11 @@ document.addEventListener('click',e=>{
 });
 function openSwitchUser(){
   closeAdminDropdown();
-  openModal('modal-login');
-  document.getElementById('login-user').value='';
-  document.getElementById('login-pass').value='';
-  document.getElementById('login-error').style.display='none';
-  setTimeout(()=>document.getElementById('login-user').focus(),80);
+  isAdminMode=false; currentUser=null;
+  const btn=document.getElementById('btn-admin-toggle');
+  btn.classList.remove('active');
+  btn.querySelector('span:first-child').textContent='⚙️ Admin';
+  showLoginPage();
 }
 async function doLogin(){
   const u=document.getElementById('login-user').value.trim();
@@ -1561,6 +1724,68 @@ async function doLogin(){
     }
   } catch(e) { err.style.display='block'; }
 }
+async function doLoginPage(){
+  const u=document.getElementById('login-page-user').value.trim();
+  const p=document.getElementById('login-page-pass').value;
+  const err=document.getElementById('login-page-error');
+  if(!u||!p){ err.textContent='Preencha todos os campos'; err.style.display='block'; return; }
+  try {
+    const resp=await api('POST','/api/login',{username:u,password:p});
+    err.style.display='none';
+    currentUser={id:resp.id,user:resp.username,nome:resp.display_name};
+    setSession(); enableAdmin();
+    document.getElementById('login-screen').classList.add('hidden');
+  } catch(e) { err.textContent='Usuário ou senha incorretos'; err.style.display='block'; }
+}
+function showLoginPage(){
+  const scr=document.getElementById('login-screen');
+  scr.classList.remove('hidden');
+  document.getElementById('login-page-user').value='';
+  document.getElementById('login-page-pass').value='';
+  document.getElementById('login-page-error').style.display='none';
+}
+function applyLoginPagePrefs(){
+  const prefs=state.prefs||{};
+  const title=prefs.nome||'MUNDONET';
+  const sub=prefs.sub||'Sistema de Indicações';
+  document.getElementById('login-page-left-title').textContent=title;
+  document.getElementById('login-page-left-sub').textContent=sub;
+  document.getElementById('login-page-title').textContent=title;
+  document.getElementById('login-page-subtitle').textContent=title+' — '+sub;
+  const logoEl=document.getElementById('login-page-logo');
+  const leftEl=document.getElementById('login-page-left');
+  if(prefs.loginLogo){
+    logoEl.innerHTML='<img src="'+prefs.loginLogo+'" alt="logo">';
+    logoEl.style.cssText='width:auto;height:auto;min-width:0;background:transparent;box-shadow:none;border-radius:0;padding:0';
+  } else if(prefs.logo){
+    logoEl.innerHTML='<img src="'+prefs.logo+'" alt="logo">';
+    logoEl.style.cssText='width:auto;height:auto;min-width:0;background:transparent;box-shadow:none;border-radius:0;padding:0';
+  } else {
+    logoEl.textContent=title.charAt(0);
+    logoEl.style.cssText='';
+  }
+  if(prefs.loginBgImage){
+    let bgImg=leftEl.querySelector('img');
+    if(!bgImg){ bgImg=document.createElement('img'); leftEl.prepend(bgImg); }
+    bgImg.src=prefs.loginBgImage;
+    const overlay=leftEl.querySelector('.login-left-overlay');
+    if(prefs.loginBgOverlay!==undefined){ overlay.style.background='rgba(0,0,0,'+prefs.loginBgOverlay+')'; }
+  }
+  if(prefs.loginBgColor){
+    leftEl.style.background=prefs.loginBgColor;
+  }
+  if(prefs.loginBtnColor){
+    document.querySelector('.login-form-btn').style.background=prefs.loginBtnColor;
+    document.querySelector('.login-form-btn').style.boxShadow='0 4px 16px '+prefs.loginBtnColor+'66';
+  }
+  if(prefs.loginCardBg){
+    document.querySelector('.login-right').style.background=prefs.loginCardBg;
+  }
+  if(prefs.loginTextColor){
+    document.querySelector('.login-form-title').style.color=prefs.loginTextColor;
+    document.querySelector('.login-form-subtitle').style.color=prefs.loginTextColor+'aa';
+  }
+}
 function enableAdmin(){
   isAdminMode=true;
   const btn=document.getElementById('btn-admin-toggle');
@@ -1574,7 +1799,7 @@ function doLogout(){
   const btn=document.getElementById('btn-admin-toggle');
   btn.classList.remove('active');
   btn.querySelector('span:first-child').textContent='⚙️ Admin';
-  updatePadding(); render();
+  showLoginPage(); render();
   toast('Sessão encerrada','info');
 }
 
@@ -1898,15 +2123,63 @@ function openPersonalize(){
   const prefs=state.prefs||{};
   document.getElementById('pers-nome').value=prefs.nome||'MUNDONET';
   document.getElementById('pers-sub').value=prefs.sub||'Painel de Indicações';
-  // logo preview
   const box=document.getElementById('logo-preview-box');
   if(prefs.logo){ box.innerHTML=`<img src="${prefs.logo}" alt="logo">`; }
   else { box.textContent='M'; }
-  // theme toggle
   const isLight=document.documentElement.getAttribute('data-theme')==='light';
   document.getElementById('theme-toggle').classList.toggle('on',isLight);
+  document.getElementById('pers-login-bg-color').value=prefs.loginBgColor||'#1d4ed8';
+  document.getElementById('pers-login-bg-color-hex').textContent=prefs.loginBgColor||'#1d4ed8';
+  document.getElementById('pers-login-btn-color').value=prefs.loginBtnColor||'#1d4ed8';
+  document.getElementById('pers-login-btn-color-hex').textContent=prefs.loginBtnColor||'#1d4ed8';
+  document.getElementById('pers-login-card-bg').value=prefs.loginCardBg||'#111827';
+  document.getElementById('pers-login-card-bg-hex').textContent=prefs.loginCardBg||'#111827';
+  document.getElementById('pers-login-text-color').value=prefs.loginTextColor||'#f0f4ff';
+  document.getElementById('pers-login-text-color-hex').textContent=prefs.loginTextColor||'#f0f4ff';
+  const overlayVal=prefs.loginBgOverlay!==undefined?Math.round(prefs.loginBgOverlay*100):40;
+  document.getElementById('pers-login-overlay').value=overlayVal;
+  document.getElementById('pers-login-overlay-val').textContent=overlayVal+'%';
+  const bgPreview=document.getElementById('login-bg-preview');
+  const bgRemoveBtn=document.getElementById('login-bg-remove-btn');
+  if(prefs.loginBgImage){ bgPreview.style.display='block'; bgPreview.querySelector('img').src=prefs.loginBgImage; bgRemoveBtn.style.display='inline-block'; }
+  else { bgPreview.style.display='none'; bgRemoveBtn.style.display='none'; }
+  const logoRemoveBtn=document.getElementById('login-logo-remove-btn');
+  logoRemoveBtn.style.display=prefs.loginLogo?'inline-block':'none';
   renderTemplateManage();
   openModal('modal-personalize');
+}
+
+function handleLoginBgUpload(input){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    state.prefs=state.prefs||{};
+    state.prefs.loginBgImage=e.target.result;
+    const preview=document.getElementById('login-bg-preview');
+    preview.style.display='block';
+    preview.querySelector('img').src=e.target.result;
+    document.getElementById('login-bg-remove-btn').style.display='inline-block';
+  };
+  reader.readAsDataURL(file);
+}
+function removeLoginBg(){
+  state.prefs=state.prefs||{}; delete state.prefs.loginBgImage;
+  document.getElementById('login-bg-preview').style.display='none';
+  document.getElementById('login-bg-remove-btn').style.display='none';
+}
+function handleLoginLogoUpload(input){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    state.prefs=state.prefs||{};
+    state.prefs.loginLogo=e.target.result;
+    document.getElementById('login-logo-remove-btn').style.display='inline-block';
+  };
+  reader.readAsDataURL(file);
+}
+function removeLoginLogo(){
+  state.prefs=state.prefs||{}; delete state.prefs.loginLogo;
+  document.getElementById('login-logo-remove-btn').style.display='none';
 }
 
 function handleLogoUpload(input){
@@ -1939,6 +2212,11 @@ async function savePersonalize(){
   state.prefs.nome=document.getElementById('pers-nome').value.trim()||'MUNDONET';
   state.prefs.sub=document.getElementById('pers-sub').value.trim()||'Painel de Indicações';
   state.prefs.theme=document.documentElement.getAttribute('data-theme');
+  state.prefs.loginBgColor=document.getElementById('pers-login-bg-color').value;
+  state.prefs.loginBtnColor=document.getElementById('pers-login-btn-color').value;
+  state.prefs.loginCardBg=document.getElementById('pers-login-card-bg').value;
+  state.prefs.loginTextColor=document.getElementById('pers-login-text-color').value;
+  state.prefs.loginBgOverlay=parseInt(document.getElementById('pers-login-overlay').value)/100;
   try { await api('PUT','/api/prefs',state.prefs); } catch(ex) { toast('Erro: '+ex.message,'error'); }
   applyPrefs();
   closeModal('modal-personalize');
@@ -1967,6 +2245,8 @@ function applyPrefs(){
   document.getElementById('btn-theme').textContent=(document.documentElement.getAttribute('data-theme')==='light')?'☀️':'🌙';
   // Title
   if(prefs.nome) document.title=`${prefs.nome} — Painel de Indicações`;
+  // Login page
+  applyLoginPagePrefs();
 }
 
 // ===== TEMPLATES =====
@@ -2392,8 +2672,14 @@ async function init(){
     toast('Erro ao carregar dados do servidor!','error');
   }
   applyPrefs();
+  applyLoginPagePrefs();
   initFilterBar();
-  if(checkSession()) enableAdmin(); else render();
+  if(checkSession()){
+    document.getElementById('login-screen').classList.add('hidden');
+    enableAdmin();
+  } else {
+    render();
+  }
   setTimeout(initKanbanDrag, 50);
 }
 
