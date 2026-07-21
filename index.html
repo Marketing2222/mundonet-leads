@@ -2551,12 +2551,20 @@ function renderTemplateButtons(){
   const el=document.getElementById('tpl-buttons'); if(!el) return;
   const tpls=getTemplates();
   if(!tpls.length){ el.innerHTML=''; return; }
-  el.innerHTML=tpls.map(t=>`<button class="tpl-btn" onclick="applyTemplate('${escHtml(t.text.replace(/'/g,"\\'"))}')">${escHtml(t.label)}</button>`).join('');
+  el.innerHTML=tpls.map(t=>`<button class="tpl-btn" onclick="applyTemplate('${escHtml(t.text.replace(/'/g,"\\'"))}','${escHtml(t.label.replace(/'/g,"\\'"))}')">${escHtml(t.label)}</button>`).join('');
 }
-function applyTemplate(text){
+function applyTemplate(text,label){
   const ta=document.getElementById('lead-comentarios');
   if(ta.value.trim()){ ta.value=ta.value.trim()+'\n'+text; }
   else { ta.value=text; }
+  const lbl=(label||text).toLowerCase();
+  let forma='';
+  if(lbl.includes('pix')) forma='pix';
+  else if(lbl.includes('desconto')) forma='desconto';
+  if(forma && currentLeadId){
+    const lead=getLead(currentLeadId);
+    if(lead){ lead.comissaoFormaPagamento=forma; api('PUT','/api/leads/'+lead.id,toSnake(lead)).then(()=>toast('Forma de pagamento: '+forma.toUpperCase(),'success')).catch(()=>{}); }
+  }
 }
 function renderTemplateManage(){
   const el=document.getElementById('tpl-manage-list'); if(!el) return;
