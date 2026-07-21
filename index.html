@@ -816,6 +816,13 @@
     .comissoes-delete-btn:hover { background: rgba(239,68,68,0.12); border-color: var(--accent-red); color: var(--accent-red); }
     .comissoes-total { font-size: 12px; color: var(--text-secondary); margin-bottom: 10px; }
     .comissoes-total strong { color: var(--text-primary); }
+    .comissoes-tab {
+      flex: 1; padding: 10px 16px; font-size: 13px; font-weight: 700; color: var(--text-muted);
+      background: none; border: none; border-bottom: 2px solid transparent;
+      cursor: pointer; transition: all 0.2s; text-align: center;
+    }
+    .comissoes-tab:hover { color: var(--text-primary); }
+    .comissoes-tab.active { color: var(--accent-blue); border-bottom-color: var(--accent-blue); }
 
     /* Hide panel until login to prevent flash */
     body:not(.ready) #app-header,
@@ -1434,11 +1441,11 @@
         </div>
         <div class="form-group" style="flex:1;min-width:140px">
           <label class="form-label">Data do convite</label>
-          <input type="text" id="comissoes-data-convite" placeholder="DD/MM/AAAA a DD/MM/AAAA" style="width:100%">
+          <input type="date" id="comissoes-data-convite" style="width:100%">
         </div>
         <div class="form-group" style="flex:1;min-width:140px">
           <label class="form-label">Data do pagamento</label>
-          <input type="text" id="comissoes-data-pagamento" placeholder="Filtrar por data" style="width:100%">
+          <input type="date" id="comissoes-data-pagamento" style="width:100%">
         </div>
         <div class="form-group" style="flex:0.6;min-width:110px">
           <label class="form-label">Status</label>
@@ -1471,6 +1478,99 @@
         </table>
       </div>
 
+    </div>
+  </div>
+</div>
+
+<!-- ===== POPUP: PAGAR COMISSÃO ===== -->
+<div class="modal-overlay" id="modal-pagar">
+  <div class="modal-box" style="max-width:520px">
+    <div class="modal-header" style="border-bottom:none;padding-bottom:0">
+      <div style="display:flex;gap:0;border-bottom:2px solid var(--border);width:100%">
+        <button class="comissoes-tab active" id="tab-dados-comissao" onclick="switchPagarTab('comissao')">Dados da comissão</button>
+        <button class="comissoes-tab" id="tab-dados-indicacao" onclick="switchPagarTab('indicacao')">Dados da indicação</button>
+      </div>
+      <button class="modal-close" onclick="closeModal('modal-pagar')" style="margin-top:-24px">✕</button>
+    </div>
+
+    <!-- ABA: DADOS DA COMISSÃO -->
+    <div class="modal-body" id="pagar-tab-comissao" style="padding:20px">
+      <div class="form-group" style="margin-bottom:14px">
+        <label class="form-label" style="color:var(--accent-blue);font-weight:700">Cliente dono do convite</label>
+        <div style="padding:10px 12px;border-radius:var(--radius-sm);background:var(--bg-elevated);border:1px solid var(--border);font-size:13px;color:var(--text-primary);font-weight:600" id="pagar-cliente-info">—</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px">
+        <div class="form-group">
+          <label class="form-label">Forma de pagamento</label>
+          <select id="pagar-forma" class="form-control" style="font-size:12px">
+            <option value="">Selecione...</option>
+            <option value="pix">PIX</option>
+            <option value="desconto">Desconto na fatura</option>
+            <option value="outros">Outros</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Comissão paga em</label>
+          <input type="date" id="pagar-data" class="form-control" style="font-size:12px">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Valor da comissão</label>
+          <div style="position:relative">
+            <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:700;color:var(--accent-green)">R$</span>
+            <input type="text" id="pagar-valor" class="form-control" style="font-size:12px;padding-left:30px" placeholder="0,00" oninput="formatCurrencyInput(this)">
+          </div>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:16px">
+        <label class="form-label">Observações</label>
+        <textarea id="pagar-obs" class="form-control" rows="3" placeholder="Observações sobre o pagamento..." style="font-size:12px;resize:vertical"></textarea>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px">
+        <button class="btn btn-ghost" onclick="closeModal('modal-pagar')">Cancelar</button>
+        <button class="btn btn-primary" onclick="finalizarComissao()">Finalizar</button>
+      </div>
+    </div>
+
+    <!-- ABA: DADOS DA INDICAÇÃO -->
+    <div class="modal-body" id="pagar-tab-indicacao" style="padding:20px;display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+        <div class="form-group">
+          <label class="form-label">Nome do Lead</label>
+          <input type="text" id="pagar-ind-nome" class="form-control" style="font-size:12px">
+        </div>
+        <div class="form-group">
+          <label class="form-label">WhatsApp do Lead</label>
+          <input type="text" id="pagar-ind-whatsapp" class="form-control" style="font-size:12px">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+        <div class="form-group">
+          <label class="form-label">Cliente</label>
+          <input type="text" id="pagar-ind-cliente" class="form-control" style="font-size:12px">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Número do Cliente</label>
+          <input type="text" id="pagar-ind-numero" class="form-control" style="font-size:12px">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+        <div class="form-group">
+          <label class="form-label">Data do Convite</label>
+          <input type="date" id="pagar-ind-data" class="form-control" style="font-size:12px">
+        </div>
+        <div class="form-group">
+          <label class="form-label">PIX do Cliente</label>
+          <input type="text" id="pagar-ind-pix" class="form-control" style="font-size:12px">
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:16px">
+        <label class="form-label">Comentários</label>
+        <textarea id="pagar-ind-comentarios" class="form-control" rows="3" style="font-size:12px;resize:vertical"></textarea>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px">
+        <button class="btn btn-ghost" onclick="closeModal('modal-pagar')">Cancelar</button>
+        <button class="btn btn-primary" onclick="salvarIndicacao()">Salvar</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1672,6 +1772,18 @@ function fmtDate(iso) {
   if (!iso) return '—';
   const d = new Date(iso); if(isNaN(d)) return iso;
   return d.toLocaleDateString('pt-BR');
+}
+function fmtDateBR(iso) {
+  if (!iso) return '—';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) { const [y,m,d]=iso.split('-'); return d+'/'+m+'/'+y; }
+  const dt = new Date(iso); if(isNaN(dt)) return iso;
+  return dt.toLocaleDateString('pt-BR');
+}
+function fmtDateInput(iso) {
+  if (!iso) return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso;
+  const dt = new Date(iso); if(isNaN(dt)) return '';
+  return dt.toISOString().slice(0,10);
 }
 function fmtDateTime(iso) {
   if (!iso) return '—';
@@ -2523,8 +2635,8 @@ function renderComissoes(){
   const ganhoId=getGanhoColumnId();
   const ganhoLeads=state.leads.filter(l=>l.columnId===ganhoId);
   const search=(document.getElementById('comissoes-search')?.value||'').toLowerCase();
-  const dateConvite=(document.getElementById('comissoes-data-convite')?.value||'').trim().toLowerCase();
-  const datePagamento=(document.getElementById('comissoes-data-pagamento')?.value||'').trim().toLowerCase();
+  const dateConvite=(document.getElementById('comissoes-data-convite')?.value||'').trim();
+  const datePagamento=(document.getElementById('comissoes-data-pagamento')?.value||'').trim();
   const statusFilter=document.getElementById('comissoes-status-filter')?.value||'';
   let filtered=ganhoLeads;
   if(search){
@@ -2550,67 +2662,85 @@ function renderComissoes(){
     const status=l.comissaoStatus||'pendente';
     const statusClass=status==='pago'?'pago':'pendente';
     const valor=l.comissaoValor||'R$ 0';
-    const dataPag=l.comissaoDataPagamento||'-';
-    const hasProof=l.comissaoComprovante?'✅':'';
+    const dataPag=l.comissaoDataPagamento?fmtDateBR(l.comissaoDataPagamento):'-';
+    const dataConv=fmtDateBR(l.dataConvite||l.criadoEm||'');
+    const payBtn=status==='pendente'?`<button class="btn btn-primary" style="font-size:10px;padding:4px 10px;white-space:nowrap" onclick="openPagarComissao('${l.id}')">💲 Pagar</button>`:`<span style="color:var(--accent-green);font-size:11px;font-weight:600">✅ Pago</span>`;
     return `<tr>
       <td style="font-weight:600;white-space:nowrap">${escHtml(l.clienteNome||'—')}</td>
       <td>${escHtml(l.leadNome||'—')}</td>
-      <td>${fmtDate(l.dataConvite||l.criadoEm||'')}</td>
-      <td>${escHtml(dataPag)}</td>
+      <td>${dataConv}</td>
+      <td>${dataPag}</td>
       <td><span class="comissoes-status ${statusClass}">${status==='pago'?'Pago':'Pendente'}</span></td>
       <td>${escHtml(valor)}</td>
-      <td>
-        <label class="comissoes-upload-btn">${hasProof?'✅ Comprovante':'+ Upload'}
-          <input type="file" accept="image/*" style="display:none" onchange="uploadComprovante('${l.id}',this)">
-        </label>
-      </td>
-      <td><button class="comissoes-delete-btn" onclick="deleteComissaoLead('${l.id}')" title="Remover lead">🗑</button></td>
+      <td>${payBtn}</td>
     </tr>`;
   }).join('');
 }
-async function toggleComissaoStatus(leadId){
+
+let pagarLeadId=null;
+
+function openPagarComissao(leadId){
   const lead=state.leads.find(l=>l.id===leadId); if(!lead) return;
-  lead.comissaoStatus=lead.comissaoStatus==='pago'?'pendente':'pago';
-  try { await api('PUT','/api/leads/'+leadId,toSnake(lead)); } catch(ex){ toast('Erro: '+ex.message,'error'); }
+  pagarLeadId=leadId;
+  document.getElementById('pagar-cliente-info').textContent=(lead.clienteNome||'—')+(lead.clienteWhatsapp?' · '+lead.clienteWhatsapp:'');
+  document.getElementById('pagar-forma').value=lead.comissaoFormaPagamento||'';
+  document.getElementById('pagar-data').value=fmtDateInput(lead.comissaoDataPagamento||'');
+  document.getElementById('pagar-valor').value=lead.comissaoValor||'';
+  document.getElementById('pagar-obs').value=lead.comissaoObs||'';
+  document.getElementById('pagar-ind-nome').value=lead.leadNome||'';
+  document.getElementById('pagar-ind-whatsapp').value=lead.leadWhatsapp||'';
+  document.getElementById('pagar-ind-cliente').value=lead.clienteNome||'';
+  document.getElementById('pagar-ind-numero').value=lead.clienteNumero||'';
+  document.getElementById('pagar-ind-data').value=fmtDateInput(lead.dataConvite||'');
+  document.getElementById('pagar-ind-pix').value=lead.clientePix||'';
+  document.getElementById('pagar-ind-comentarios').value=lead.comentarios||'';
+  switchPagarTab('comissao');
+  openModal('modal-pagar');
+}
+
+function switchPagarTab(tab){
+  document.getElementById('tab-dados-comissao').classList.toggle('active',tab==='comissao');
+  document.getElementById('tab-dados-indicacao').classList.toggle('active',tab==='indicacao');
+  document.getElementById('pagar-tab-comissao').style.display=tab==='comissao'?'block':'none';
+  document.getElementById('pagar-tab-indicacao').style.display=tab==='indicacao'?'block':'none';
+}
+
+function formatCurrencyInput(input){
+  let v=input.value.replace(/\D/g,'');
+  if(!v){ input.value=''; return; }
+  v=(parseInt(v)/100).toFixed(2);
+  v=v.replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+  input.value=v;
+}
+
+async function finalizarComissao(){
+  if(!pagarLeadId) return;
+  const lead=state.leads.find(l=>l.id===pagarLeadId); if(!lead) return;
+  lead.comissaoFormaPagamento=document.getElementById('pagar-forma').value;
+  lead.comissaoDataPagamento=document.getElementById('pagar-data').value;
+  lead.comissaoValor='R$ '+document.getElementById('pagar-valor').value;
+  lead.comissaoObs=document.getElementById('pagar-obs').value;
+  lead.comissaoStatus='pago';
+  try { await api('PUT','/api/leads/'+pagarLeadId,toSnake(lead)); } catch(ex){ toast('Erro: '+ex.message,'error'); }
+  closeModal('modal-pagar');
   renderComissoes();
+  toast('Comissão marcada como paga!','success');
+  pagarLeadId=null;
 }
-async function updateComissaoPagamento(leadId,value){
-  const lead=state.leads.find(l=>l.id===leadId); if(!lead) return;
-  lead.comissaoDataPagamento=value;
-  try { await api('PUT','/api/leads/'+leadId,toSnake(lead)); } catch(ex){ toast('Erro: '+ex.message,'error'); }
-}
-async function updateComissaoValor(leadId,value){
-  const lead=state.leads.find(l=>l.id===leadId); if(!lead) return;
-  lead.comissaoValor=value;
-  try { await api('PUT','/api/leads/'+leadId,toSnake(lead)); } catch(ex){ toast('Erro: '+ex.message,'error'); }
-}
-async function uploadComprovante(leadId,input){
-  const file=input.files[0]; if(!file) return;
-  const reader=new FileReader();
-  reader.onload=async (e)=>{
-    const lead=state.leads.find(l=>l.id===leadId); if(!lead) return;
-    lead.comissaoComprovante=e.target.result;
-    try { await api('PUT','/api/leads/'+leadId,toSnake(lead)); toast('Comprovante salvo!','success'); } catch(ex){ toast('Erro: '+ex.message,'error'); }
-    renderComissoes();
-  };
-  reader.readAsDataURL(file);
-}
-function deleteComissaoLead(leadId){
-  const lead=state.leads.find(l=>l.id===leadId); if(!lead) return;
-  document.getElementById('confirm-icon').textContent='⚠️';
-  document.getElementById('confirm-title').textContent='Remover comissão';
-  document.getElementById('confirm-msg').textContent='Remover este lead da lista de comissões? (O lead continuará no kanban)';
-  document.getElementById('confirm-yes').onclick=async ()=>{
-    const ganhoId=getGanhoColumnId();
-    const otherCols=state.columns.filter(c=>c.id!==ganhoId);
-    const targetCol=otherCols.length?otherCols[0].id:state.columns[0].id;
-    lead.columnId=targetCol; lead.etapa=targetCol;
-    try { await api('PUT','/api/leads/'+leadId,toSnake(lead)); } catch(ex){ toast('Erro: '+ex.message,'error'); }
-    closeModal('modal-confirm');
-    renderComissoes(); render();
-    toast('Lead removido das comissões','info');
-  };
-  openModal('modal-confirm');
+
+async function salvarIndicacao(){
+  if(!pagarLeadId) return;
+  const lead=state.leads.find(l=>l.id===pagarLeadId); if(!lead) return;
+  lead.leadNome=document.getElementById('pagar-ind-nome').value.trim();
+  lead.leadWhatsapp=document.getElementById('pagar-ind-whatsapp').value.trim();
+  lead.clienteNome=document.getElementById('pagar-ind-cliente').value.trim();
+  lead.clienteNumero=document.getElementById('pagar-ind-numero').value.trim();
+  lead.dataConvite=document.getElementById('pagar-ind-data').value;
+  lead.clientePix=document.getElementById('pagar-ind-pix').value.trim();
+  lead.comentarios=document.getElementById('pagar-ind-comentarios').value.trim();
+  try { await api('PUT','/api/leads/'+pagarLeadId,toSnake(lead)); } catch(ex){ toast('Erro: '+ex.message,'error'); }
+  renderComissoes(); render();
+  toast('Indicação atualizada!','success');
 }
 
 // ===== CLIENTS PANEL =====
