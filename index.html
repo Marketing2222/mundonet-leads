@@ -1366,6 +1366,16 @@
       </div>
 
       <!-- Templates de Comentário -->
+      <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px;padding-top:12px;border-top:1px solid var(--border)">Comissões</p>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label" style="font-size:12px">Valor padrão da comissão (R$)</label>
+        <div style="position:relative;max-width:200px">
+          <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:700;color:var(--accent-green)">R$</span>
+          <input type="text" id="pers-default-comissao" class="form-control" style="font-size:12px;padding-left:30px" placeholder="40,00" oninput="formatCurrencyInput(this)">
+        </div>
+      </div>
+
+      <!-- Templates de Comentário -->
       <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px;padding-top:12px;border-top:1px solid var(--border)">Templates de Comentário</p>
       <div id="tpl-manage-list"></div>
       <div style="display:flex;gap:6px;margin-top:8px">
@@ -1469,7 +1479,7 @@
               <th>Data da indicação</th>
               <th>Data do pagamento</th>
               <th>Status</th>
-              <th>Valor pago ao cliente(R$)</th>
+              <th>O CLIENTE RECEBE</th>
               <th>Ações</th>
               <th>Comprovante</th>
               <th></th>
@@ -1506,7 +1516,7 @@
           <select id="pagar-forma" class="form-control" style="font-size:12px">
             <option value="">Selecione...</option>
             <option value="pix">PIX</option>
-            <option value="desconto">Desconto na fatura</option>
+            <option value="desconto">DESCONTO</option>
             <option value="outros">Outros</option>
           </select>
         </div>
@@ -2421,6 +2431,7 @@ function openPersonalize(){
   document.getElementById('pers-login-show-text').classList.toggle('on',showText);
   const loginLight=prefs.loginTheme==='light';
   document.getElementById('pers-login-theme').classList.toggle('on',loginLight);
+  document.getElementById('pers-default-comissao').value=prefs.defaultComissao||'40,00';
   const bgPreview=document.getElementById('login-bg-preview');
   const bgRemoveBtn=document.getElementById('login-bg-remove-btn');
   if(prefs.loginBgImage){ bgPreview.style.display='block'; bgPreview.querySelector('img').src=prefs.loginBgImage; bgRemoveBtn.style.display='inline-block'; }
@@ -2501,6 +2512,7 @@ async function savePersonalize(){
   state.prefs.loginBgOverlay=parseInt(document.getElementById('pers-login-overlay').value)/100;
   state.prefs.loginShowText=document.getElementById('pers-login-show-text').classList.contains('on');
   state.prefs.loginTheme=document.getElementById('pers-login-theme').classList.contains('on')?'light':'dark';
+  state.prefs.defaultComissao=document.getElementById('pers-default-comissao').value.trim()||'40,00';
   try { await api('PUT','/api/prefs',state.prefs); } catch(ex) { toast('Erro: '+ex.message,'error'); }
   applyPrefs();
   closeModal('modal-personalize');
@@ -2671,7 +2683,7 @@ function renderComissoes(){
     const statusClass=status==='pago'?'pago':'pendente';
     const valor=l.comissaoValor||'0,00';
     const forma=l.comissaoFormaPagamento||'';
-    const formaLabel=forma==='pix'?'PIX':forma==='desconto'?'Desconto na fatura':forma==='outros'?'Outros':'';
+    const formaLabel=forma==='pix'?'PIX':forma==='desconto'?'DESCONTO':forma==='outros'?'Outros':'';
     const valorDisplay=(formaLabel?(formaLabel+' '):'')+'R$ '+valor;
     const dataPag=l.comissaoDataPagamento?fmtDateBR(l.comissaoDataPagamento):'-';
     const dataConv=fmtDateBR(l.dataConvite||l.criadoEm||'');
@@ -2700,7 +2712,7 @@ function openPagarComissao(leadId){
   document.getElementById('pagar-cliente-info').textContent=(lead.clienteNome||'—')+(lead.clienteWhatsapp?' · '+lead.clienteWhatsapp:'');
   document.getElementById('pagar-forma').value=lead.comissaoFormaPagamento||'';
   document.getElementById('pagar-data').value=fmtDateInput(lead.comissaoDataPagamento||'');
-  document.getElementById('pagar-valor').value=lead.comissaoValor||'';
+  document.getElementById('pagar-valor').value=lead.comissaoValor||(state.prefs?.defaultComissao||'40,00');
   document.getElementById('pagar-obs').value=lead.comissaoObs||'';
   document.getElementById('pagar-toggle-paga').classList.toggle('on',lead.comissaoStatus==='pago');
   document.getElementById('pagar-ind-nome').value=lead.leadNome||'';
