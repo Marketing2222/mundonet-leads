@@ -981,7 +981,7 @@
     <div class="modal-header" style="display: flex; align-items: center; justify-content: space-between;">
       <h2 class="modal-title">Configurações do lead</h2>
       <div style="flex: 1; text-align: right; margin-right: 15px;">
-        <input type="datetime-local" id="lead-data" style="background: transparent; border: none; color: var(--text-muted); opacity: 0.5; font-size: 12px; outline: none; cursor: pointer;">
+        <input type="datetime-local" id="lead-data" style="background: transparent; border: none; color: #9ca3af; font-size: 12px; outline: none; cursor: pointer;">
       </div>
       <button class="modal-close" onclick="closeModal('modal-lead')">✕</button>
     </div>
@@ -2617,7 +2617,7 @@ function editTemplate(i){
 // ===== MODALS =====
 function openModal(id){ document.getElementById(id).classList.add('open'); document.body.style.overflow='hidden'; }
 function closeModal(id){ document.getElementById(id).classList.remove('open'); if(!document.querySelector('.modal-overlay.open')) document.body.style.overflow=''; }
-document.querySelectorAll('.modal-overlay').forEach(ov=>{ ov.addEventListener('click',e=>{ if(e.target===ov && ov.id!=='modal-comissoes' && ov.id!=='modal-pagar') closeModal(ov.id); }); });
+document.querySelectorAll('.modal-overlay').forEach(ov=>{ ov.addEventListener('click',e=>{ if(e.target===ov && ov.id!=='modal-comissoes' && ov.id!=='modal-pagar' && ov.id!=='modal-lead') closeModal(ov.id); }); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ const o=document.querySelector('.modal-overlay.open'); if(o) closeModal(o.id); } });
 
 // ===== PADDING =====
