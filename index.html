@@ -1767,6 +1767,7 @@ function showLoginPage(){
   document.getElementById('login-page-user').value='';
   document.getElementById('login-page-pass').value='';
   document.getElementById('login-page-error').style.display='none';
+  applyLoginPagePrefs();
 }
 function applyLoginPagePrefs(){
   const prefs=state.prefs||{};
@@ -1846,6 +1847,7 @@ function doLogout(){
   btn.querySelector('span:first-child').textContent='⚙️ Admin';
   document.body.classList.remove('ready');
   showLoginPage();
+  render();
   toast('Sessão encerrada','info');
 }
 
