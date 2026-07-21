@@ -1526,6 +1526,13 @@
         <label class="form-label">Observações</label>
         <textarea id="pagar-obs" class="form-control" rows="3" placeholder="Observações sobre o pagamento..." style="font-size:12px;resize:vertical"></textarea>
       </div>
+      <div class="toggle-row" style="margin-bottom:16px">
+        <div>
+          <div class="toggle-label">Comissão paga</div>
+          <div class="toggle-sub">Ative se a comissão já foi paga</div>
+        </div>
+        <div class="toggle-switch" id="pagar-toggle-paga" onclick="this.classList.toggle('on')"></div>
+      </div>
       <div style="display:flex;justify-content:flex-end;gap:8px">
         <button class="btn btn-ghost" onclick="closeModal('modal-pagar')">Cancelar</button>
         <button class="btn btn-primary" onclick="finalizarComissao()">Finalizar</button>
@@ -2695,6 +2702,7 @@ function openPagarComissao(leadId){
   document.getElementById('pagar-data').value=fmtDateInput(lead.comissaoDataPagamento||'');
   document.getElementById('pagar-valor').value=lead.comissaoValor||'';
   document.getElementById('pagar-obs').value=lead.comissaoObs||'';
+  document.getElementById('pagar-toggle-paga').classList.toggle('on',lead.comissaoStatus==='pago');
   document.getElementById('pagar-ind-nome').value=lead.leadNome||'';
   document.getElementById('pagar-ind-whatsapp').value=lead.leadWhatsapp||'';
   document.getElementById('pagar-ind-cliente').value=lead.clienteNome||'';
@@ -2728,11 +2736,11 @@ async function finalizarComissao(){
   lead.comissaoDataPagamento=document.getElementById('pagar-data').value;
   lead.comissaoValor='R$ '+document.getElementById('pagar-valor').value;
   lead.comissaoObs=document.getElementById('pagar-obs').value;
-  lead.comissaoStatus='pago';
+  lead.comissaoStatus=document.getElementById('pagar-toggle-paga').classList.contains('on')?'pago':'pendente';
   try { await api('PUT','/api/leads/'+pagarLeadId,toSnake(lead)); } catch(ex){ toast('Erro: '+ex.message,'error'); }
   closeModal('modal-pagar');
   renderComissoes();
-  toast('Comissão marcada como paga!','success');
+  toast(lead.comissaoStatus==='pago'?'Comissão marcada como paga!':'Comissão marcada como pendente!','success');
   pagarLeadId=null;
 }
 
