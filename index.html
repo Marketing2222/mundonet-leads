@@ -1470,6 +1470,8 @@
               <th>Data do pagamento</th>
               <th>Status</th>
               <th>Valor pago ao cliente(R$)</th>
+              <th>Ações</th>
+              <th>Comprovante</th>
               <th>Comprovante</th>
               <th></th>
             </tr>
@@ -2667,7 +2669,10 @@ function renderComissoes(){
     const valorDisplay=formaLabel?(formaLabel+' '+valor):valor;
     const dataPag=l.comissaoDataPagamento?fmtDateBR(l.comissaoDataPagamento):'-';
     const dataConv=fmtDateBR(l.dataConvite||l.criadoEm||'');
-    const payBtn=status==='pendente'?`<button class="btn btn-primary" style="font-size:10px;padding:4px 10px;white-space:nowrap" onclick="openPagarComissao('${l.id}')">💲 Pagar</button>`:`<span style="color:var(--accent-green);font-size:11px;font-weight:600">✅ Pago</span>`;
+    const payBtn=status==='pendente'
+      ?`<button class="btn btn-primary" style="font-size:10px;padding:4px 10px;white-space:nowrap" onclick="openPagarComissao('${l.id}')">💲 Pagar</button>`
+      :`<button class="btn btn-ghost" style="font-size:10px;padding:4px 10px;white-space:nowrap;border:1px solid var(--border-light)" onclick="openPagarComissao('${l.id}')">✏️ Editar</button>`;
+    const proofBtn=`<label class="comissoes-upload-btn" title="Upload comprovante">${l.comissaoComprovante?'✅ Comprovante':'+ Upload'}<input type="file" accept="image/*" style="display:none" onchange="uploadComprovante('${l.id}',this)"></label>`;
     return `<tr>
       <td style="font-weight:600;white-space:nowrap">${escHtml(l.clienteNome||'—')}</td>
       <td>${escHtml(l.leadNome||'—')}</td>
@@ -2676,6 +2681,7 @@ function renderComissoes(){
       <td><span class="comissoes-status ${statusClass}">${status==='pago'?'Pago':'Pendente'}</span></td>
       <td>${escHtml(valorDisplay)}</td>
       <td>${payBtn}</td>
+      <td>${proofBtn}</td>
     </tr>`;
   }).join('');
 }
@@ -2744,6 +2750,18 @@ async function salvarIndicacao(){
   try { await api('PUT','/api/leads/'+pagarLeadId,toSnake(lead)); } catch(ex){ toast('Erro: '+ex.message,'error'); }
   renderComissoes(); render();
   toast('Indicação atualizada!','success');
+}
+
+async function uploadComprovante(leadId,input){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=async (e)=>{
+    const lead=state.leads.find(l=>l.id===leadId); if(!lead) return;
+    lead.comissaoComprovante=e.target.result;
+    try { await api('PUT','/api/leads/'+leadId,toSnake(lead)); toast('Comprovante salvo!','success'); } catch(ex){ toast('Erro: '+ex.message,'error'); }
+    renderComissoes();
+  };
+  reader.readAsDataURL(file);
 }
 
 // ===== CLIENTS PANEL =====
