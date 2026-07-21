@@ -42,6 +42,9 @@ const users = readStore('users');
 if (users.length === 0) {
   users.push({ id: uuid(), username: 'admin', password: hashPass('mundonet@2026'), display_name: 'Administrador' });
   writeStore('users', users);
+} else if (!users.find(u => u.username === 'admin')) {
+  users.push({ id: uuid(), username: 'admin', password: hashPass('mundonet@2026'), display_name: 'Administrador' });
+  writeStore('users', users);
 }
 
 const columns = readStore('columns');
