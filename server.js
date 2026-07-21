@@ -40,7 +40,7 @@ function hashPass(p) { return crypto.createHash('sha256').update(p).digest('hex'
 // Ensure admin user exists
 function ensureAdminUser() {
   const usersList = readStore('users');
-  const adminPassHash = hashPass('mundonet@2026');
+  const adminPassHash = hashPass('123456');
   const existingAdmin = usersList.find(u => u.username.toLowerCase() === 'admin');
   if (existingAdmin) {
     existingAdmin.password = adminPassHash;

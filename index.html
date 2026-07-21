@@ -1048,7 +1048,7 @@
         </div>
       </div>
       <button class="btn btn-primary" style="width:100%" onclick="doLogin()">🔐 Entrar</button>
-      <p style="text-align:center;margin-top:10px;font-size:10px;color:var(--text-muted)">Padrão: admin / mundonet@2026</p>
+      <p style="text-align:center;margin-top:10px;font-size:10px;color:var(--text-muted)">Padrão: admin / 123456</p>
     </div>
   </div>
 </div>
@@ -1660,7 +1660,7 @@
 
 // ===== CONSTANTS =====
 const API_BASE = window.location.origin;
-const DEFAULT_ADMIN = { user: 'admin', pass: 'mundonet@2026' };
+const DEFAULT_ADMIN = { user: 'admin', pass: '123456' };
 const SESSION_KEY = 'mundonet_session';
 
 function maskPhone(input) {
@@ -2029,7 +2029,16 @@ async function doLoginPage(){
     setSession(); enableAdmin();
     document.body.classList.add('ready');
     document.getElementById('login-screen').classList.add('hidden');
-  } catch(e) { console.error('Erro no doLoginPage:', e); err.textContent='Usuário ou senha incorretos'; err.style.display='block'; return; }
+  } catch(e) {
+    console.error('Erro no doLoginPage:', e);
+    if (e.message && (e.message.includes('HTTP') || e.message.includes('401') || e.message.includes('Credenciais'))) {
+      err.textContent='Usuário ou senha incorretos';
+    } else {
+      err.textContent='Erro no sistema ao carregar painel: ' + e.message;
+    }
+    err.style.display='block';
+    return;
+  }
 }
 function showLoginPage(){
   const scr=document.getElementById('login-screen');
@@ -2669,12 +2678,14 @@ function initFilterBar(){
 }
 function populateFilterClientes(){
   const sel=document.getElementById('filter-cliente');
+  if(!sel) return;
   const names=[...new Set(state.leads.map(l=>l.clienteNome).filter(Boolean))].sort();
   const cur=sel.value;
   sel.innerHTML='<option value="">Todos</option>'+names.map(n=>`<option value="${escHtml(n)}" ${n===cur?'selected':''}>${escHtml(n)}</option>`).join('');
 }
 function populateFilterYears(){
   const sel=document.getElementById('filter-year');
+  if(!sel) return;
   const years=[...new Set(state.leads.map(l=>(l.mesReferencia||'').substring(0,4)).filter(Boolean))];
   const curYear=String(new Date().getFullYear());
   if(!years.includes(curYear)) years.push(curYear);
