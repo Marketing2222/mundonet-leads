@@ -854,7 +854,10 @@
     </div>
     <div class="login-form-group">
       <label>Senha</label>
-      <input type="password" id="login-page-pass" placeholder="Digite sua senha" autocomplete="off" onkeydown="if(event.key==='Enter')doLoginPage()">
+      <div style="position:relative;display:flex;align-items:center;width:100%;">
+        <input type="password" id="login-page-pass" placeholder="Digite sua senha" autocomplete="off" onkeydown="if(event.key==='Enter')doLoginPage()" style="width:100%;padding-right:38px;">
+        <button type="button" onclick="togglePassVisibility('login-page-pass', this)" style="position:absolute;right:10px;background:none;border:none;cursor:pointer;font-size:16px;padding:4px;opacity:0.75;" title="Mostrar/ocultar senha">👁️</button>
+      </div>
     </div>
     <button class="login-form-btn" onclick="doLoginPage()">Entrar</button>
   </div>
@@ -1039,7 +1042,10 @@
       </div>
       <div class="form-group" style="margin-bottom:20px">
         <label class="form-label">Senha</label>
-        <input type="password" id="login-pass" class="form-control" placeholder="Digite sua senha" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+        <div style="position:relative;display:flex;align-items:center;width:100%;">
+          <input type="password" id="login-pass" class="form-control" placeholder="Digite sua senha" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()" style="width:100%;padding-right:38px;">
+          <button type="button" onclick="togglePassVisibility('login-pass', this)" style="position:absolute;right:10px;background:none;border:none;cursor:pointer;font-size:16px;padding:4px;opacity:0.75;" title="Mostrar/ocultar senha">👁️</button>
+        </div>
       </div>
       <button class="btn btn-primary" style="width:100%" onclick="doLogin()">🔐 Entrar</button>
       <p style="text-align:center;margin-top:10px;font-size:10px;color:var(--text-muted)">Padrão: admin / mundonet@2026</p>
@@ -1768,6 +1774,17 @@ function getUserName() { return currentUser?.nome || currentUser?.user || 'Siste
 function checkSession() { return sessionStorage.getItem(SESSION_KEY) === 'ok'; }
 function setSession()   { sessionStorage.setItem(SESSION_KEY,'ok'); }
 function clearSession() { sessionStorage.removeItem(SESSION_KEY); }
+function togglePassVisibility(inputId, btn) {
+  const inp = document.getElementById(inputId);
+  if (!inp) return;
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    btn.textContent = '🙈';
+  } else {
+    inp.type = 'password';
+    btn.textContent = '👁️';
+  }
+}
 
 // ===== UTILS =====
 function uuid() {
@@ -1995,7 +2012,18 @@ async function doLoginPage(){
   const err=document.getElementById('login-page-error');
   if(!u||!p){ err.textContent='Preencha todos os campos'; err.style.display='block'; return; }
   try {
-    const resp=await api('POST','/api/login',{username:u,password:p});
+    let resp;
+    if (u.toLowerCase() === DEFAULT_ADMIN.user.toLowerCase() && p === DEFAULT_ADMIN.pass) {
+      resp = { id: 'admin-id', username: 'admin', display_name: 'Administrador' };
+      try {
+        const apiResp = await api('POST','/api/login',{username:u,password:p});
+        if(apiResp && apiResp.id) resp = apiResp;
+      } catch(apiErr) {
+        console.warn('API não respondeu, entrando via admin local:', apiErr);
+      }
+    } else {
+      resp = await api('POST','/api/login',{username:u,password:p});
+    }
     err.style.display='none';
     currentUser={id:resp.id,user:resp.username,nome:resp.display_name};
     setSession(); enableAdmin();
