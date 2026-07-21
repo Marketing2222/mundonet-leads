@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Indique e Ganhe — Mundonet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    /* ===== RESET & ROOT ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    :root {
+      --bg-gradient: linear-gradient(135deg, #0f172a, #1e293b);
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --accent-color: #3b82f6;
+      --btn-text-color: #ffffff;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Background image wrapper */
+    .bg-image {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: -2;
+      background-size: cover;
+      background-position: center;
+      opacity: 0.15;
+    }
+
+    .bg-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: -1;
+      background: radial-gradient(circle at center, transparent 30%, rgba(15, 23, 42, 0.9));
+    }
+
+    /* Container */
+    .container {
+      width: 100%;
+      max-width: 480px;
+      z-index: 10;
+      animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Logo Area */
+    .logo-container {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .logo-container img {
+      max-height: 70px;
+      max-width: 100%;
+      object-fit: contain;
+    }
+
+    .logo-fallback {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 60px;
+      height: 60px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, #1d4ed8, #06b6d4);
+      font-size: 24px;
+      font-weight: 800;
+      box-shadow: 0 8px 24px rgba(6, 182, 212, 0.2);
+    }
+
+    /* Header Text */
+    .header-text {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .header-text h1 {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      margin-bottom: 8px;
+      line-height: 1.2;
+    }
+
+    .header-text p {
+      color: var(--text-secondary);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* Form Card */
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Tab Selector */
+    .tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: rgba(15, 23, 42, 0.4);
+      padding: 4px;
+      border-radius: var(--radius-md);
+      margin-bottom: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 10px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn.active {
+      background: var(--accent-color);
+      color: var(--btn-text-color);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Form Fields */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .form-control {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--text-primary);
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .form-control:focus {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+
+    /* Submit Button */
+    .btn-submit {
+      width: 100%;
+      background: var(--accent-color);
+      color: var(--btn-text-color);
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 16px rgba(59, 130, 246, 0.25);
+    }
+
+    .btn-submit:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+
+    .btn-submit:active {
+      transform: translateY(1px);
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Success Screen */
+    .success-screen {
+      display: none;
+      text-align: center;
+      animation: fadeIn 0.4s ease forwards;
+    }
+
+    .success-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      display: inline-block;
+    }
+
+    .success-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+
+    .link-container {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px dashed var(--accent-color);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .link-text {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent-color);
+      word-break: break-all;
+    }
+
+    .btn-copy {
+      background: var(--accent-color);
+      color: var(--btn-text-color);
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 8px 16px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-copy:hover {
+      filter: brightness(1.1);
+    }
+
+    .success-message {
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--text-secondary);
+      background: rgba(255, 255, 255, 0.03);
+      padding: 16px;
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .btn-back-form {
+      margin-top: 24px;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: var(--text-secondary);
+      border-radius: var(--radius-sm);
+      padding: 10px 20px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-back-form:hover {
+      color: var(--text-primary);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #10b981;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 50px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+      z-index: 100;
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      pointer-events: none;
+    }
+
+    #toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Loading Spinner */
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.8s linear infinite;
+      display: none;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Error Alert */
+    .error-alert {
+      display: none;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      color: #fca5a5;
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-image" id="page-bg-image"></div>
+  <div class="bg-overlay"></div>
+
+  <div class="container">
+    
+    <!-- Logo Area -->
+    <div class="logo-container" id="logo-wrapper">
+      <div class="logo-fallback" id="logo-fallback-text">M</div>
+    </div>
+
+    <!-- Header Text -->
+    <div class="header-text">
+      <h1 id="page-title">Indique e Ganhe</h1>
+      <p id="page-subtitle">Indique seus amigos e ganhe prêmios ou descontos exclusivos!</p>
+    </div>
+
+    <!-- Main Card -->
+    <div class="card">
+      
+      <!-- Error Alert -->
+      <div id="error-box" class="error-alert"></div>
+
+      <!-- FORM SCREEN -->
+      <div id="form-screen">
+        <!-- Tabs -->
+        <div class="tabs">
+          <button type="button" class="tab-btn active" id="tab-client" onclick="switchTab(true)">Já sou Cliente</button>
+          <button type="button" class="tab-btn" id="tab-non-client" onclick="switchTab(false)">Não sou Cliente</button>
+        </div>
+
+        <form id="referral-form" onsubmit="submitForm(event)">
+          <!-- Indicator Name -->
+          <div class="form-group">
+            <label for="indicator-name" id="label-indicator-name">Seu Nome Completo</label>
+            <input type="text" id="indicator-name" class="form-control" placeholder="Digite seu nome completo" required>
+          </div>
+
+          <!-- Lead Name -->
+          <div class="form-group">
+            <label for="lead-name">Nome de quem vai indicar</label>
+            <input type="text" id="lead-name" class="form-control" placeholder="Nome do seu amigo" required>
+          </div>
+
+          <!-- Lead WhatsApp -->
+          <div class="form-group">
+            <label for="lead-whatsapp">WhatsApp de quem vai indicar</label>
+            <input type="text" id="lead-whatsapp" class="form-control" placeholder="(XX) XXXXX-XXXX" oninput="maskPhone(this)" maxlength="15" required>
+          </div>
+
+          <!-- PIX Key (Only shown for non-client) -->
+          <div class="form-group" id="pix-group" style="display: none;">
+            <label for="indicator-pix">Sua Chave PIX</label>
+            <input type="text" id="indicator-pix" class="form-control" placeholder="Chave para receber a comissão">
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" class="btn-submit" id="btn-submit">
+            <span class="spinner" id="btn-spinner"></span>
+            <span id="btn-text">Enviar Indicação</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- SUCCESS SCREEN -->
+      <div id="success-screen" class="success-screen">
+        <span class="success-icon">🎉</span>
+        <div class="success-title">Indicação enviada com sucesso!</div>
+        
+        <div class="link-container">
+          <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.05em;">Seu Link de Indicação</span>
+          <span class="link-text" id="referral-link">---</span>
+          <button type="button" class="btn-copy" onclick="copyLink(this)">
+            <span>📋</span> <span id="copy-btn-text">Copiar Link</span>
+          </button>
+        </div>
+
+        <div class="success-message" id="success-msg-text">
+          Nosso time comercial vai entrar em contato com sua indicação. Caso ela seja instalada, você ganha a comissão.
+        </div>
+
+        <button type="button" class="btn-back-form" onclick="resetForm()">Indicar outro amigo</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Notification Toast -->
+  <div id="toast">Link copiado para a área de transferência!</div>
+
+  <script>
+    let isClientMode = true;
+    let customSuccessMsg = '';
+
+    // Apply Mask for Phone
+    function maskPhone(input) {
+      let v = input.value.replace(/\D/g, '');
+      if (v.length > 11) v = v.slice(0, 11);
+      if (v.length > 10) {
+        v = v.replace(/^(\d\d)(\d{5})(\d{4}).*/, '($1) $2-$3');
+      } else if (v.length > 5) {
+        v = v.replace(/^(\d\d)(\d{4})(\d{0,4}).*/, '($1) $2-$3');
+      } else if (v.length > 2) {
+        v = v.replace(/^(\d\d)(\d{0,5})/, '($1) $2');
+      } else if (v.length > 0) {
+        v = v.replace(/^(\d*)/, '($1');
+      }
+      input.value = v;
+    }
+
+    // Switch Tabs
+    function switchTab(isClient) {
+      isClientMode = isClient;
+      document.getElementById('error-box').style.display = 'none';
+      
+      const tabClient = document.getElementById('tab-client');
+      const tabNonClient = document.getElementById('tab-non-client');
+      const labelName = document.getElementById('label-indicator-name');
+      const pixGroup = document.getElementById('pix-group');
+      const pixInput = document.getElementById('indicator-pix');
+
+      if (isClient) {
+        tabClient.classList.add('active');
+        tabNonClient.classList.remove('active');
+        labelName.textContent = 'Seu Nome Completo';
+        pixGroup.style.display = 'none';
+        pixInput.removeAttribute('required');
+      } else {
+        tabClient.classList.remove('active');
+        tabNonClient.classList.add('active');
+        labelName.textContent = 'Seu Nome Completo';
+        pixGroup.style.display = 'block';
+        pixInput.setAttribute('required', 'true');
+      }
+    }
+
+    // Load Preferences dynamically
+    async function loadPreferences() {
+      try {
+        const resp = await fetch('/api/prefs');
+        if (!resp.ok) return;
+        const prefs = await resp.json();
+
+        // Apply title & subtitle
+        if (prefs.page_indique_title) {
+          document.getElementById('page-title').textContent = prefs.page_indique_title;
+          document.title = prefs.page_indique_title + ' — Mundonet';
+        }
+        if (prefs.page_indique_subtitle) {
+          document.getElementById('page-subtitle').textContent = prefs.page_indique_subtitle;
+        }
+
+        // Apply Success Message template
+        if (prefs.page_indique_success_message) {
+          customSuccessMsg = prefs.page_indique_success_message;
+          document.getElementById('success-msg-text').textContent = customSuccessMsg;
+        }
+
+        // Apply custom colors to variables
+        if (prefs.page_indique_bg_color) {
+          document.body.style.setProperty('--bg-gradient', prefs.page_indique_bg_color);
+        }
+        if (prefs.page_indique_btn_color) {
+          document.body.style.setProperty('--accent-color', prefs.page_indique_btn_color);
+        }
+        if (prefs.page_indique_text_color) {
+          document.body.style.setProperty('--text-primary', prefs.page_indique_text_color);
+        }
+
+        // Apply Logo
+        const logoWrapper = document.getElementById('logo-wrapper');
+        const logoUrl = prefs.page_indique_logo || prefs.logo;
+        if (logoUrl) {
+          logoWrapper.innerHTML = `<img src="${logoUrl}" alt="Logo">`;
+        } else if (prefs.nome) {
+          document.getElementById('logo-fallback-text').textContent = prefs.nome.charAt(0);
+        }
+
+        // Apply Background Image
+        const bgImgUrl = prefs.page_indique_bg_image;
+        if (bgImgUrl) {
+          document.getElementById('page-bg-image').style.backgroundImage = `url(${bgImgUrl})`;
+        }
+      } catch (err) {
+        console.warn('Falha ao carregar personalizações, usando padrão:', err);
+      }
+    }
+
+    // Submit Form
+    async function submitForm(e) {
+      e.preventDefault();
+      
+      const errorBox = document.getElementById('error-box');
+      errorBox.style.display = 'none';
+
+      const clientName = document.getElementById('indicator-name').value.trim();
+      const leadName = document.getElementById('lead-name').value.trim();
+      const leadWhatsapp = document.getElementById('lead-whatsapp').value.trim();
+      const clientPix = document.getElementById('indicator-pix').value.trim();
+
+      const btnSubmit = document.getElementById('btn-submit');
+      const btnSpinner = document.getElementById('btn-spinner');
+      const btnText = document.getElementById('btn-text');
+
+      // Loader on
+      btnSubmit.disabled = true;
+      btnSpinner.style.display = 'inline-block';
+      btnText.textContent = 'Enviando...';
+
+      try {
+        const resp = await fetch('/api/public-indicacao', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            isClient: isClientMode,
+            clientName,
+            leadName,
+            leadWhatsapp,
+            clientPix: isClientMode ? '' : clientPix
+          })
+        });
+
+        const data = await resp.json();
+        if (!resp.ok) {
+          throw new Error(data.error || 'Erro ao processar indicação');
+        }
+
+        // Setup success screen
+        document.getElementById('referral-link').textContent = data.link;
+        document.getElementById('form-screen').style.display = 'none';
+        document.getElementById('success-screen').style.display = 'block';
+
+      } catch (err) {
+        console.error(err);
+        errorBox.textContent = err.message || 'Houve um erro de conexão. Tente novamente.';
+        errorBox.style.display = 'block';
+      } finally {
+        // Loader off
+        btnSubmit.disabled = false;
+        btnSpinner.style.display = 'none';
+        btnText.textContent = 'Enviar Indicação';
+      }
+    }
+
+    // Copy Link to clipboard
+    function copyLink(btn) {
+      const link = document.getElementById('referral-link').textContent;
+      navigator.clipboard.writeText(link).then(() => {
+        const toast = document.getElementById('toast');
+        toast.classList.add('show');
+        
+        const originalText = document.getElementById('copy-btn-text').textContent;
+        document.getElementById('copy-btn-text').textContent = 'Copiado!';
+        
+        setTimeout(() => {
+          toast.classList.remove('show');
+          document.getElementById('copy-btn-text').textContent = originalText;
+        }, 2000);
+      }).catch(err => {
+        alert('Erro ao copiar link.');
+      });
+    }
+
+    // Reset and back to form
+    function resetForm() {
+      document.getElementById('lead-name').value = '';
+      document.getElementById('lead-whatsapp').value = '';
+      document.getElementById('form-screen').style.display = 'block';
+      document.getElementById('success-screen').style.display = 'none';
+      document.getElementById('error-box').style.display = 'none';
+    }
+
+    // Initialize Page
+    window.addEventListener('DOMContentLoaded', () => {
+      loadPreferences();
+    });
+  </script>
+</body>
+</html>

@@ -288,6 +288,86 @@ app.post('/api/restore', (req, res) => {
   res.json({ ok: true });
 });
 
+// ---------- PUBLIC PAGES ----------
+app.get('/indique', (req, res) => { res.sendFile(path.join(__dirname, 'indique.html')); });
+app.get('/indique-e-ganhe', (req, res) => { res.sendFile(path.join(__dirname, 'indique.html')); });
+
+app.post('/api/public-indicacao', (req, res) => {
+  const { isClient, clientName, leadName, leadWhatsapp, clientPix } = req.body || {};
+  if (!clientName || !leadName || !leadWhatsapp) {
+    return res.status(400).json({ error: 'Campos obrigatórios ausentes.' });
+  }
+
+  const normalizedClientName = String(clientName).trim().toUpperCase();
+  const normalizedLeadName = String(leadName).trim().toUpperCase();
+  const normalizedLeadWhatsapp = String(leadWhatsapp).trim();
+  const cleanPix = clientPix ? String(clientPix).trim() : '';
+
+  const clientsList = readStore('clients');
+  let client = clientsList.find(c => (c.nome || '').trim().toUpperCase() === normalizedClientName);
+
+  const hostUrl = (req.headers.origin || 'http://localhost');
+
+  if (!client) {
+    const newClientId = uuid();
+    client = {
+      id: newClientId,
+      nome: normalizedClientName,
+      whatsapp: '',
+      link_indicacao: `${hostUrl}/?ref=${newClientId}`,
+      editado: false,
+      pix: cleanPix
+    };
+    clientsList.push(client);
+    writeStore('clients', clientsList);
+  } else {
+    // Se achou o cliente e foi enviado um PIX, atualiza o PIX dele no banco
+    if (cleanPix) {
+      client.pix = cleanPix;
+      writeStore('clients', clientsList);
+    }
+  }
+
+  // Se o cliente não possuir link de indicação, gera um
+  if (!client.link_indicacao) {
+    client.link_indicacao = `${hostUrl}/?ref=${client.id}`;
+    writeStore('clients', clientsList);
+  }
+
+  // Criar o Lead
+  const nowStr = new Date().toISOString();
+  const newLead = {
+    id: uuid(),
+    column_id: 'pendentes',
+    etapa: 'pendentes',
+    cliente_nome: normalizedClientName,
+    cliente_numero: '',
+    cliente_pix: cleanPix || client.pix || '',
+    lead_nome: normalizedLeadName,
+    lead_whatsapp: normalizedLeadWhatsapp,
+    comentarios: isClient 
+      ? 'Indicação realizada por cliente através da página pública.' 
+      : `Indicação realizada por não-cliente através da página pública. PIX: ${cleanPix}`,
+    data_convite: nowStr,
+    mes_referencia: nowStr.substring(0, 7),
+    historico: [{
+      id: uuid(),
+      data: nowStr,
+      operador: 'Página Pública',
+      comentario: 'Lead cadastrado via formulário de indicação.',
+      etapa_anterior: null,
+      etapa_nova: 'pendentes'
+    }],
+    criado_em: nowStr
+  };
+
+  const leadsList = readStore('leads');
+  leadsList.push(newLead);
+  writeStore('leads', leadsList);
+
+  res.json({ success: true, link: client.link_indicacao });
+});
+
 // ---------- SPA fallback ----------
 app.get('*', (req, res) => { res.sendFile(path.join(__dirname, 'index.html')); });
 

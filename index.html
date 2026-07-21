@@ -1370,6 +1370,57 @@
         </div>
       </div>
 
+      <!-- Página de Indicação Externa -->
+      <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px;padding-top:12px;border-top:1px solid var(--border)">📣 Página de Indicação (Externa)</p>
+      
+      <div class="form-group" style="margin-bottom:12px">
+        <label class="form-label">Título Principal</label>
+        <input type="text" id="pers-indique-title" class="form-control" placeholder="Ex: Indique e Ganhe">
+      </div>
+
+      <div class="form-group" style="margin-bottom:12px">
+        <label class="form-label">Subtítulo</label>
+        <input type="text" id="pers-indique-subtitle" class="form-control" placeholder="Ex: Indique seus amigos e ganhe prêmios!">
+      </div>
+
+      <div class="form-group" style="margin-bottom:12px">
+        <label class="form-label">Mensagem de Sucesso (após envio)</label>
+        <textarea id="pers-indique-success-msg" class="form-control" style="min-height:50px" placeholder="Mensagem informativa sobre a comissão e contato comercial..."></textarea>
+      </div>
+
+      <div class="form-group" style="margin-bottom:12px">
+        <label class="form-label">Logotipo da Página (Opcional)</label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn btn-ghost" onclick="document.getElementById('indique-logo-file').click()" style="font-size:12px;padding:8px 14px">📤 Upload de logo</button>
+          <input type="file" id="indique-logo-file" accept="image/*" style="display:none" onchange="handleIndiqueLogoUpload(this)">
+          <button class="btn btn-danger" onclick="removeIndiqueLogo()" style="font-size:11px;padding:6px 12px;display:none" id="indique-logo-remove-btn">🗑 Remover</button>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom:12px">
+        <label class="form-label">Imagem de fundo (Opcional)</label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn btn-ghost" onclick="document.getElementById('indique-bg-file').click()" style="font-size:12px;padding:8px 14px">📤 Upload de fundo</button>
+          <input type="file" id="indique-bg-file" accept="image/*" style="display:none" onchange="handleIndiqueBgUpload(this)">
+          <button class="btn btn-danger" onclick="removeIndiqueBg()" style="font-size:11px;padding:6px 12px;display:none" id="indique-bg-remove-btn">🗑 Remover</button>
+        </div>
+        <div id="indique-bg-preview" style="margin-top:8px;border-radius:8px;overflow:hidden;display:none;height:100px;background:var(--bg-elevated);border:1px solid var(--border)"><img style="width:100%;height:100%;object-fit:cover"></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+        <div class="form-group">
+          <label class="form-label">Cor de Fundo (Gradient/CSS)</label>
+          <input type="text" id="pers-indique-bg-color" class="form-control" placeholder="Ex: #0f172a ou linear-gradient(...)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Cor do Botão Enviar</label>
+          <div style="display:flex;gap:6px;align-items:center">
+            <input type="color" id="pers-indique-btn-color" value="#3b82f6" style="width:36px;height:32px;border:none;border-radius:6px;cursor:pointer;background:transparent" oninput="document.getElementById('pers-indique-btn-color-hex').textContent=this.value">
+            <span style="font-size:11px;color:var(--text-muted)" id="pers-indique-btn-color-hex">#3b82f6</span>
+          </div>
+        </div>
+      </div>
+
       <!-- Templates de Comentário -->
       <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px;padding-top:12px;border-top:1px solid var(--border)">Templates de Comentário</p>
       <div id="tpl-manage-list"></div>
@@ -2474,6 +2525,23 @@ function openPersonalize(){
   const loginLight=prefs.loginTheme==='light';
   document.getElementById('pers-login-theme').classList.toggle('on',loginLight);
   document.getElementById('pers-default-comissao').value=prefs.defaultComissao||'40,00';
+  
+  // Public referral page preferences loading
+  document.getElementById('pers-indique-title').value=prefs.page_indique_title||'';
+  document.getElementById('pers-indique-subtitle').value=prefs.page_indique_subtitle||'';
+  document.getElementById('pers-indique-success-msg').value=prefs.page_indique_success_message||'';
+  document.getElementById('pers-indique-bg-color').value=prefs.page_indique_bg_color||'';
+  document.getElementById('pers-indique-btn-color').value=prefs.page_indique_btn_color||'#3b82f6';
+  document.getElementById('pers-indique-btn-color-hex').textContent=prefs.page_indique_btn_color||'#3b82f6';
+
+  const rqLogoBtn=document.getElementById('indique-logo-remove-btn');
+  rqLogoBtn.style.display=prefs.page_indique_logo?'inline-block':'none';
+
+  const rqBgPreview=document.getElementById('indique-bg-preview');
+  const rqBgBtn=document.getElementById('indique-bg-remove-btn');
+  if(prefs.page_indique_bg_image){ rqBgPreview.style.display='block'; rqBgPreview.querySelector('img').src=prefs.page_indique_bg_image; rqBgBtn.style.display='inline-block'; }
+  else { rqBgPreview.style.display='none'; rqBgBtn.style.display='none'; }
+
   const bgPreview=document.getElementById('login-bg-preview');
   const bgRemoveBtn=document.getElementById('login-bg-remove-btn');
   if(prefs.loginBgImage){ bgPreview.style.display='block'; bgPreview.querySelector('img').src=prefs.loginBgImage; bgRemoveBtn.style.display='inline-block'; }
@@ -2517,6 +2585,39 @@ function removeLoginLogo(){
   document.getElementById('login-logo-remove-btn').style.display='none';
 }
 
+function handleIndiqueLogoUpload(input){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    state.prefs=state.prefs||{};
+    state.prefs.page_indique_logo=e.target.result;
+    document.getElementById('indique-logo-remove-btn').style.display='inline-block';
+  };
+  reader.readAsDataURL(file);
+}
+function removeIndiqueLogo(){
+  state.prefs=state.prefs||{}; delete state.prefs.page_indique_logo;
+  document.getElementById('indique-logo-remove-btn').style.display='none';
+}
+function handleIndiqueBgUpload(input){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    state.prefs=state.prefs||{};
+    state.prefs.page_indique_bg_image=e.target.result;
+    const preview=document.getElementById('indique-bg-preview');
+    preview.style.display='block';
+    preview.querySelector('img').src=e.target.result;
+    document.getElementById('indique-bg-remove-btn').style.display='inline-block';
+  };
+  reader.readAsDataURL(file);
+}
+function removeIndiqueBg(){
+  state.prefs=state.prefs||{}; delete state.prefs.page_indique_bg_image;
+  document.getElementById('indique-bg-preview').style.display='none';
+  document.getElementById('indique-bg-remove-btn').style.display='none';
+}
+
 function handleLogoUpload(input){
   const file=input.files[0]; if(!file) return;
   const reader=new FileReader();
@@ -2555,6 +2656,14 @@ async function savePersonalize(){
   state.prefs.loginShowText=document.getElementById('pers-login-show-text').classList.contains('on');
   state.prefs.loginTheme=document.getElementById('pers-login-theme').classList.contains('on')?'light':'dark';
   state.prefs.defaultComissao=document.getElementById('pers-default-comissao').value.trim()||'40,00';
+  
+  // Public referral page preferences saving
+  state.prefs.page_indique_title=document.getElementById('pers-indique-title').value.trim();
+  state.prefs.page_indique_subtitle=document.getElementById('pers-indique-subtitle').value.trim();
+  state.prefs.page_indique_success_message=document.getElementById('pers-indique-success-msg').value.trim();
+  state.prefs.page_indique_bg_color=document.getElementById('pers-indique-bg-color').value.trim();
+  state.prefs.page_indique_btn_color=document.getElementById('pers-indique-btn-color').value;
+
   try { await api('PUT','/api/prefs',state.prefs); } catch(ex) { toast('Erro: '+ex.message,'error'); }
   applyPrefs();
   closeModal('modal-personalize');
