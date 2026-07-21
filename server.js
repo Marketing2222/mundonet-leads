@@ -7,7 +7,8 @@ import crypto from 'crypto';
 const PORT = process.env.PORT || 80;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const DATA_DIR = process.env.DB_PATH || path.join(__dirname, 'data');
+const DATA_DIR = process.env.DB_PATH || '/data';
+console.log('DATA_DIR:', DATA_DIR, '| DB_PATH env:', process.env.DB_PATH || '(not set)');
 
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
@@ -233,6 +234,13 @@ app.post('/api/clients/sync', (req, res) => {
   res.json({ ok: true, count: clients.length });
 });
 
+app.post('/api/columns/sync', (req, res) => {
+  const { columns } = req.body;
+  if (!Array.isArray(columns)) return res.status(400).json({ error: 'Array esperado' });
+  writeStore('columns', columns.map((c, i) => ({ id: c.id || uuid(), name: c.name, color: c.color || '#6b7280', order: c.order !== undefined ? c.order : i })));
+  res.json({ ok: true, count: columns.length });
+});
+
 // ---------- CONFIG ----------
 app.get('/api/config', (req, res) => { res.json(readObj('config')); });
 app.put('/api/config', (req, res) => { writeObj('config', req.body); res.json({ ok: true }); });
@@ -241,7 +249,39 @@ app.put('/api/config', (req, res) => { writeObj('config', req.body); res.json({ 
 app.get('/api/prefs', (req, res) => { res.json(readObj('prefs')); });
 app.put('/api/prefs', (req, res) => { writeObj('prefs', req.body); res.json({ ok: true }); });
 
+// ---------- BACKUP / RESTORE ----------
+app.get('/api/backup', (req, res) => {
+  res.json({
+    leads: readStore('leads'),
+    columns: readStore('columns'),
+    clients: readStore('clients'),
+    users: readStore('users').map(u => ({ id:u.id, username:u.username, display_name:u.display_name })),
+    trash: readStore('trash'),
+    config: readObj('config'),
+    prefs: readObj('prefs'),
+  });
+});
+app.post('/api/restore', (req, res) => {
+  const data = req.body;
+  if (data.columns) writeStore('columns', data.columns);
+  if (data.leads) writeStore('leads', data.leads);
+  if (data.clients) writeStore('clients', data.clients);
+  if (data.trash) writeStore('trash', data.trash);
+  if (data.config) writeObj('config', data.config);
+  if (data.prefs) writeObj('prefs', data.prefs);
+  res.json({ ok: true });
+});
+
 // ---------- SPA fallback ----------
 app.get('*', (req, res) => { res.sendFile(path.join(__dirname, 'index.html')); });
 
-app.listen(PORT, '0.0.0.0', () => console.log('Server running on port ' + PORT));
+app.listen(PORT, '0.0.0.0', () => {
+  console.log('Server running on port ' + PORT);
+  console.log('DATA_DIR:', DATA_DIR);
+  const files = ['leads.json','columns.json','users.json','clients.json','trash.json','config.json','prefs.json'];
+  files.forEach(f => {
+    const fp = path.join(DATA_DIR, f);
+    const exists = fs.existsSync(fp);
+    console.log(`  ${f}: ${exists ? 'EXISTS (' + fs.statSync(fp).size + ' bytes)' : 'NOT FOUND'}`);
+  });
+});

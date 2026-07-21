@@ -1836,11 +1836,14 @@ function openImport(){
   document.getElementById('import-json').value='';
   openModal('modal-export');
 }
-function downloadBackup(){
-  const blob=new Blob([JSON.stringify({leads:state.leads,columns:state.columns},null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a'); a.href=url; a.download=`mundonet_backup_${new Date().toISOString().slice(0,10)}.json`; a.click(); URL.revokeObjectURL(url);
-  toast('Backup baixado!','success');
+async function downloadBackup(){
+  try {
+    const backup=await api('GET','/api/backup');
+    const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a'); a.href=url; a.download=`mundonet_backup_${new Date().toISOString().slice(0,10)}.json`; a.click(); URL.revokeObjectURL(url);
+    toast('Backup baixado!','success');
+  } catch(e) { toast('Erro ao baixar backup: '+e.message,'error'); }
 }
 function loadImportFile(input){ const f=input.files[0]; if(!f) return; const r=new FileReader(); r.onload=e=>{ document.getElementById('import-json').value=e.target.result; }; r.readAsText(f); }
 async function doImport(){
@@ -1848,13 +1851,18 @@ async function doImport(){
   if(!raw){ toast('Nenhum dado','error'); return; }
   try{
     const p=JSON.parse(raw);
-    if(!p.leads||!Array.isArray(p.leads)) throw new Error('Formato inválido');
     if(p.columns&&Array.isArray(p.columns)) {
-      for(const col of p.columns) await api('POST','/api/columns',col);
+      await api('POST','/api/columns/sync',{columns:p.columns});
       state.columns=p.columns;
     }
-    for(const lead of p.leads) await api('POST','/api/leads',toSnake(lead));
-    state.leads=p.leads;
+    if(p.leads&&Array.isArray(p.leads)) {
+      for(const lead of p.leads) await api('POST','/api/leads',toSnake(lead));
+      state.leads=p.leads;
+    }
+    if(p.clients&&Array.isArray(p.clients)) {
+      await api('POST','/api/clients/sync',{clients:p.clients});
+      clients=p.clients;
+    }
     closeModal('modal-export'); render();
     toast(`${p.leads.length} leads importados!`,'success');
   } catch(e){ toast('Erro: '+e.message,'error'); }
@@ -2381,7 +2389,7 @@ async function init(){
     if(!state.prefs.templates) state.prefs.templates=DEFAULT_TEMPLATES;
   } catch(e) {
     console.error('Erro ao carregar dados:',e);
-    state.columns=[...DEFAULT_COLUMNS];
+    toast('Erro ao carregar dados do servidor!','error');
   }
   applyPrefs();
   initFilterBar();
