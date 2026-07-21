@@ -2597,7 +2597,7 @@ function editTemplate(i){
 // ===== MODALS =====
 function openModal(id){ document.getElementById(id).classList.add('open'); document.body.style.overflow='hidden'; }
 function closeModal(id){ document.getElementById(id).classList.remove('open'); if(!document.querySelector('.modal-overlay.open')) document.body.style.overflow=''; }
-document.querySelectorAll('.modal-overlay').forEach(ov=>{ ov.addEventListener('click',e=>{ if(e.target===ov) closeModal(ov.id); }); });
+document.querySelectorAll('.modal-overlay').forEach(ov=>{ ov.addEventListener('click',e=>{ if(e.target===ov && ov.id!=='modal-comissoes' && ov.id!=='modal-pagar') closeModal(ov.id); }); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ const o=document.querySelector('.modal-overlay.open'); if(o) closeModal(o.id); } });
 
 // ===== PADDING =====
@@ -2669,10 +2669,10 @@ function renderComissoes(){
   tbody.innerHTML=filtered.map(l=>{
     const status=l.comissaoStatus||'pendente';
     const statusClass=status==='pago'?'pago':'pendente';
-    const valor=l.comissaoValor||'R$ 0';
+    const valor=l.comissaoValor||'0,00';
     const forma=l.comissaoFormaPagamento||'';
     const formaLabel=forma==='pix'?'PIX':forma==='desconto'?'Desconto na fatura':forma==='outros'?'Outros':'';
-    const valorDisplay=formaLabel?(formaLabel+' '+valor.replace(/^R\$\s*/,'')):valor;
+    const valorDisplay=(formaLabel?(formaLabel+' ':'')+'R$ '+valor);
     const dataPag=l.comissaoDataPagamento?fmtDateBR(l.comissaoDataPagamento):'-';
     const dataConv=fmtDateBR(l.dataConvite||l.criadoEm||'');
     const payBtn=status==='pendente'
@@ -2734,7 +2734,7 @@ async function finalizarComissao(){
   const lead=state.leads.find(l=>l.id===pagarLeadId); if(!lead) return;
   lead.comissaoFormaPagamento=document.getElementById('pagar-forma').value;
   lead.comissaoDataPagamento=document.getElementById('pagar-data').value;
-  lead.comissaoValor='R$ '+document.getElementById('pagar-valor').value;
+  lead.comissaoValor=document.getElementById('pagar-valor').value;
   lead.comissaoObs=document.getElementById('pagar-obs').value;
   lead.comissaoStatus=document.getElementById('pagar-toggle-paga').classList.contains('on')?'pago':'pendente';
   try { await api('PUT','/api/leads/'+pagarLeadId,toSnake(lead)); } catch(ex){ toast('Erro: '+ex.message,'error'); }
