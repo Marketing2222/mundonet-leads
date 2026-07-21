@@ -2672,7 +2672,7 @@ function renderComissoes(){
     const valor=l.comissaoValor||'0,00';
     const forma=l.comissaoFormaPagamento||'';
     const formaLabel=forma==='pix'?'PIX':forma==='desconto'?'Desconto na fatura':forma==='outros'?'Outros':'';
-    const valorDisplay=(formaLabel?(formaLabel+' ':'')+'R$ '+valor);
+    const valorDisplay=(formaLabel?(formaLabel+' '):'')+'R$ '+valor;
     const dataPag=l.comissaoDataPagamento?fmtDateBR(l.comissaoDataPagamento):'-';
     const dataConv=fmtDateBR(l.dataConvite||l.criadoEm||'');
     const payBtn=status==='pendente'
