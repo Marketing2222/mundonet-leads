@@ -7,7 +7,7 @@ import crypto from 'crypto';
 const PORT = process.env.PORT || 80;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const DATA_DIR = process.env.DB_PATH || '/data';
+const DATA_DIR = process.env.DB_PATH || path.join(__dirname, 'data');
 console.log('DATA_DIR:', DATA_DIR, '| DB_PATH env:', process.env.DB_PATH || '(not set)');
 
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
