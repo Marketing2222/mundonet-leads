@@ -225,6 +225,37 @@
       transform: none;
     }
 
+    .pix-type-selector {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+    .pix-type-btn {
+      flex: 1;
+      min-width: 80px;
+      padding: 6px 8px;
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text-primary);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .2s;
+      text-align: center;
+      line-height: 1.3;
+    }
+    .pix-type-btn:hover {
+      border-color: var(--button-color);
+      color: var(--button-color);
+    }
+    .pix-type-btn.active {
+      border-color: var(--button-color);
+      background: var(--button-color);
+      color: #fff;
+    }
+
     /* Success Screen */
     .success-screen {
       display: none;
@@ -421,7 +452,13 @@
           <!-- PIX Key (Only shown for non-client) -->
           <div class="form-group" id="pix-group" style="display: none;">
             <label for="indicator-pix">Sua Chave PIX</label>
-            <input type="text" id="indicator-pix" class="form-control" placeholder="CPF, CNPJ, celular ou e-mail" oninput="maskPix(this)">
+            <div class="pix-type-selector" id="pix-type-selector">
+              <button type="button" class="pix-type-btn active" data-type="celular" onclick="selectPixType('celular')">📱 Celular</button>
+              <button type="button" class="pix-type-btn" data-type="cpfcnpj" onclick="selectPixType('cpfcnpj')">💳 CPF/CNPJ</button>
+              <button type="button" class="pix-type-btn" data-type="email" onclick="selectPixType('email')">✉️ E-mail</button>
+              <button type="button" class="pix-type-btn" data-type="aleatoria" onclick="selectPixType('aleatoria')">🔑 Chave aleatória</button>
+            </div>
+            <input type="text" id="indicator-pix" class="form-control" placeholder="(XX) XXXXX-XXXX" oninput="maskPixByType(this)">
           </div>
 
           <!-- Submit Button -->
@@ -483,25 +520,42 @@
       input.value = v;
     }
 
-    function isDDD(d) { return /^(1[1-9]|2[12478]|3[1-578]|4[1-9]|5[1-3455]|6[1-9]|7[134579]|8[1-9]|9[1-9])$/.test(d); }
+    let pixType = 'celular';
 
-    function maskPix(input) {
-      let v = input.value;
-      if (/[a-zA-Z@]/.test(v)) {
-        input.maxLength = 255;
+    function selectPixType(type) {
+      pixType = type;
+      document.querySelectorAll('.pix-type-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.type === type);
+      });
+      const pixInput = document.getElementById('indicator-pix');
+      const placeholders = {
+        celular: '(XX) XXXXX-XXXX',
+        cpfcnpj: 'CPF ou CNPJ',
+        email: 'seu@email.com',
+        aleatoria: 'Chave aleatória (ex: 123e4567-e89b...)'
+      };
+      pixInput.placeholder = placeholders[type] || '';
+      pixInput.maxLength = type === 'email' ? 255 : 50;
+      pixInput.value = '';
+      pixInput.focus();
+    }
+
+    function maskPixByType(input) {
+      if (pixType === 'email') {
+        input.value = input.value.toLowerCase();
         return;
       }
-      input.maxLength = 18;
+      if (pixType === 'aleatoria') return;
+      if (pixType === 'celular') {
+        maskPhone(input);
+        return;
+      }
+      // cpfcnpj
+      let v = input.value;
       let nums = v.replace(/\D/g, '');
       if (nums.length > 14) nums = nums.slice(0, 14);
-      if (nums.length === 10) {
-        input.value = nums.replace(/^(\d{2})(\d{4})(\d{4})$/, '($1) $2-$3');
-      } else if (nums.length === 11) {
-        if (isDDD(nums.slice(0, 2)) && nums[2] === '9') {
-          input.value = nums.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
-        } else {
-          input.value = nums.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4');
-        }
+      if (nums.length === 11) {
+        input.value = nums.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4');
       } else if (nums.length === 14) {
         input.value = nums.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
       } else {
@@ -628,7 +682,8 @@
             clientName,
             leadName,
             leadWhatsapp,
-            clientPix: isClientMode ? '' : clientPix
+            clientPix: isClientMode ? '' : clientPix,
+            pixType: isClientMode ? '' : pixType
           })
         });
 
