@@ -225,35 +225,68 @@
       transform: none;
     }
 
-    .pix-type-selector {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
+    .pix-dropdown {
+      position: relative;
       margin-bottom: 8px;
     }
-    .pix-type-btn {
+    .pix-dropdown-btn {
       width: 100%;
-      padding: 8px 12px;
+      padding: 10px 14px;
       border: 2px solid var(--border-color);
       border-radius: 8px;
-      background: transparent;
+      background: rgba(15, 23, 42, 0.5);
       color: var(--text-primary);
       font-size: 13px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.03em;
       cursor: pointer;
-      transition: all .2s;
-      text-align: left;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: border-color .2s;
     }
-    .pix-type-btn:hover {
+    .pix-dropdown-btn:hover {
       border-color: var(--button-color);
+    }
+    .pix-dropdown-arrow {
+      font-size: 12px;
+      transition: transform .2s;
+    }
+    .pix-dropdown.open .pix-dropdown-arrow {
+      transform: rotate(180deg);
+    }
+    .pix-dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0; right: 0;
+      margin-top: 4px;
+      background: #1e293b;
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      overflow: hidden;
+      z-index: 100;
+      box-shadow: 0 8px 24px rgba(0,0,0,.4);
+    }
+    .pix-dropdown.open .pix-dropdown-menu {
+      display: block;
+    }
+    .pix-dropdown-item {
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .pix-dropdown-item:hover {
+      background: rgba(255,255,255,0.08);
+    }
+    .pix-dropdown-item.active {
       color: var(--button-color);
-    }
-    .pix-type-btn.active {
-      border-color: var(--button-color);
-      background: var(--button-color);
-      color: #fff;
     }
 
     /* Success Screen */
@@ -452,11 +485,17 @@
           <!-- PIX Key (Only shown for non-client) -->
           <div class="form-group" id="pix-group" style="display: none;">
             <label for="indicator-pix">SUA CHAVE PIX</label>
-            <div class="pix-type-selector" id="pix-type-selector">
-              <button type="button" class="pix-type-btn active" data-type="celular" onclick="selectPixType('celular')">CELULAR</button>
-              <button type="button" class="pix-type-btn" data-type="cpfcnpj" onclick="selectPixType('cpfcnpj')">CPF/CNPJ</button>
-              <button type="button" class="pix-type-btn" data-type="email" onclick="selectPixType('email')">E-MAIL</button>
-              <button type="button" class="pix-type-btn" data-type="aleatoria" onclick="selectPixType('aleatoria')">CHAVE ALEATÓRIA</button>
+            <div class="pix-dropdown" id="pix-dropdown">
+              <button type="button" class="pix-dropdown-btn" id="pix-dropdown-btn" onclick="togglePixDropdown()">
+                <span id="pix-dropdown-label">CELULAR</span>
+                <span class="pix-dropdown-arrow">▾</span>
+              </button>
+              <div class="pix-dropdown-menu" id="pix-dropdown-menu">
+                <div class="pix-dropdown-item active" data-type="celular" onclick="selectPixType('celular')">CELULAR</div>
+                <div class="pix-dropdown-item" data-type="cpfcnpj" onclick="selectPixType('cpfcnpj')">CPF/CNPJ</div>
+                <div class="pix-dropdown-item" data-type="email" onclick="selectPixType('email')">E-MAIL</div>
+                <div class="pix-dropdown-item" data-type="aleatoria" onclick="selectPixType('aleatoria')">CHAVE ALEATÓRIA</div>
+              </div>
             </div>
             <input type="text" id="indicator-pix" class="form-control" placeholder="(XX) XXXXX-XXXX" oninput="maskPixByType(this)">
           </div>
@@ -524,9 +563,17 @@
 
     function selectPixType(type) {
       pixType = type;
-      document.querySelectorAll('.pix-type-btn').forEach(b => {
-        b.classList.toggle('active', b.dataset.type === type);
+      const labels = {
+        celular: 'CELULAR',
+        cpfcnpj: 'CPF/CNPJ',
+        email: 'E-MAIL',
+        aleatoria: 'CHAVE ALEATÓRIA'
+      };
+      document.getElementById('pix-dropdown-label').textContent = labels[type] || '';
+      document.querySelectorAll('.pix-dropdown-item').forEach(el => {
+        el.classList.toggle('active', el.dataset.type === type);
       });
+      document.getElementById('pix-dropdown').classList.remove('open');
       const pixInput = document.getElementById('indicator-pix');
       const placeholders = {
         celular: '(XX) XXXXX-XXXX',
@@ -539,6 +586,17 @@
       pixInput.value = '';
       pixInput.focus();
     }
+
+    function togglePixDropdown() {
+      document.getElementById('pix-dropdown').classList.toggle('open');
+    }
+
+    document.addEventListener('click', function(e) {
+      const dd = document.getElementById('pix-dropdown');
+      if (dd && !dd.contains(e.target)) {
+        dd.classList.remove('open');
+      }
+    });
 
     function maskPixByType(input) {
       if (pixType === 'email') {
