@@ -403,13 +403,13 @@
           <!-- Indicator Name -->
           <div class="form-group">
             <label for="indicator-name" id="label-indicator-name">Seu Nome Completo</label>
-            <input type="text" id="indicator-name" class="form-control" placeholder="Digite seu nome completo" required>
+            <input type="text" id="indicator-name" class="form-control" placeholder="Digite seu nome completo" required style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
           </div>
 
           <!-- Lead Name -->
           <div class="form-group">
             <label for="lead-name">Nome de quem vai indicar</label>
-            <input type="text" id="lead-name" class="form-control" placeholder="Nome do seu amigo" required>
+            <input type="text" id="lead-name" class="form-control" placeholder="Nome do seu amigo" required style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
           </div>
 
           <!-- Lead WhatsApp -->
@@ -421,7 +421,7 @@
           <!-- PIX Key (Only shown for non-client) -->
           <div class="form-group" id="pix-group" style="display: none;">
             <label for="indicator-pix">Sua Chave PIX</label>
-            <input type="text" id="indicator-pix" class="form-control" placeholder="Chave para receber a comissão">
+            <input type="text" id="indicator-pix" class="form-control" placeholder="CPF, CNPJ, celular ou e-mail" oninput="maskPix(this)">
           </div>
 
           <!-- Submit Button -->
@@ -481,6 +481,27 @@
         v = v.replace(/^(\d*)/, '($1');
       }
       input.value = v;
+    }
+
+    function maskPix(input) {
+      let v = input.value;
+      // Email detection
+      if (v.includes('@')) {
+        input.value = v.toLowerCase();
+        return;
+      }
+      // Remove non-digits
+      const digits = v.replace(/\D/g, '');
+      if (digits.length <= 11) {
+        // CPF mask: XXX.XXX.XXX-XX
+        input.value = digits.replace(/^(\d{3})(\d{3})(\d{3})(\d{0,2}).*/, '$1.$2.$3-$4');
+      } else if (digits.length <= 14) {
+        // CNPJ mask: XX.XXX.XXX/XXXX-XX
+        input.value = digits.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{0,2}).*/, '$1.$2.$3/$4-$5');
+      } else {
+        // Phone or other - just show digits
+        input.value = digits;
+      }
     }
 
     // Switch Tabs
@@ -568,8 +589,8 @@
       const errorBox = document.getElementById('error-box');
       errorBox.style.display = 'none';
 
-      const clientName = document.getElementById('indicator-name').value.trim();
-      const leadName = document.getElementById('lead-name').value.trim();
+      const clientName = document.getElementById('indicator-name').value.trim().toUpperCase();
+      const leadName = document.getElementById('lead-name').value.trim().toUpperCase();
       const leadWhatsapp = document.getElementById('lead-whatsapp').value.trim();
       const clientPix = document.getElementById('indicator-pix').value.trim();
 
