@@ -232,12 +232,12 @@
     #dashboard-content { padding: 14px 20px; }
     .dash-grid {
       display: grid;
-      grid-template-columns: auto 1fr auto;
+      grid-template-columns: 1fr 1.4fr auto;
       gap: 10px;
       align-items: stretch;
     }
-    .dash-kpis-col { display: flex; flex-direction: column; gap: 6px; width: 380px; }
-    .dash-kpis-row { display: flex; gap: 6px; }
+    .dash-kpis-col { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 0; }
+    .dash-kpis-row { display: flex; gap: 6px; flex: 1; }
     .dash-kpi {
       flex: 1;
       background: #111827; border: 1px solid rgba(255,255,255,0.06);
