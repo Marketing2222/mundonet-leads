@@ -499,8 +499,19 @@
         // CNPJ mask: XX.XXX.XXX/XXXX-XX
         input.value = digits.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{0,2}).*/, '$1.$2.$3/$4-$5');
       } else {
-        // Phone or other - just show digits
-        input.value = digits;
+        // Phone mask: (XX) XXXXX-XXXX
+        const d = digits.slice(0, 11);
+        if (d.length > 10) {
+          input.value = d.replace(/^(\d{2})(\d{5})(\d{4}).*/, '($1) $2-$3');
+        } else if (d.length > 5) {
+          input.value = d.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, '($1) $2-$3');
+        } else if (d.length > 2) {
+          input.value = d.replace(/^(\d{2})(\d{0,5})/, '($1) $2');
+        } else if (d.length > 0) {
+          input.value = d.replace(/^(\d*)/, '($1');
+        } else {
+          input.value = '';
+        }
       }
     }
 
