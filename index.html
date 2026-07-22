@@ -215,10 +215,69 @@
     }
     .dropdown-content .toolbar-btn:hover { background: #1e293b; }
 
+    /* ===== DASHBOARD ===== */
+    #dashboard-panel {
+      display: none;
+      background: #0a0e1a;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease;
+    }
+    #dashboard-panel.open {
+      display: block;
+      max-height: 55vh;
+      overflow-y: auto;
+    }
+    #dashboard-content {
+      padding: 14px 20px;
+    }
+    .dash-row { margin-bottom: 12px; }
+    .dash-filters { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; }
+    .dash-filter-group { display: flex; flex-direction: column; gap: 4px; }
+    .dash-label { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
+    .dash-date-range { display: flex; align-items: center; gap: 8px; }
+    .dash-date-input {
+      background: #111827; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;
+      padding: 6px 10px; font-size: 12px; color: #e2e8f0; font-family: inherit;
+    }
+    .dash-date-input:focus { outline: none; border-color: #3b82f6; }
+    .dash-date-sep { font-size: 12px; color: #64748b; }
+    .dash-select {
+      background: #111827; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;
+      padding: 6px 10px; font-size: 12px; color: #e2e8f0; font-family: inherit; cursor: pointer;
+    }
+    .dash-select:focus { outline: none; border-color: #3b82f6; }
+    .dash-kpis { display: flex; gap: 10px; flex-wrap: wrap; }
+    .dash-kpi {
+      flex: 1; min-width: 120px;
+      background: #111827; border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px; padding: 12px 14px; text-align: center;
+    }
+    .dash-kpi-val { font-size: 22px; font-weight: 800; color: #f1f5f9; line-height: 1.2; }
+    .dash-kpi-label { font-size: 9px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
+    .dash-kpi-sub { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+    .dash-ranking-row { margin-top: 4px; }
+    .dash-ranking-title { font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px; }
+    .dash-ranking-list { display: flex; gap: 8px; flex-wrap: wrap; }
+    .dash-rank-item {
+      display: flex; align-items: center; gap: 8px;
+      background: #111827; border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px; padding: 8px 12px; min-width: 180px; flex: 1;
+    }
+    .dash-rank-pos { font-size: 16px; font-weight: 800; color: #f59e0b; min-width: 24px; text-align: center; }
+    .dash-rank-name { font-size: 12px; font-weight: 600; color: #e2e8f0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .dash-rank-count { font-size: 11px; font-weight: 700; color: #10b981; background: rgba(16,185,129,0.12); padding: 2px 8px; border-radius: 10px; }
+    .dash-rank-empty { font-size: 12px; color: #64748b; font-style: italic; }
+
     /* ===== BOARD ===== */
     #board-wrapper {
       padding-top: calc(var(--header-h) + 42px + 44px);
       height: 100vh; overflow: hidden; display: flex; flex-direction: column;
+      transition: padding-top 0.35s ease;
+    }
+    body.dashboard-open #board-wrapper {
+      padding-top: calc(var(--header-h) + 42px + 44px + 55vh);
     }
     #kanban-board {
       flex: 1; display: flex; flex-direction: column; gap: 10px;
@@ -960,6 +1019,65 @@
   </div>
 
   <button class="toolbar-btn" onclick="if(!isAdminMode){toast('Faça login primeiro','error');return}openTrash()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg> Lixeira</button>
+
+  <button class="toolbar-btn" id="btn-dashboard-toggle" onclick="toggleDashboard()" title="Dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg> Dashboard</button>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard-panel">
+  <div id="dashboard-content">
+    <div class="dash-row">
+      <div class="dash-filters">
+        <div class="dash-filter-group">
+          <label class="dash-label">Período</label>
+          <div class="dash-date-range">
+            <input type="date" id="dash-date-from" class="dash-date-input" onchange="renderDashboard()">
+            <span class="dash-date-sep">até</span>
+            <input type="date" id="dash-date-to" class="dash-date-input" onchange="renderDashboard()">
+          </div>
+        </div>
+        <div class="dash-filter-group">
+          <label class="dash-label">Ranking</label>
+          <select id="dash-ranking-filter" class="dash-select" onchange="renderDashboard()">
+            <option value="month">Este Mês</option>
+            <option value="all">Todos os Meses</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="dash-row dash-kpis">
+      <div class="dash-kpi">
+        <div class="dash-kpi-val" id="dash-kpi-total">0</div>
+        <div class="dash-kpi-label">LEADS NO MÊS</div>
+      </div>
+      <div class="dash-kpi" style="--kpi-color:#10b981">
+        <div class="dash-kpi-val" id="dash-kpi-ganho" style="color:#10b981">0</div>
+        <div class="dash-kpi-label">GANHOS</div>
+      </div>
+      <div class="dash-kpi" style="--kpi-color:#ef4444">
+        <div class="dash-kpi-val" id="dash-kpi-perda" style="color:#ef4444">0</div>
+        <div class="dash-kpi-label">PERDIDOS</div>
+      </div>
+      <div class="dash-kpi" style="--kpi-color:#f59e0b">
+        <div class="dash-kpi-val" id="dash-kpi-pago" style="color:#f59e0b">R$ 0,00</div>
+        <div class="dash-kpi-label">TOTAL PAGO</div>
+      </div>
+      <div class="dash-kpi" style="--kpi-color:#8b5cf6">
+        <div class="dash-kpi-val" id="dash-kpi-pix" style="color:#8b5cf6">0</div>
+        <div class="dash-kpi-label">COMISSÃO PIX</div>
+        <div class="dash-kpi-sub" id="dash-kpi-pix-val">R$ 0,00</div>
+      </div>
+      <div class="dash-kpi" style="--kpi-color:#06b6d4">
+        <div class="dash-kpi-val" id="dash-kpi-desc" style="color:#06b6d4">0</div>
+        <div class="dash-kpi-label">COMISSÃO DESCONTO</div>
+        <div class="dash-kpi-sub" id="dash-kpi-desc-val">R$ 0,00</div>
+      </div>
+    </div>
+    <div class="dash-row dash-ranking-row">
+      <div class="dash-ranking-title">🏆 Ranking de Quem Mais Indicou (Ganhou)</div>
+      <div id="dash-ranking-list" class="dash-ranking-list"></div>
+    </div>
+  </div>
 </div>
 
 <!-- KANBAN BOARD -->
@@ -1972,6 +2090,7 @@ function render(){
   document.body.classList.toggle('admin-mode',isAdminMode);
   populateFilterClientes();
   populateFilterYears();
+  if(document.getElementById('dashboard-panel').classList.contains('open')) renderDashboard();
   setTimeout(initKanbanDrag, 10);
 }
 
@@ -2823,6 +2942,130 @@ function populateFilterYears(){
   sel.innerHTML=html;
 }
 function applyFilters(){ render(); }
+
+// ===== DASHBOARD =====
+function toggleDashboard(){
+  const panel=document.getElementById('dashboard-panel');
+  const isOpen=panel.classList.contains('open');
+  if(isOpen){
+    panel.classList.remove('open');
+    document.body.classList.remove('dashboard-open');
+  } else {
+    panel.classList.add('open');
+    document.body.classList.add('dashboard-open');
+    initDashboardDates();
+    renderDashboard();
+  }
+}
+
+function initDashboardDates(){
+  const from=document.getElementById('dash-date-from');
+  const to=document.getElementById('dash-date-to');
+  if(!from.value){
+    const now=new Date();
+    const first=new Date(now.getFullYear(),now.getMonth(),1);
+    from.value=fmtDateInput(first.toISOString());
+    to.value=fmtDateInput(now.toISOString());
+  }
+}
+
+function parseDateBR(s){
+  if(!s) return null;
+  const p=s.split('-');
+  return new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2]));
+}
+
+function renderDashboard(){
+  const dateFrom=(document.getElementById('dash-date-from')?.value||'').trim();
+  const dateTo=(document.getElementById('dash-date-to')?.value||'').trim();
+  const rankingFilter=document.getElementById('dash-ranking-filter')?.value||'month';
+
+  const leads=state.leads||[];
+  const ganhoId=getGanhoColumnId();
+  const perdaId=getPerdaColumnId();
+
+  function inRange(l){
+    if(!dateFrom&&!dateTo) return true;
+    const created=(l.criadoEm||'').substring(0,10);
+    if(dateFrom&&created<dateFrom) return false;
+    if(dateTo&&created>dateTo) return false;
+    return true;
+  }
+
+  const filtered=leads.filter(inRange);
+  const ganho=filtered.filter(l=>l.columnId===ganhoId);
+  const perda=filtered.filter(l=>l.columnId===perdaId);
+
+  document.getElementById('dash-kpi-total').textContent=filtered.length;
+  document.getElementById('dash-kpi-ganho').textContent=ganho.length;
+  document.getElementById('dash-kpi-perda').textContent=perda.length;
+
+  const pagos=filtered.filter(l=>l.comissaoStatus==='pago');
+  const totalPago=pagos.reduce((s,l)=>{
+    const v=parseFloat((l.comissaoValor||'0').replace('.','').replace(',','.'));
+    return s+(isNaN(v)?0:v);
+  },0);
+  document.getElementById('dash-kpi-pago').textContent='R$ '+totalPago.toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+
+  const pix=filtered.filter(l=>l.comissaoFormaPagamento==='pix'&&l.comissaoStatus==='pago');
+  const pixTotal=pix.reduce((s,l)=>{
+    const v=parseFloat((l.comissaoValor||'0').replace('.','').replace(',','.'));
+    return s+(isNaN(v)?0:v);
+  },0);
+  document.getElementById('dash-kpi-pix').textContent=pix.length+'x';
+  document.getElementById('dash-kpi-pix-val').textContent='R$ '+pixTotal.toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+
+  const desc=filtered.filter(l=>l.comissaoFormaPagamento==='desconto'&&l.comissaoStatus==='pago');
+  const descTotal=desc.reduce((s,l)=>{
+    const v=parseFloat((l.comissaoValor||'0').replace('.','').replace(',','.'));
+    return s+(isNaN(v)?0:v);
+  },0);
+  document.getElementById('dash-kpi-desc').textContent=desc.length+'x';
+  document.getElementById('dash-kpi-desc-val').textContent='R$ '+descTotal.toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+
+  renderDashboardRanking(rankingFilter);
+}
+
+function getPerdaColumnId(){
+  const col=state.columns.find(c=>c.name&&c.name.toLowerCase().replace(/\s+/g,'').includes('perda'));
+  return col?col.id:'perda';
+}
+
+function renderDashboardRanking(mode){
+  const ganhoId=getGanhoColumnId();
+  const leads=(state.leads||[]).filter(l=>l.columnId===ganhoId);
+  let filtered=leads;
+
+  if(mode==='month'){
+    const now=new Date();
+    const ym=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+    filtered=leads.filter(l=>(l.mesReferencia||'').startsWith(ym));
+  }
+
+  const counts={};
+  filtered.forEach(l=>{
+    const name=(l.clienteNome||'').trim().toUpperCase();
+    if(!name) return;
+    counts[name]=(counts[name]||0)+1;
+  });
+
+  const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const list=document.getElementById('dash-ranking-list');
+  if(!sorted.length){
+    list.innerHTML='<div class="dash-rank-empty">Nenhuma indicação ganha no período.</div>';
+    return;
+  }
+
+  const medals=['🥇','🥈','🥉'];
+  list.innerHTML=sorted.map(([name,count],i)=>{
+    const pos=i<3?medals[i]:(i+1)+'°';
+    return `<div class="dash-rank-item">
+      <div class="dash-rank-pos">${pos}</div>
+      <div class="dash-rank-name">${escHtml(name)}</div>
+      <div class="dash-rank-count">${count} lead${count>1?'s':''}</div>
+    </div>`;
+  }).join('');
+}
 
 // ===== COMISSÕES =====
 function getGanhoColumnId(){
