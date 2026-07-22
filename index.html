@@ -1389,6 +1389,11 @@
       </div>
 
       <div class="form-group" style="margin-bottom:12px">
+        <label class="form-label">Rodapé da Página</label>
+        <textarea id="pers-indique-footer" class="form-control" style="min-height:50px" placeholder="Texto do rodapé (ex: CNPJ, copyright...)"></textarea>
+      </div>
+
+      <div class="form-group" style="margin-bottom:12px">
         <label class="form-label">Logotipo da Página (Opcional)</label>
         <div style="display:flex;gap:8px;align-items:center">
           <button class="btn btn-ghost" onclick="document.getElementById('indique-logo-file').click()" style="font-size:12px;padding:8px 14px">📤 Upload de logo</button>
@@ -2539,6 +2544,7 @@ function openPersonalize(){
   document.getElementById('pers-indique-title').value=prefs.page_indique_title||'';
   document.getElementById('pers-indique-subtitle').value=prefs.page_indique_subtitle||'';
   document.getElementById('pers-indique-success-msg').value=prefs.page_indique_success_message||'';
+  document.getElementById('pers-indique-footer').value=prefs.page_indique_footer||'';
   document.getElementById('pers-indique-bg-color').value=prefs.page_indique_bg_color||'';
   document.getElementById('pers-indique-btn-color').value=prefs.page_indique_btn_color||'#3b82f6';
   document.getElementById('pers-indique-btn-color-hex').textContent=prefs.page_indique_btn_color||'#3b82f6';
@@ -2672,6 +2678,7 @@ async function savePersonalize(){
   state.prefs.page_indique_title=document.getElementById('pers-indique-title').value.trim();
   state.prefs.page_indique_subtitle=document.getElementById('pers-indique-subtitle').value.trim();
   state.prefs.page_indique_success_message=document.getElementById('pers-indique-success-msg').value.trim();
+  state.prefs.page_indique_footer=document.getElementById('pers-indique-footer').value.trim();
   state.prefs.page_indique_bg_color=document.getElementById('pers-indique-bg-color').value.trim();
   state.prefs.page_indique_btn_color=document.getElementById('pers-indique-btn-color').value;
   state.prefs.page_indique_text_color=document.getElementById('pers-indique-text-color').value;

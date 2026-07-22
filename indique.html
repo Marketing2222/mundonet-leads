@@ -35,6 +35,7 @@
       align-items: center;
       justify-content: center;
       padding: 20px;
+      padding-bottom: 60px;
       position: relative;
       overflow-x: hidden;
     }
@@ -376,8 +377,17 @@
 
     /* ===== FOOTER ===== */
     .page-footer {
-      width: 100%; text-align: center; padding: 16px 20px;
-      font-size: 11px; color: var(--text-secondary); opacity: 0.6; margin-top: 24px;
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      width: 100%;
+      text-align: center;
+      padding: 12px 20px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #fff;
+      background: var(--button-color);
+      z-index: 200;
+      line-height: 1.4;
     }
 
     /* Toast */
@@ -535,7 +545,7 @@
   <div id="toast">Link copiado para a área de transferência!</div>
 
   <!-- Footer -->
-  <footer class="page-footer">
+  <footer class="page-footer" id="page-footer">
     Mundonet Telecom | CNPJ 19.062.539/0001-01 &copy; 2026 Mundonet Telecom. Todos os direitos reservados.
   </footer>
 
@@ -704,6 +714,11 @@
         const bgImgUrl = prefs.page_indique_bg_image;
         if (bgImgUrl) {
           document.getElementById('page-bg-image').style.backgroundImage = `url(${bgImgUrl})`;
+        }
+
+        // Apply Footer text
+        if (prefs.page_indique_footer) {
+          document.getElementById('page-footer').textContent = prefs.page_indique_footer;
         }
       } catch (err) {
         console.warn('Falha ao carregar personalizações, usando padrão:', err);
