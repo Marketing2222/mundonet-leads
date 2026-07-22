@@ -485,45 +485,37 @@
 
     function maskPix(input) {
       let v = input.value;
-      const digits = v.replace(/\D/g, '');
-      // Email detection (must be before digit stripping)
-      if (v.includes('@')) {
-        input.value = v.toLowerCase();
+      if (/[a-zA-Z@]/.test(v)) {
+        input.maxLength = 255;
         return;
       }
-      // If user typed parentheses or +, treat as phone
-      if (v.includes('(') || v.includes('+')) {
-        const d = digits.slice(0, 11);
-        input.value = formatPhone(d);
-        return;
-      }
-      if (digits.length <= 10) {
-        input.value = formatPhone(digits);
-      } else if (digits.length === 11) {
-        // 3rd digit = 9 → phone, otherwise CPF
-        input.value = digits[2] === '9' ? formatPhone(digits) : formatCpf(digits);
-      } else if (digits.length <= 14) {
-        input.value = formatCnpj(digits);
+      input.maxLength = 18;
+      let nums = v.replace(/\D/g, '');
+      if (nums.length > 14) nums = nums.slice(0, 14);
+      if (nums.length === 10) {
+        input.value = nums.replace(/^(\d{2})(\d{4})(\d{4})$/, '($1) $2-$3');
+      } else if (nums.length === 11) {
+        if (nums[2] === '9') {
+          input.value = nums.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+        } else {
+          input.value = nums.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4');
+        }
+      } else if (nums.length === 14) {
+        input.value = nums.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
       } else {
-        input.value = formatPhone(digits.slice(0, 11));
+        if (nums.length <= 11) {
+          v = nums.replace(/(\d{3})(\d)/, '$1.$2');
+          v = v.replace(/(\d{3})\.(\d{3})(\d)/, '$1.$2.$3');
+          v = v.replace(/(\d{3})\.(\d{3})\.(\d{3})(\d)/, '$1.$2.$3-$4');
+          input.value = v;
+        } else {
+          v = nums.replace(/(\d{2})(\d)/, '$1.$2');
+          v = v.replace(/(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+          v = v.replace(/(\d{2})\.(\d{3})\.(\d{3})(\d)/, '$1.$2.$3/$4');
+          v = v.replace(/(\d{2})\.(\d{3})\.(\d{3})\/(\d{4})(\d)/, '$1.$2.$3/$4-$5');
+          input.value = v;
+        }
       }
-    }
-    function formatCpf(d) {
-      return d.replace(/^(\d{3})(\d{3})(\d{3})(\d{0,2})$/, '$1.$2.$3-$4');
-    }
-    function formatCnpj(d) {
-      return d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{0,2})$/, '$1.$2.$3/$4-$5');
-    }
-    function formatPhone(d) {
-      if (d.length > 10)
-        return d.replace(/^(\d{2})(\d{5})(\d{0,4})$/, '($1) $2-$3');
-      if (d.length > 5)
-        return d.replace(/^(\d{2})(\d{4})(\d{0,4})$/, '($1) $2-$3');
-      if (d.length > 2)
-        return d.replace(/^(\d{2})(\d{0,5})$/, '($1) $2');
-      if (d.length > 0)
-        return d.replace(/^(\d*)$/, '($1');
-      return '';
     }
 
     // Switch Tabs
