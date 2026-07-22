@@ -258,12 +258,6 @@
     }
     .dash-chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
     .dash-chart-header span { font-size: 10px; font-weight: 700; color: #94a3b8; }
-    .dash-chart-toggle {
-      background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3);
-      border-radius: 4px; padding: 2px 6px; font-size: 8px; font-weight: 600;
-      color: #60a5fa; cursor: pointer; font-family: inherit; white-space: nowrap;
-    }
-    .dash-chart-toggle:hover { background: rgba(59,130,246,0.25); }
     .dash-chart-area { display: flex; flex-direction: column; align-items: center; gap: 6px; flex:1; justify-content: center; }
     .dash-pie-legend { display: flex; gap: 12px; justify-content: center; }
     .dash-pie-legend-item { display: flex; align-items: center; gap: 4px; font-size: 10px; color: #94a3b8; }
@@ -1054,8 +1048,7 @@
       <div class="dash-charts-col">
         <div class="dash-chart-card">
           <div class="dash-chart-header">
-            <span id="dash-pie-title">Proporção Ganhos / Perdidos</span>
-            <button class="dash-chart-toggle" id="dash-pie-toggle" onclick="togglePieChart()">Ver Comissões</button>
+            <span>Proporção Ganhos / Perdidos</span>
           </div>
           <div class="dash-chart-area">
             <svg id="dash-pie-svg" viewBox="0 0 200 200" width="160" height="160"></svg>
@@ -2973,7 +2966,6 @@ function populateFilterYears(){
 function applyFilters(){ render(); }
 
 // ===== DASHBOARD =====
-let dashPieMode='comissoes';
 
 function toggleDashboard(){
   const panel=document.getElementById('dashboard-panel');
@@ -3029,7 +3021,7 @@ function renderDashboard(){
   document.getElementById('dash-kpi-desc').textContent=desc.length+'x';
   document.getElementById('dash-kpi-desc-val').textContent='R$ '+fmtCurrency(descTotal);
 
-  renderPieChart(pix.length,desc.length,ganho.length,perda.length);
+  renderPieChart(ganho.length,perda.length);
   renderBarChart(pix.length,desc.length);
   renderDashboardRanking();
 }
@@ -3043,34 +3035,16 @@ function getPerdaColumnId(){
   return col?col.id:'perda';
 }
 
-function togglePieChart(){
-  dashPieMode=dashPieMode==='comissoes'?'ganho':'comissoes';
-  const btn=document.getElementById('dash-pie-toggle');
-  const title=document.getElementById('dash-pie-title');
-  if(dashPieMode==='comissoes'){
-    btn.textContent='Ver Ganhos / Perdidos';
-    title.textContent='Proporção de Comissões';
-  } else {
-    btn.textContent='Ver Comissões';
-    title.textContent='Proporção Ganhos / Perdidos';
-  }
-  renderDashboard();
-}
-
-function renderPieChart(pixCount,descCount,ganhoCount,perdaCount){
+function renderPieChart(ganhoCount,perdaCount){
   const svg=document.getElementById('dash-pie-svg');
   const legend=document.getElementById('dash-pie-legend');
-  let a,b,labelA,labelB,colorA,colorB;
-  if(dashPieMode==='comissoes'){
-    a=pixCount;b=descCount;labelA='PIX';labelB='Desconto';colorA='#f59e0b';colorB='#06b6d4';
-  } else {
-    a=ganhoCount;b=perdaCount;labelA='Ganhou';labelB='Perdeu';colorA='#10b981';colorB='#ef4444';
-  }
+  const a=ganhoCount,b=perdaCount;
+  const labelA='Ganhou',labelB='Perdeu',colorA='#10b981',colorB='#ef4444';
   const total=a+b;
   if(total===0){
     svg.innerHTML=`<circle cx="100" cy="100" r="80" fill="#1e293b" stroke="rgba(255,255,255,0.08)" stroke-width="2"/>
       <text x="100" y="96" text-anchor="middle" fill="#475569" font-size="11" font-weight="600">Sem dados</text>
-      <text x="100" y="112" text-anchor="middle" fill="#475569" font-size="9">${dashPieMode==='comissoes'?'Nenhuma comissão paga':'Nenhum lead'}</text>`;
+      <text x="100" y="112" text-anchor="middle" fill="#475569" font-size="9">Nenhum lead</text>`;
     legend.innerHTML=`<div class="dash-pie-legend-item"><div class="dash-pie-legend-dot" style="background:${colorA}"></div>${labelA} 0</div>
       <div class="dash-pie-legend-item"><div class="dash-pie-legend-dot" style="background:${colorB}"></div>${labelB} 0</div>`;
     return;
