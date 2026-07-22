@@ -257,6 +257,43 @@ app.post('/api/columns/sync', (req, res) => {
   res.json({ ok: true, count: columns.length });
 });
 
+// ---------- PUBLIC INDICATION ----------
+app.post('/api/public-indicacao', (req, res) => {
+  const { isClient, clientName, leadName, leadWhatsapp, clientPix } = req.body;
+  if (!clientName || !leadName || !leadWhatsapp) {
+    return res.status(400).json({ error: 'Preencha todos os campos obrigatórios' });
+  }
+
+  const tracking = uuid().slice(0, 8);
+  const baseUrl = req.protocol + '://' + req.get('host');
+  const link = baseUrl + '/indique.html?ref=' + tracking;
+
+  const now = new Date().toISOString();
+  const columns = readStore('columns').sort((a, b) => a.order - b.order);
+  const firstColId = columns.length > 0 ? columns[0].id : 'pendentes';
+
+  const lead = {
+    id: uuid(),
+    column_id: firstColId,
+    etapa: firstColId,
+    cliente_nome: clientName.toUpperCase(),
+    cliente_pix: isClient ? '' : (clientPix || ''),
+    lead_nome: leadName.toUpperCase(),
+    lead_whatsapp: leadWhatsapp,
+    comentarios: isClient ? 'Indicação via página pública (cliente)' : 'Indicação via página pública (não cliente)',
+    tracking: tracking,
+    criado_em: now,
+    mes_referencia: now.substring(0, 7),
+    historico: [{ data: now, texto: 'Lead criado via página Indique e Ganhe' }]
+  };
+
+  const leads = readStore('leads');
+  leads.push(lead);
+  writeStore('leads', leads);
+
+  res.json({ ok: true, link: link, tracking: tracking });
+});
+
 // ---------- CONFIG ----------
 app.get('/api/config', (req, res) => { res.json(readObj('config')); });
 app.put('/api/config', (req, res) => { writeObj('config', req.body); res.json({ ok: true }); });
