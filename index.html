@@ -173,7 +173,7 @@
       display: none;
       transition: top 0.3s ease;
     }
-    body.dashboard-open #admin-toolbar { top: calc(var(--header-h) + 210px); }
+    body.dashboard-open #admin-toolbar { top: var(--dash-bottom, calc(var(--header-h) + 176px)); }
     body.admin-mode #admin-toolbar { display: flex; }
     .toolbar-label {
       font-size: 11px; font-weight: 700; color: #f1f5f9;
@@ -224,6 +224,7 @@
       border-bottom: 1px solid rgba(255,255,255,0.06);
       position: relative;
       z-index: 99;
+      margin-top: var(--header-h);
     }
     #dashboard-panel.open { display: block; }
     #dashboard-content { padding: 14px 20px; }
@@ -285,7 +286,7 @@
       transition: padding-top 0.3s ease;
     }
     body.dashboard-open #board-wrapper {
-      padding-top: calc(var(--header-h) + 210px + 44px + 42px);
+      padding-top: calc(var(--dash-bottom, calc(var(--header-h) + 176px)) + 44px + 42px);
     }
     #kanban-board {
       flex: 1; display: flex; flex-direction: column; gap: 10px;
@@ -708,7 +709,7 @@
       padding: 8px 20px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
       transition: top 0.3s ease;
     }
-    body.dashboard-open #filter-bar { top: calc(var(--header-h) + 42px + 210px + 44px); }
+    body.dashboard-open #filter-bar { top: calc(var(--dash-bottom, calc(var(--header-h) + 176px)) + 44px); }
     .filter-group { display: flex; align-items: center; gap: 5px; }
     .filter-label { font-size: 10px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; }
     .filter-select, .filter-input {
@@ -2966,6 +2967,10 @@ function toggleDashboard(){
     panel.classList.add('open');
     document.body.classList.add('dashboard-open');
     renderDashboard();
+    requestAnimationFrame(()=>{
+      const rect=panel.getBoundingClientRect();
+      document.documentElement.style.setProperty('--dash-bottom',rect.bottom+'px');
+    });
   }
 }
 
