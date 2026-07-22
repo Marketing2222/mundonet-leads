@@ -1736,6 +1736,8 @@ function maskPhone(input) {
   input.value = v;
 }
 
+function isDDD(d) { return /^(1[1-9]|2[12478]|3[1-578]|4[1-9]|5[1-3455]|6[1-9]|7[134579]|8[1-9]|9[1-9])$/.test(d); }
+
 function maskPix(input) {
   let v = input.value;
   if (/[a-zA-Z@]/.test(v)) {
@@ -1748,7 +1750,7 @@ function maskPix(input) {
   if (nums.length === 10) {
     input.value = nums.replace(/^(\d{2})(\d{4})(\d{4})$/, '($1) $2-$3');
   } else if (nums.length === 11) {
-    if (nums[2] === '9') {
+    if (isDDD(nums.slice(0, 2)) && nums[2] === '9') {
       input.value = nums.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
     } else {
       input.value = nums.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4');
