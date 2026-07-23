@@ -279,7 +279,7 @@
     .kanban-row {
       flex: 1; display: flex; gap: 10px;
       overflow-x: auto; overflow-y: hidden;
-      align-items: stretch;
+      align-items: flex-start;
       cursor: grab;
       user-select: none;
       min-height: 0;
@@ -299,7 +299,8 @@
       background: var(--bg-surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-md);
-      max-height: 100%; overflow: hidden;
+      max-height: calc(50vh - 60px);
+      overflow: hidden;
       position: relative; transition: box-shadow 0.2s;
     }
     .kanban-column::before {
