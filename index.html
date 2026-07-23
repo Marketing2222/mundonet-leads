@@ -712,8 +712,6 @@
       color: var(--text-primary); font-size: 12px; font-weight: 500;
     }
     .filter-select:focus, .filter-input:focus { outline: none; border-color: var(--accent-blue); }
-    #calendar-popup span { display: inline-block; }
-    #calendar-popup span:hover { background: var(--bg-elevated) !important; }
     .filter-input { width: 180px; }
     .filter-divider { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
     #btn-clients-panel {
@@ -965,29 +963,16 @@
     <!-- Filter elements -->
     <button id="btn-search" onclick="toggleSearch()" style="display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:var(--radius-sm);background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-primary);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Buscar</button>
     <div class="filter-group" style="position:relative">
-      <span class="filter-label">Mês</span>
-      <button class="filter-select" id="btn-calendar" onclick="toggleCalendar()" style="cursor:pointer;text-align:left;min-width:120px">
-        <span id="calendar-display">Todos</span> ▾
-      </button>
-      <div id="calendar-popup" style="display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:200;background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-md);box-shadow:var(--shadow-lg);padding:12px;width:260px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-          <button onclick="calPrev()" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:16px;padding:4px">◀</button>
-          <span id="cal-month-year" style="font-size:13px;font-weight:700;color:var(--text-primary)"></span>
-          <button onclick="calNext()" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:16px;padding:4px">▶</button>
+      <button id="btn-calendar" onclick="toggleCalendar()" style="display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:var(--radius-sm);background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-primary);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap" title="Filtrar por mês"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> <span id="calendar-display">Mês</span></button>
+      <div id="calendar-popup" style="display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:200;background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-md);box-shadow:var(--shadow-lg);padding:12px;width:220px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <button onclick="calPrevYear()" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:14px;padding:4px 6px">◀</button>
+          <span id="cal-year-display" style="font-size:13px;font-weight:700;color:var(--text-primary)"></span>
+          <button onclick="calNextYear()" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:14px;padding:4px 6px">▶</button>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;margin-bottom:4px">
-          <span style="font-size:10px;font-weight:700;color:var(--text-muted);padding:4px 0">D</span>
-          <span style="font-size:10px;font-weight:700;color:var(--text-muted);padding:4px 0">S</span>
-          <span style="font-size:10px;font-weight:700;color:var(--text-muted);padding:4px 0">T</span>
-          <span style="font-size:10px;font-weight:700;color:var(--text-muted);padding:4px 0">Q</span>
-          <span style="font-size:10px;font-weight:700;color:var(--text-muted);padding:4px 0">Q</span>
-          <span style="font-size:10px;font-weight:700;color:var(--text-muted);padding:4px 0">S</span>
-          <span style="font-size:10px;font-weight:700;color:var(--text-muted);padding:4px 0">S</span>
-        </div>
-        <div id="cal-days" style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center"></div>
-        <div style="display:flex;justify-content:space-between;margin-top:8px;border-top:1px solid var(--border);padding-top:8px">
-          <button onclick="calClear()" style="background:none;border:none;color:var(--accent-blue);font-size:12px;font-weight:600;cursor:pointer">Limpar</button>
-          <button onclick="calToday()" style="background:none;border:none;color:var(--accent-blue);font-size:12px;font-weight:600;cursor:pointer">Hoje</button>
+        <div id="cal-months-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px"></div>
+        <div style="margin-top:8px;border-top:1px solid var(--border);padding-top:8px">
+          <button onclick="calClear()" style="width:100%;background:none;border:none;color:var(--accent-blue);font-size:12px;font-weight:600;cursor:pointer;text-align:center">Limpar</button>
         </div>
       </div>
     </div>
@@ -3013,51 +2998,38 @@ function populateFilterClientes(){
   sel.innerHTML='<option value="">Todos</option>'+names.map(n=>`<option value="${escHtml(n)}" ${n===cur?'selected':''}>${escHtml(n)}</option>`).join('');
 }
 // ===== CALENDAR FILTER =====
-let calViewYear, calViewMonth, calSelectedMonth, calSelectedYear;
+let calViewYear, calSelectedMonth, calSelectedYear;
+const MONTHS=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const MONTHS_SHORT=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
 function initCalendar(){
   const now=new Date();
   calViewYear=now.getFullYear();
-  calViewMonth=now.getMonth();
   calSelectedMonth=String(now.getMonth()+1).padStart(2,'0');
   calSelectedYear=String(now.getFullYear());
-  renderCalendar();
+  renderMonthGrid();
   updateCalendarDisplay();
 }
 
 function toggleCalendar(){
   const p=document.getElementById('calendar-popup');
-  if(p.style.display==='none'){ p.style.display='block'; renderCalendar(); }
+  if(p.style.display==='none'){ p.style.display='block'; renderMonthGrid(); }
   else p.style.display='none';
 }
 
-function calPrev(){ calViewMonth--; if(calViewMonth<0){ calViewMonth=11; calViewYear--; } renderCalendar(); }
-function calNext(){ calViewMonth++; if(calViewMonth>11){ calViewMonth=0; calViewYear++; } renderCalendar(); }
+function calPrevYear(){ calViewYear--; renderMonthGrid(); }
+function calNextYear(){ calViewYear++; renderMonthGrid(); }
 
-function calSelectDay(day){
-  if(!day) return;
-  calSelectedMonth=String(calViewMonth+1).padStart(2,'0');
+function calSelectMonth(m){
+  calSelectedMonth=String(m).padStart(2,'0');
   calSelectedYear=String(calViewYear);
-  calSelectedDay=day;
   updateCalendarDisplay();
   document.getElementById('calendar-popup').style.display='none';
   render();
 }
 
 function calClear(){
-  calSelectedMonth=''; calSelectedYear=''; calSelectedDay=null;
-  updateCalendarDisplay();
-  document.getElementById('calendar-popup').style.display='none';
-  render();
-}
-
-function calToday(){
-  const now=new Date();
-  calViewYear=now.getFullYear();
-  calViewMonth=now.getMonth();
-  calSelectedMonth=String(now.getMonth()+1).padStart(2,'0');
-  calSelectedYear=String(now.getFullYear());
-  calSelectedDay=now.getDate();
+  calSelectedMonth=''; calSelectedYear='';
   updateCalendarDisplay();
   document.getElementById('calendar-popup').style.display='none';
   render();
@@ -3065,31 +3037,25 @@ function calToday(){
 
 function updateCalendarDisplay(){
   const disp=document.getElementById('calendar-display');
-  const months=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
   if(calSelectedMonth && calSelectedYear){
-    disp.textContent=months[parseInt(calSelectedMonth)-1]+' '+calSelectedYear;
+    disp.textContent=MONTHS[parseInt(calSelectedMonth)-1]+' '+calSelectedYear;
   } else {
-    disp.textContent='Todos';
+    disp.textContent='Mês';
   }
 }
 
-function renderCalendar(){
-  const months=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-  document.getElementById('cal-month-year').textContent=months[calViewMonth]+' de '+calViewYear;
-  const firstDay=new Date(calViewYear, calViewMonth, 1).getDay();
-  const daysInMonth=new Date(calViewYear, calViewMonth+1, 0).getDate();
+function renderMonthGrid(){
+  document.getElementById('cal-year-display').textContent=calViewYear;
   const today=new Date();
-  const isCurrentMonth=calViewMonth===today.getMonth() && calViewYear===today.getFullYear();
-  const container=document.getElementById('cal-days');
+  const isCurrentYear=calViewYear===today.getFullYear();
+  const container=document.getElementById('cal-months-grid');
   let html='';
-  for(let i=0;i<firstDay;i++) html+='<span></span>';
-  for(let d=1;d<=daysInMonth;d++){
-    const isToday=isCurrentMonth && d===today.getDate();
-    const isSelected=calSelectedDay && calSelectedMonth && calSelectedYear
-      && calSelectedDay===d && calSelectedMonth===String(calViewMonth+1).padStart(2,'0') && calSelectedYear===String(calViewYear);
-    const bg=isToday?'#3b82f6':isSelected?'rgba(59,130,246,0.3)':'transparent';
-    const color=isToday?'#fff':isSelected?'#60a5fa':'var(--text-primary)';
-    html+=`<span onclick="calSelectDay(${d})" style="padding:6px 0;font-size:12px;font-weight:600;cursor:pointer;border-radius:6px;background:${bg};color:${color};transition:all 0.15s" onmouseenter="this.style.background='var(--bg-elevated)'" onmouseleave="this.style.background='${bg}'">${d}</span>`;
+  for(let m=1;m<=12;m++){
+    const isSelected=calSelectedMonth===String(m).padStart(2,'0') && calSelectedYear===String(calViewYear);
+    const isCurrent=isCurrentYear && m===today.getMonth()+1;
+    let bg='transparent', color='var(--text-primary)', border='1px solid var(--border)';
+    if(isSelected){ bg='var(--accent-blue)'; color='#fff'; border='1px solid var(--accent-blue)'; }
+    html+=`<button onclick="calSelectMonth(${m})" style="padding:8px 4px;font-size:11px;font-weight:600;cursor:pointer;border-radius:6px;background:${bg};color:${color};border:${border};transition:all 0.15s">${MONTHS_SHORT[m-1]}</button>`;
   }
   container.innerHTML=html;
 }
