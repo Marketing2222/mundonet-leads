@@ -1408,6 +1408,21 @@
       </div>
       <button class="btn btn-danger" onclick="removeLogo()" style="margin-bottom:18px;font-size:11px;padding:6px 12px">🗑 Remover logo personalizado</button>
 
+      <!-- Favicon -->
+      <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;padding-top:12px;border-top:1px solid var(--border)">🌐 Favicon</p>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+        <div id="favicon-preview-box" style="width:48px;height:48px;border-radius:10px;background:var(--bg-elevated);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden">
+          <span style="font-size:20px">🌐</span>
+        </div>
+        <div>
+          <label class="logo-upload-area" style="padding:8px 14px;margin-bottom:6px" onclick="document.getElementById('favicon-file-input').click()">
+            📤 Enviar favicon
+            <input type="file" id="favicon-file-input" accept="image/*" style="display:none" onchange="handleFaviconUpload(this)">
+          </label>
+          <div><button class="btn btn-danger" onclick="removeFavicon()" style="font-size:11px;padding:6px 12px;margin-top:4px">🗑 Remover</button></div>
+        </div>
+      </div>
+
       <!-- Tela de Login -->
       <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;padding-top:12px;border-top:1px solid var(--border)">🖼 Tela de Login</p>
 
@@ -2654,6 +2669,9 @@ function openPersonalize(){
   const box=document.getElementById('logo-preview-box');
   if(prefs.logo){ box.innerHTML=`<img src="${prefs.logo}" alt="logo">`; }
   else { box.textContent='M'; }
+  const favBox=document.getElementById('favicon-preview-box');
+  if(prefs.favicon){ favBox.innerHTML=`<img src="${prefs.favicon}" alt="favicon" style="width:100%;height:100%;object-fit:cover">`; }
+  else { favBox.innerHTML='<span style="font-size:20px">🌐</span>'; }
   const isLight=document.documentElement.getAttribute('data-theme')==='light';
   document.getElementById('theme-toggle').classList.toggle('on',isLight);
   document.getElementById('pers-login-bg-color').value=prefs.loginBgColor||'#1d4ed8';
@@ -2785,6 +2803,23 @@ function removeLogo(){
   document.getElementById('logo-preview-box').textContent='M';
 }
 
+function handleFaviconUpload(input){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    document.getElementById('favicon-preview-box').innerHTML=`<img src="${e.target.result}" alt="favicon" style="width:100%;height:100%;object-fit:cover">`;
+    state.prefs=state.prefs||{};
+    state.prefs.favicon=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeFavicon(){
+  state.prefs=state.prefs||{}; delete state.prefs.favicon;
+  document.getElementById('favicon-preview-box').innerHTML='<span style="font-size:20px">🌐</span>';
+  const link=document.querySelector('link[rel="icon"]'); if(link) link.remove();
+}
+
 function toggleTheme(){
   const isLight=document.documentElement.getAttribute('data-theme')==='light';
   const newTheme=isLight?'dark':'light';
@@ -2845,6 +2880,12 @@ function applyPrefs(){
   document.getElementById('btn-theme').textContent=(document.documentElement.getAttribute('data-theme')==='light')?'☀️':'🌙';
   // Title
   if(prefs.nome) document.title=`${prefs.nome} — Painel de Indicações`;
+  // Favicon
+  if(prefs.favicon){
+    let link=document.querySelector('link[rel="icon"]');
+    if(!link){ link=document.createElement('link'); link.rel='icon'; document.head.appendChild(link); }
+    link.href=prefs.favicon;
+  }
   // Login page
   applyLoginPagePrefs();
 }
