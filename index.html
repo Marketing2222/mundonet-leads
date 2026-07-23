@@ -1607,6 +1607,7 @@
   <div class="clients-search">
     <input type="text" id="clients-search-input" placeholder="Buscar cliente..." oninput="filterClients(this.value)">
   </div>
+  <div style="padding:4px 14px;font-size:10px;color:var(--text-muted)" id="clients-last-sync"></div>
   <div class="clients-list" id="clients-list">
     <div class="clients-empty">Nenhum cliente importado.<br>Sincronize via API IXC no painel admin.</div>
   </div>
@@ -1822,6 +1823,18 @@
         </div>
         <button class="btn btn-primary" onclick="syncIXC()" id="btn-sync-ixc">🔄 Sincronizar Clientes</button>
         <span style="font-size:10px;color:var(--text-muted);margin-left:8px" id="ixc-count"></span>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:11px;color:var(--text-secondary)">Auto-sync</span>
+            <div class="toggle-switch" id="api-ixc-auto-sync" onclick="toggleAutoSync()"></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:11px;color:var(--text-secondary)">A cada</span>
+            <input type="number" id="api-ixc-sync-interval" class="form-control" value="30" min="5" max="1440" style="width:60px;padding:4px 8px;font-size:11px" onchange="apiConfig.ixc_auto_sync_interval=parseInt(this.value)||30">
+            <span style="font-size:11px;color:var(--text-secondary)">min</span>
+          </div>
+        </div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:6px" id="ixc-last-sync"></div>
       </div>
 
       <div class="api-section">
@@ -3405,6 +3418,8 @@ function closeClientsPanel(){
 }
 function renderClientsList(filter=''){
   const el=document.getElementById('clients-list');
+  const syncEl=document.getElementById('clients-last-sync');
+  if(syncEl) syncEl.textContent=lastSyncTime?'Último sync: '+lastSyncTime.toLocaleString('pt-BR'):'';
   if(!clients.length){ el.innerHTML='<div class="clients-empty">Nenhum cliente importado.<br>Sincronize via API IXC no painel admin.</div>'; return; }
   let list=clients;
   if(filter){
@@ -3467,15 +3482,22 @@ function openApiConfig(){
   document.getElementById('api-ixc-token').value=apiConfig.ixc?.token||'';
   document.getElementById('api-zapisp-url').value=apiConfig.zapisp?.url||'';
   document.getElementById('api-zapisp-token').value=apiConfig.zapisp?.token||'';
+  document.getElementById('api-ixc-auto-sync').classList.toggle('on',!!apiConfig.ixc_auto_sync);
+  document.getElementById('api-ixc-sync-interval').value=apiConfig.ixc_auto_sync_interval||30;
+  const lastEl=document.getElementById('ixc-last-sync');
+  lastEl.textContent=lastSyncTime?'Último sync: '+lastSyncTime.toLocaleString('pt-BR'):'Nenhum sync ainda';
   updateApiStatus();
   openModal('modal-api-config');
 }
 async function saveApiConfig(){
   apiConfig.ixc={url:document.getElementById('api-ixc-url').value.trim(),token:document.getElementById('api-ixc-token').value.trim()};
   apiConfig.zapisp={url:document.getElementById('api-zapisp-url').value.trim(),token:document.getElementById('api-zapisp-token').value.trim()};
+  apiConfig.ixc_auto_sync=document.getElementById('api-ixc-auto-sync').classList.contains('on');
+  apiConfig.ixc_auto_sync_interval=parseInt(document.getElementById('api-ixc-sync-interval').value)||30;
   try {
-    await api('PUT','/api/config',{ixc_url:apiConfig.ixc.url,ixc_token:apiConfig.ixc.token,zapisp_url:apiConfig.zapisp.url,zapisp_token:apiConfig.zapisp.token});
+    await api('PUT','/api/config',{ixc_url:apiConfig.ixc.url,ixc_token:apiConfig.ixc.token,zapisp_url:apiConfig.zapisp.url,zapisp_token:apiConfig.zapisp.token,ixc_auto_sync:apiConfig.ixc_auto_sync,ixc_auto_sync_interval:apiConfig.ixc_auto_sync_interval});
   } catch(ex) { toast('Erro: '+ex.message,'error'); }
+  if(apiConfig.ixc_auto_sync) startAutoSync(); else stopAutoSync();
   updateApiStatus();
   toast('Configuração de API salva!','success');
 }
@@ -3490,48 +3512,78 @@ function updateApiStatus(){
 }
 
 // ===== IXC SYNC =====
-async function syncIXC(){
+async function fetchIXCClients(){
   const url=apiConfig.ixc?.url;
   const token=apiConfig.ixc?.token;
-  if(!url||!token){ toast('Configure URL e Token do IXC primeiro','error'); return; }
-  const btn=document.getElementById('btn-sync-ixc');
-  btn.textContent='🔄 Sincronizando...'; btn.disabled=true;
-  try{
-    const allClients=[];
-    let page=1;
-    let hasMore=true;
-    while(hasMore){
-      const resp=await fetch(`${url}/clientes?page=${page}&limit=100`,{
-        headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'}
-      });
-      if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const data=await resp.json();
-      const items=data.data||data.clients||data||[];
-      if(Array.isArray(items)){
-        items.forEach(c=>{
-          allClients.push({
-            id:c.id||('ixc_'+Date.now()+'_'+Math.random().toString(36).substr(2,6)),
-            nome:c.nome||c.name||c.razao_social||'',
-            whatsapp:c.whatsapp||c.telefone||c.celular||c.phone||'',
-            linkIndicacao:'',
-            editado:false
-          });
+  if(!url||!token) return null;
+  const allClients=[];
+  let page=1;
+  let hasMore=true;
+  while(hasMore){
+    const resp=await fetch(`${url}/clientes?page=${page}&limit=100`,{
+      headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'}
+    });
+    if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data=await resp.json();
+    const items=data.data||data.clients||data||[];
+    if(Array.isArray(items)){
+      items.forEach(c=>{
+        allClients.push({
+          id:c.id||('ixc_'+Date.now()+'_'+Math.random().toString(36).substr(2,6)),
+          nome:c.nome||c.name||c.razao_social||'',
+          whatsapp:c.whatsapp||c.telefone||c.celular||c.phone||'',
+          linkIndicacao:'',
+          editado:false
         });
-      }
-      hasMore=items.length===100;
-      page++;
-      if(page>50) break;
+      });
     }
-    clients=allClients;
-    try { await api('POST','/api/clients/sync',{clients:allClients}); } catch(ex) { toast('Erro ao salvar: '+ex.message,'error'); }
+    hasMore=items.length===100;
+    page++;
+    if(page>50) break;
+  }
+  return allClients;
+}
+
+let lastSyncTime=null;
+let autoSyncInterval=null;
+
+async function syncIXC(silent){
+  const url=apiConfig.ixc?.url;
+  const token=apiConfig.ixc?.token;
+  if(!url||!token){ if(!silent) toast('Configure URL e Token do IXC primeiro','error'); return; }
+  const btn=document.getElementById('btn-sync-ixc');
+  if(btn && !silent){ btn.textContent='🔄 Sincronizando...'; btn.disabled=true; }
+  try{
+    const allClients=await fetchIXCClients();
+    if(!allClients) return;
+    const result=await api('POST','/api/clients/merge',{clients:allClients});
+    const merged=await api('GET','/api/clients');
+    clients=merged;
+    lastSyncTime=new Date();
     renderClientsList();
     updateApiStatus();
-    toast(`${clients.length} clientes sincronizados do IXC!`,'success');
+    if(!silent) toast(`Clientes: ${result.added} novos, ${result.updated} atualizados, ${result.kept} mantidos`,'success');
   }catch(e){
-    toast('Erro ao sincronizar IXC: '+e.message,'error');
+    if(!silent) toast('Erro ao sincronizar IXC: '+e.message,'error');
   }finally{
-    btn.textContent='🔄 Sincronizar Clientes'; btn.disabled=false;
+    if(btn && !silent){ btn.textContent='🔄 Sincronizar Clientes'; btn.disabled=false; }
   }
+}
+
+function startAutoSync(){
+  stopAutoSync();
+  const mins=parseInt(apiConfig.ixc_auto_sync_interval)||30;
+  autoSyncInterval=setInterval(()=>{ syncIXC(true); },mins*60*1000);
+}
+
+function stopAutoSync(){
+  if(autoSyncInterval){ clearInterval(autoSyncInterval); autoSyncInterval=null; }
+}
+
+function toggleAutoSync(){
+  const on=document.getElementById('api-ixc-auto-sync').classList.contains('on');
+  apiConfig.ixc_auto_sync=on;
+  if(on) startAutoSync(); else stopAutoSync();
 }
 
 // ===== ZAPISP SYNC =====
@@ -3712,7 +3764,7 @@ async function init(){
     state.columns=cols;
     users=usr;
     clients=clnts;
-    apiConfig={ixc:{url:cfg.ixc_url||'',token:cfg.ixc_token||''},zapisp:{url:cfg.zapisp_url||'',token:cfg.zapisp_token||''}};
+    apiConfig={ixc:{url:cfg.ixc_url||'',token:cfg.ixc_token||''},zapisp:{url:cfg.zapisp_url||'',token:cfg.zapisp_token||''},ixc_auto_sync:cfg.ixc_auto_sync||false,ixc_auto_sync_interval:cfg.ixc_auto_sync_interval||30};
     state.prefs=toCamel(prfs);
     if(!state.prefs.templates) state.prefs.templates=DEFAULT_TEMPLATES;
   } catch(e) {
@@ -3732,6 +3784,7 @@ async function init(){
   }
   setTimeout(initKanbanDrag, 50);
   setInterval(()=>{ if(isAdminMode) render(); },60000);
+  if(apiConfig.ixc_auto_sync && apiConfig.ixc?.url && apiConfig.ixc?.token) startAutoSync();
 }
 
 // ===== KANBAN DRAG SCROLL =====

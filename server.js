@@ -250,6 +250,35 @@ app.post('/api/clients/sync', (req, res) => {
   res.json({ ok: true, count: clients.length });
 });
 
+app.post('/api/clients/merge', (req, res) => {
+  const { clients } = req.body;
+  if (!Array.isArray(clients)) return res.status(400).json({ error: 'Array esperado' });
+  const existing = readStore('clients');
+  const existingMap = {};
+  existing.forEach(c => { existingMap[c.id] = c; });
+  let added = 0, updated = 0, kept = 0;
+  clients.forEach(c => {
+    const id = c.id || uuid();
+    const nome = c.nome || '';
+    const whatsapp = c.whatsapp || '';
+    if (existingMap[id]) {
+      if (existingMap[id].nome !== nome || existingMap[id].whatsapp !== whatsapp) {
+        existingMap[id].nome = nome;
+        existingMap[id].whatsapp = whatsapp;
+        updated++;
+      } else {
+        kept++;
+      }
+    } else {
+      existingMap[id] = { id, nome, whatsapp, link_indicacao: c.link_indicacao || '', editado: c.editado || false };
+      added++;
+    }
+  });
+  const merged = Object.values(existingMap);
+  writeStore('clients', merged);
+  res.json({ ok: true, total: merged.length, added, updated, kept });
+});
+
 app.post('/api/columns/sync', (req, res) => {
   const { columns } = req.body;
   if (!Array.isArray(columns)) return res.status(400).json({ error: 'Array esperado' });
