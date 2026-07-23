@@ -712,6 +712,8 @@
       color: var(--text-primary); font-size: 12px; font-weight: 500;
     }
     .filter-select:focus, .filter-input:focus { outline: none; border-color: var(--accent-blue); }
+    #calendar-popup span { display: inline-block; }
+    #calendar-popup span:hover { background: var(--bg-elevated) !important; }
     .filter-input { width: 180px; }
     .filter-divider { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
     #btn-clients-panel {
@@ -962,27 +964,32 @@
     <div class="header-divider"></div>
     <!-- Filter elements -->
     <button id="btn-search" onclick="toggleSearch()" style="display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:var(--radius-sm);background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-primary);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Buscar</button>
-    <div class="filter-group">
+    <div class="filter-group" style="position:relative">
       <span class="filter-label">Mês</span>
-      <select class="filter-select" id="filter-month" onchange="applyFilters()">
-        <option value="">Todos</option>
-        <option value="01">Janeiro</option>
-        <option value="02">Fevereiro</option>
-        <option value="03">Março</option>
-        <option value="04">Abril</option>
-        <option value="05">Maio</option>
-        <option value="06">Junho</option>
-        <option value="07">Julho</option>
-        <option value="08">Agosto</option>
-        <option value="09">Setembro</option>
-        <option value="10">Outubro</option>
-        <option value="11">Novembro</option>
-        <option value="12">Dezembro</option>
-      </select>
-    </div>
-    <div class="filter-group">
-      <span class="filter-label">Ano</span>
-      <select class="filter-select" id="filter-year" onchange="applyFilters()"></select>
+      <button class="filter-select" id="btn-calendar" onclick="toggleCalendar()" style="cursor:pointer;text-align:left;min-width:120px">
+        <span id="calendar-display">Todos</span> ▾
+      </button>
+      <div id="calendar-popup" style="display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:200;background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-md);box-shadow:var(--shadow-lg);padding:12px;width:260px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <button onclick="calPrev()" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:16px;padding:4px">◀</button>
+          <span id="cal-month-year" style="font-size:13px;font-weight:700;color:var(--text-primary)"></span>
+          <button onclick="calNext()" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:16px;padding:4px">▶</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;margin-bottom:4px">
+          <span style="font-size:10px;font-weight:700;color:var(--text-muted);padding:4px 0">D</span>
+          <span style="font-size:10px;font-weight:700;color:var(--text-muted);padding:4px 0">S</span>
+          <span style="font-size:10px;font-weight:700;color:var(--text-muted);padding:4px 0">T</span>
+          <span style="font-size:10px;font-weight:700;color:var(--text-muted);padding:4px 0">Q</span>
+          <span style="font-size:10px;font-weight:700;color:var(--text-muted);padding:4px 0">Q</span>
+          <span style="font-size:10px;font-weight:700;color:var(--text-muted);padding:4px 0">S</span>
+          <span style="font-size:10px;font-weight:700;color:var(--text-muted);padding:4px 0">S</span>
+        </div>
+        <div id="cal-days" style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center"></div>
+        <div style="display:flex;justify-content:space-between;margin-top:8px;border-top:1px solid var(--border);padding-top:8px">
+          <button onclick="calClear()" style="background:none;border:none;color:var(--accent-blue);font-size:12px;font-weight:600;cursor:pointer">Limpar</button>
+          <button onclick="calToday()" style="background:none;border:none;color:var(--accent-blue);font-size:12px;font-weight:600;cursor:pointer">Hoje</button>
+        </div>
+      </div>
     </div>
     <button id="btn-clients-panel" onclick="openClientsPanel()">📋 Clientes IXC</button>
     <button id="btn-comissoes" onclick="openComissoes()">💲 Comissões</button>
@@ -2063,8 +2070,8 @@ function render(){
 
   const filterCliente = (document.getElementById('filter-cliente')?.value||'').toLowerCase();
   const filterLead = (document.getElementById('filter-lead-nome')?.value||'').toLowerCase();
-  const filterMonth = document.getElementById('filter-month')?.value||'';
-  const filterYear = document.getElementById('filter-year')?.value||'';
+  const filterMonth = calSelectedMonth||'';
+  const filterYear = calSelectedYear||'';
   const searchQ = (document.getElementById('search-input')?.value||'').toLowerCase();
 
   const filteredCols = cols.map(col=>{
@@ -2119,7 +2126,6 @@ function render(){
 
   document.body.classList.toggle('admin-mode',isAdminMode);
   populateFilterClientes();
-  populateFilterYears();
   if(document.getElementById('dashboard-panel').classList.contains('open')) renderDashboard();
   setTimeout(()=>{ initKanbanDrag(); updatePadding(); }, 10);
 }
@@ -2192,6 +2198,9 @@ document.addEventListener('click',e=>{
   const dd=document.getElementById('admin-user-dropdown');
   const btn=document.getElementById('btn-admin-toggle');
   if(dd&&dd.style.display==='block'&&!dd.contains(e.target)&&!btn.contains(e.target)) dd.style.display='none';
+  const cal=document.getElementById('calendar-popup');
+  const calBtn=document.getElementById('btn-calendar');
+  if(cal&&cal.style.display==='block'&&!cal.contains(e.target)&&!calBtn.contains(e.target)) cal.style.display='none';
 });
 function openSwitchUser(){
   closeAdminDropdown();
@@ -2994,10 +3003,7 @@ function updatePadding(){ /* no longer needed - body padding-top handles header 
 // ===== FILTER BAR =====
 function initFilterBar(){
   populateFilterClientes();
-  populateFilterYears();
-  const now=new Date();
-  document.getElementById('filter-month').value=String(now.getMonth()+1).padStart(2,'0');
-  document.getElementById('filter-year').value=String(now.getFullYear());
+  initCalendar();
 }
 function populateFilterClientes(){
   const sel=document.getElementById('filter-cliente');
@@ -3006,17 +3012,88 @@ function populateFilterClientes(){
   const cur=sel.value;
   sel.innerHTML='<option value="">Todos</option>'+names.map(n=>`<option value="${escHtml(n)}" ${n===cur?'selected':''}>${escHtml(n)}</option>`).join('');
 }
-function populateFilterYears(){
-  const sel=document.getElementById('filter-year');
-  if(!sel) return;
-  const curYear=String(new Date().getFullYear());
-  let html='<option value="">Todos</option>';
-  for(let y=2010;y<=2050;y++){
-    const ys=String(y);
-    html+=`<option value="${ys}" ${ys===curYear?'selected':''}>${ys}</option>`;
-  }
-  sel.innerHTML=html;
+// ===== CALENDAR FILTER =====
+let calViewYear, calViewMonth, calSelectedMonth, calSelectedYear;
+
+function initCalendar(){
+  const now=new Date();
+  calViewYear=now.getFullYear();
+  calViewMonth=now.getMonth();
+  calSelectedMonth=String(now.getMonth()+1).padStart(2,'0');
+  calSelectedYear=String(now.getFullYear());
+  renderCalendar();
+  updateCalendarDisplay();
 }
+
+function toggleCalendar(){
+  const p=document.getElementById('calendar-popup');
+  if(p.style.display==='none'){ p.style.display='block'; renderCalendar(); }
+  else p.style.display='none';
+}
+
+function calPrev(){ calViewMonth--; if(calViewMonth<0){ calViewMonth=11; calViewYear--; } renderCalendar(); }
+function calNext(){ calViewMonth++; if(calViewMonth>11){ calViewMonth=0; calViewYear++; } renderCalendar(); }
+
+function calSelectDay(day){
+  if(!day) return;
+  calSelectedMonth=String(calViewMonth+1).padStart(2,'0');
+  calSelectedYear=String(calViewYear);
+  calSelectedDay=day;
+  updateCalendarDisplay();
+  document.getElementById('calendar-popup').style.display='none';
+  render();
+}
+
+function calClear(){
+  calSelectedMonth=''; calSelectedYear=''; calSelectedDay=null;
+  updateCalendarDisplay();
+  document.getElementById('calendar-popup').style.display='none';
+  render();
+}
+
+function calToday(){
+  const now=new Date();
+  calViewYear=now.getFullYear();
+  calViewMonth=now.getMonth();
+  calSelectedMonth=String(now.getMonth()+1).padStart(2,'0');
+  calSelectedYear=String(now.getFullYear());
+  calSelectedDay=now.getDate();
+  updateCalendarDisplay();
+  document.getElementById('calendar-popup').style.display='none';
+  render();
+}
+
+function updateCalendarDisplay(){
+  const disp=document.getElementById('calendar-display');
+  const months=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  if(calSelectedMonth && calSelectedYear){
+    disp.textContent=months[parseInt(calSelectedMonth)-1]+' '+calSelectedYear;
+  } else {
+    disp.textContent='Todos';
+  }
+}
+
+function renderCalendar(){
+  const months=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  document.getElementById('cal-month-year').textContent=months[calViewMonth]+' de '+calViewYear;
+  const firstDay=new Date(calViewYear, calViewMonth, 1).getDay();
+  const daysInMonth=new Date(calViewYear, calViewMonth+1, 0).getDate();
+  const today=new Date();
+  const isCurrentMonth=calViewMonth===today.getMonth() && calViewYear===today.getFullYear();
+  const container=document.getElementById('cal-days');
+  let html='';
+  for(let i=0;i<firstDay;i++) html+='<span></span>';
+  for(let d=1;d<=daysInMonth;d++){
+    const isToday=isCurrentMonth && d===today.getDate();
+    const isSelected=calSelectedDay && calSelectedMonth && calSelectedYear
+      && calSelectedDay===d && calSelectedMonth===String(calViewMonth+1).padStart(2,'0') && calSelectedYear===String(calViewYear);
+    const bg=isToday?'#3b82f6':isSelected?'rgba(59,130,246,0.3)':'transparent';
+    const color=isToday?'#fff':isSelected?'#60a5fa':'var(--text-primary)';
+    html+=`<span onclick="calSelectDay(${d})" style="padding:6px 0;font-size:12px;font-weight:600;cursor:pointer;border-radius:6px;background:${bg};color:${color};transition:all 0.15s" onmouseenter="this.style.background='var(--bg-elevated)'" onmouseleave="this.style.background='${bg}'">${d}</span>`;
+  }
+  container.innerHTML=html;
+}
+
 function applyFilters(){ render(); }
 
 // ===== DASHBOARD =====
