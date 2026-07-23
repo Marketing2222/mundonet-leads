@@ -1414,12 +1414,10 @@
         <div id="favicon-preview-box" style="width:48px;height:48px;border-radius:10px;background:var(--bg-elevated);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden">
           <span style="font-size:20px">🌐</span>
         </div>
-        <div>
-          <label class="logo-upload-area" style="padding:8px 14px;margin-bottom:6px" onclick="document.getElementById('favicon-file-input').click()">
-            📤 Enviar favicon
-            <input type="file" id="favicon-file-input" accept="image/*" style="display:none" onchange="handleFaviconUpload(this)">
-          </label>
-          <div><button class="btn btn-danger" onclick="removeFavicon()" style="font-size:11px;padding:6px 12px;margin-top:4px">🗑 Remover</button></div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn btn-ghost" onclick="document.getElementById('favicon-file-input').click()" style="font-size:12px;padding:8px 14px">📤 Enviar favicon</button>
+          <input type="file" id="favicon-file-input" accept="image/*" style="display:none" onchange="handleFaviconUpload(this)">
+          <button class="btn btn-danger" onclick="removeFavicon()" style="font-size:11px;padding:6px 12px;display:none" id="favicon-remove-btn">🗑 Remover</button>
         </div>
       </div>
 
@@ -2670,8 +2668,8 @@ function openPersonalize(){
   if(prefs.logo){ box.innerHTML=`<img src="${prefs.logo}" alt="logo">`; }
   else { box.textContent='M'; }
   const favBox=document.getElementById('favicon-preview-box');
-  if(prefs.favicon){ favBox.innerHTML=`<img src="${prefs.favicon}" alt="favicon" style="width:100%;height:100%;object-fit:cover">`; }
-  else { favBox.innerHTML='<span style="font-size:20px">🌐</span>'; }
+  if(prefs.favicon){ favBox.innerHTML=`<img src="${prefs.favicon}" alt="favicon" style="width:100%;height:100%;object-fit:cover">`; document.getElementById('favicon-remove-btn').style.display=''; }
+  else { favBox.innerHTML='<span style="font-size:20px">🌐</span>'; document.getElementById('favicon-remove-btn').style.display='none'; }
   const isLight=document.documentElement.getAttribute('data-theme')==='light';
   document.getElementById('theme-toggle').classList.toggle('on',isLight);
   document.getElementById('pers-login-bg-color').value=prefs.loginBgColor||'#1d4ed8';
@@ -2810,13 +2808,16 @@ function handleFaviconUpload(input){
     document.getElementById('favicon-preview-box').innerHTML=`<img src="${e.target.result}" alt="favicon" style="width:100%;height:100%;object-fit:cover">`;
     state.prefs=state.prefs||{};
     state.prefs.favicon=e.target.result;
+    document.getElementById('favicon-remove-btn').style.display='';
   };
   reader.readAsDataURL(file);
+  input.value='';
 }
 
 function removeFavicon(){
   state.prefs=state.prefs||{}; delete state.prefs.favicon;
   document.getElementById('favicon-preview-box').innerHTML='<span style="font-size:20px">🌐</span>';
+  document.getElementById('favicon-remove-btn').style.display='none';
   const link=document.querySelector('link[rel="icon"]'); if(link) link.remove();
 }
 
