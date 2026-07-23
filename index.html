@@ -2182,6 +2182,11 @@ async function onDrop(e){
   const toId=e.currentTarget.dataset.colId;
   const lead=getLead(dragLeadId);
   if(!lead||lead.columnId===toId) return;
+  const ganhoId=getGanhoColumnId();
+  if(lead.columnId===ganhoId&&toId!==ganhoId){
+    lead.comissaoStatus='';lead.comissaoFormaPagamento='';lead.comissaoValor='';
+    lead.comissaoDataPagamento='';lead.comissaoObs='';lead.comissaoComprovante='';
+  }
   addHistory(lead,'Movido via arrastar e soltar',lead.columnId,toId);
   lead.columnId=toId; lead.etapa=toId;
   try { await api('PUT', `/api/leads/${lead.id}`, toSnake(lead)); } catch(ex) { toast('Erro: '+ex.message,'error'); }
@@ -2445,7 +2450,14 @@ async function saveLead(){
       lead.comentarios=comment;
       lead.dataConvite=document.getElementById('lead-data').value||lead.dataConvite;
       lead.etapa=etapa;
-      if(oldEtapa!==etapa){ lead.columnId=etapa; addHistory(lead,comment||'Etapa alterada',oldEtapa,etapa); }
+      if(oldEtapa!==etapa){
+        const ganhoId=getGanhoColumnId();
+        if(oldEtapa===ganhoId&&etapa!==ganhoId){
+          lead.comissaoStatus='';lead.comissaoFormaPagamento='';lead.comissaoValor='';
+          lead.comissaoDataPagamento='';lead.comissaoObs='';lead.comissaoComprovante='';
+        }
+        lead.columnId=etapa; addHistory(lead,comment||'Etapa alterada',oldEtapa,etapa);
+      }
       else { if(comment) addHistory(lead,comment,oldEtapa,etapa); }
       await api('PUT', `/api/leads/${lead.id}`, toSnake(lead));
       toast(oldEtapa!==etapa?`Movido para "${getCol(etapa)?.name}"`:'Lead atualizado!','success');
@@ -2514,6 +2526,11 @@ async function confirmMove(){
   const toId=document.getElementById('move-col-select').value;
   const comment=document.getElementById('move-comment').value.trim();
   if(lead.columnId!==toId){
+    const ganhoId=getGanhoColumnId();
+    if(lead.columnId===ganhoId&&toId!==ganhoId){
+      lead.comissaoStatus='';lead.comissaoFormaPagamento='';lead.comissaoValor='';
+      lead.comissaoDataPagamento='';lead.comissaoObs='';lead.comissaoComprovante='';
+    }
     addHistory(lead,comment||'Movido pelo admin',lead.columnId,toId);
     lead.columnId=toId; lead.etapa=toId;
     try { await api('PUT', `/api/leads/${lead.id}`, toSnake(lead)); } catch(ex) { toast('Erro: '+ex.message,'error'); }
