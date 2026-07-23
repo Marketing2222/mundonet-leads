@@ -69,6 +69,8 @@
       min-height: 100vh;
       overflow-x: hidden;
       transition: background 0.3s, color 0.3s;
+      display: flex; flex-direction: column;
+      padding-top: var(--header-h);
     }
     button { cursor: pointer; font-family: var(--font); border: none; outline: none; }
     input, textarea, select { font-family: var(--font); }
@@ -90,7 +92,7 @@
       backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
       display: flex; align-items: center; justify-content: space-between;
-      padding: 6px 20px; gap: 10px;
+      padding: 6px 12px; gap: 6px;
       flex-wrap: wrap;
       box-shadow: 0 1px 8px rgba(0,0,0,0.2);
     }
@@ -162,7 +164,6 @@
     #search-clear:hover { color: var(--text-primary); }
 
     /* ===== ADMIN TOOLBAR (now inside header) ===== */
-    body.dashboard-open .header-toolbar { /* no change needed */ }
     .toolbar-label {
       font-size: 11px; font-weight: 700; color: var(--text-primary);
       text-transform: uppercase; letter-spacing: 0.05em;
@@ -210,13 +211,10 @@
       display: none;
       background: var(--bg-base);
       border-bottom: 1px solid var(--border);
-      position: fixed;
-      top: var(--header-h);
-      left: 0; right: 0;
-      z-index: 99;
-      transition: top 0.3s ease;
+      transition: max-height 0.3s ease, opacity 0.3s ease;
+      max-height: 0; opacity: 0; overflow: hidden;
     }
-    #dashboard-panel.open { display: block; }
+    #dashboard-panel.open { display: block; max-height: 300px; opacity: 1; }
     #dashboard-content { padding: 14px 20px; }
     .dash-grid {
       display: grid;
@@ -269,12 +267,7 @@
 
     /* ===== BOARD ===== */
     #board-wrapper {
-      padding-top: calc(var(--header-h) + 42px);
-      height: 100vh; overflow: hidden; display: flex; flex-direction: column;
-      transition: padding-top 0.3s ease;
-    }
-    body.dashboard-open #board-wrapper {
-      padding-top: calc(var(--dash-bottom) + 42px);
+      flex: 1; overflow: hidden; display: flex; flex-direction: column;
     }
     #kanban-board {
       flex: 1; display: flex; flex-direction: column; gap: 10px;
@@ -936,16 +929,12 @@
 <header id="app-header">
   <div class="header-logo">
     <div class="logo-icon" id="header-logo-icon">M</div>
-    <div class="logo-text">
-      <span class="logo-name" id="header-logo-name">MUNDONET</span>
-      <span class="logo-sub" id="header-logo-sub">Painel de Indicações</span>
-    </div>
   </div>
 
   <div class="header-center">
     <!-- Admin Toolbar Buttons (visible only in admin mode) -->
     <div class="header-toolbar" id="header-toolbar">
-      <button class="toolbar-btn" onclick="if(!isAdminMode){toast('Faça login primeiro','error');return}openAddLead()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Novo Lead</button>
+      <button class="toolbar-btn" onclick="if(!isAdminMode){toast('Faça login primeiro','error');return}openAddLead()" title="Novo Lead" style="padding:7px 10px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
       <div class="dropdown">
         <button class="toolbar-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.85 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg> Personalizar</button>
         <div class="dropdown-content">
@@ -991,8 +980,8 @@
       <span class="filter-label">Ano</span>
       <select class="filter-select" id="filter-year" onchange="applyFilters()"></select>
     </div>
-    <button id="btn-comissoes" onclick="openComissoes()">💲 Comissões</button>
     <button id="btn-clients-panel" onclick="openClientsPanel()">📋 Clientes IXC</button>
+    <button id="btn-comissoes" onclick="openComissoes()">💲 Comissões</button>
   </div>
 
   <div class="header-right">
@@ -2893,9 +2882,6 @@ async function savePersonalize(){
 
 function applyPrefs(){
   const prefs=state.prefs||{};
-  // Logo name
-  if(prefs.nome) document.getElementById('header-logo-name').textContent=prefs.nome;
-  if(prefs.sub)  document.getElementById('header-logo-sub').textContent=prefs.sub;
   if(prefs.nome) { document.getElementById('login-sub-text').textContent=(prefs.nome)+' — Sistema de Indicações'; }
   // Logo icon
   const icon=document.getElementById('header-logo-icon');
@@ -2999,12 +2985,7 @@ document.querySelectorAll('.modal-overlay').forEach(ov=>{ ov.addEventListener('c
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ const o=document.querySelector('.modal-overlay.open'); if(o) closeModal(o.id); } });
 
 // ===== PADDING =====
-function updatePadding(){
-  const w=document.getElementById('board-wrapper');
-  const h=document.getElementById('app-header');
-  const headerH=h.offsetHeight||56;
-  w.style.paddingTop=(headerH+6)+'px';
-}
+function updatePadding(){ /* no longer needed - body padding-top handles header offset */ }
 
 // ===== FILTER BAR =====
 function initFilterBar(){
@@ -3042,20 +3023,10 @@ function toggleDashboard(){
   if(isOpen){
     panel.classList.remove('open');
     document.body.classList.remove('dashboard-open');
-    panel.style.top='';
-    updatePadding();
   } else {
     panel.classList.add('open');
     document.body.classList.add('dashboard-open');
     renderDashboard();
-    requestAnimationFrame(()=>{
-      const h=document.getElementById('app-header');
-      const headerH=h.offsetHeight||56;
-      panel.style.top=headerH+'px';
-      const rect=panel.getBoundingClientRect();
-      document.documentElement.style.setProperty('--dash-bottom',rect.bottom+'px');
-      updatePadding();
-    });
   }
 }
 
