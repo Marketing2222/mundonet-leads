@@ -268,18 +268,21 @@
     /* ===== BOARD ===== */
     #board-wrapper {
       flex: 1; overflow: hidden; display: flex; flex-direction: column;
+      min-height: 0;
     }
     #kanban-board {
       flex: 1; display: flex; flex-direction: column; gap: 10px;
       padding: 14px 18px 12px;
-      overflow-y: auto;
+      overflow: hidden;
+      min-height: 0;
     }
     .kanban-row {
       flex: 1; display: flex; gap: 10px;
       overflow-x: auto; overflow-y: hidden;
-      align-items: flex-start;
+      align-items: stretch;
       cursor: grab;
       user-select: none;
+      min-height: 0;
       scrollbar-width: thin;
       scrollbar-color: rgba(128,128,128,0.25) transparent;
     }
