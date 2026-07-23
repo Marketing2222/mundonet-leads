@@ -334,15 +334,6 @@
       background: var(--bg-elevated); font-size: 10px; font-weight: 700;
       color: var(--text-secondary); flex-shrink: 0;
     }
-    .col-add-btn {
-      width: 24px; height: 24px; border-radius: 6px;
-      background: var(--bg-elevated); border: 1px solid var(--border);
-      color: var(--text-secondary); font-size: 16px; line-height: 1;
-      display: none; align-items: center; justify-content: center;
-      transition: all 0.2s; flex-shrink: 0;
-    }
-    .col-add-btn:hover { color: var(--text-primary); background: var(--bg-card); }
-    .admin-mode .col-add-btn { display: flex; }
     .col-expand-btn {
       width: 24px; height: 24px; border-radius: 6px;
       background: var(--bg-elevated); border: 1px solid var(--border);
@@ -352,6 +343,7 @@
     }
     .col-expand-btn:hover { color: var(--text-primary); background: var(--bg-card); }
     .admin-mode .col-expand-btn { display: flex; }
+    #column-popup { border-top: 3px solid var(--accent-red); }
     .cards-container {
       flex: 1; overflow-y: auto; padding: 8px;
       display: flex; flex-direction: column; gap: 6px; min-height: 60px;
@@ -1161,18 +1153,13 @@
   </div>
 </div>
 
-<!-- ===== MODAL: COLUMN POPUP ===== -->
-<div class="modal-overlay" id="modal-column">
-  <div class="modal-box" style="max-width:480px">
-    <div class="modal-header">
-      <h2 class="modal-title" id="col-popup-title">Coluna</h2>
-      <button class="modal-close" onclick="closeColumnPopup()">✕</button>
-    </div>
-    <div class="modal-body" id="col-popup-body" style="padding:12px 16px"></div>
-    <div class="modal-footer">
-      <button class="btn btn-primary" id="col-popup-add-btn">＋ Novo Lead</button>
-    </div>
+<!-- ===== COLUMN POPUP (flutuante) ===== -->
+<div id="column-popup" style="display:none;position:fixed;z-index:500;width:380px;max-height:70vh;background:var(--bg-surface);border-radius:12px;box-shadow:var(--shadow-lg);border:1px solid var(--border);overflow:hidden;flex-direction:column">
+  <div id="column-popup-header" style="padding:12px 16px;display:flex;align-items:center;justify-content:space-between;cursor:move;user-select:none">
+    <span id="col-popup-title" style="font-size:13px;font-weight:800;color:#fff"></span>
+    <button onclick="closeColumnPopup()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:24px;height:24px;border-radius:6px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center">✕</button>
   </div>
+  <div id="col-popup-body" style="flex:1;overflow-y:auto;padding:10px 12px"></div>
 </div>
 
 <!-- ===== MODAL: LOGIN ===== -->
@@ -2107,7 +2094,6 @@ function render(){
           </div>
           <span class="col-count">${leads.length}</span>
           <button class="col-expand-btn" onclick="openColumnPopup('${col.id}')" title="Expandir coluna">↗</button>
-          <button class="col-add-btn" onclick="openAddLeadInCol('${col.id}')" title="Adicionar lead">＋</button>
         </div>
         <div class="cards-container" data-col-id="${col.id}">${cardsHtml}</div>
       `;
@@ -2936,7 +2922,7 @@ function editTemplate(i){
 // ===== MODALS =====
 function openModal(id){ document.getElementById(id).classList.add('open'); document.body.style.overflow='hidden'; }
 function closeModal(id){ document.getElementById(id).classList.remove('open'); if(!document.querySelector('.modal-overlay.open')) document.body.style.overflow=''; }
-document.querySelectorAll('.modal-overlay').forEach(ov=>{ ov.addEventListener('click',e=>{ if(e.target===ov && ov.id!=='modal-comissoes' && ov.id!=='modal-pagar' && ov.id!=='modal-lead' && ov.id!=='modal-column') closeModal(ov.id); }); });
+document.querySelectorAll('.modal-overlay').forEach(ov=>{ ov.addEventListener('click',e=>{ if(e.target===ov && ov.id!=='modal-comissoes' && ov.id!=='modal-pagar' && ov.id!=='modal-lead') closeModal(ov.id); }); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ const o=document.querySelector('.modal-overlay.open'); if(o) closeModal(o.id); } });
 
 // ===== PADDING =====
@@ -3042,14 +3028,25 @@ function openColumnPopup(colId){
   const col=getCol(colId);
   if(!col) return;
   const leads=state.leads.filter(l=>l.columnId===colId);
-  document.getElementById('col-popup-title').textContent=col.name+' ('+leads.length+')';
+  const popup=document.getElementById('column-popup');
+  const header=document.getElementById('column-popup-header');
   const body=document.getElementById('col-popup-body');
+
+  popup.style.left=Math.max(20,(window.innerWidth-380)/2)+'px';
+  popup.style.top=Math.max(20,(window.innerHeight-400)/2)+'px';
+  popup.style.borderTopColor=col.color;
+  header.style.background=col.color;
+  document.getElementById('col-popup-title').textContent=col.name+' ('+leads.length+')';
+
+  const bgMixed='color-mix(in srgb, '+col.color+' 8%, var(--bg-surface))';
+  body.style.background=bgMixed;
+
   if(leads.length===0){
     body.innerHTML='<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:12px">Nenhum lead nesta coluna</div>';
   } else {
     body.innerHTML=leads.map(l=>{
       const date=fmtDate(l.dataConvite||l.criadoEm);
-      return `<div class="col-popup-card" onclick="closeColumnPopup();openLead('${l.id}')" style="padding:10px 12px;margin-bottom:6px;border-radius:8px;background:var(--bg-elevated);border:1px solid var(--border);cursor:pointer;transition:all 0.15s" onmouseover="this.style.borderColor='var(--accent-blue)'" onmouseout="this.style.borderColor='var(--border)'">
+      return `<div onclick="closeColumnPopup();openLead('${l.id}')" style="padding:10px 12px;margin-bottom:6px;border-radius:8px;background:var(--bg-surface);border:1px solid var(--border);cursor:pointer;transition:all 0.15s" onmouseover="this.style.borderColor='${col.color}'" onmouseout="this.style.borderColor='var(--border)'">
         <div style="display:flex;justify-content:space-between;align-items:center">
           <span style="font-size:13px;font-weight:700;color:var(--text-primary)">${escHtml(l.leadNome||'Lead sem nome')}</span>
           <span style="font-size:10px;color:var(--text-muted)">${date}</span>
@@ -3059,13 +3056,31 @@ function openColumnPopup(colId){
       </div>`;
     }).join('');
   }
-  document.getElementById('col-popup-add-btn').onclick=function(){
-    closeColumnPopup();
-    openAddLeadInCol(colId);
-  };
-  openModal('modal-column');
+
+  popup.style.display='flex';
+  initColumnPopupDrag();
 }
-function closeColumnPopup(){ closeModal('modal-column'); }
+
+function closeColumnPopup(){ document.getElementById('column-popup').style.display='none'; }
+
+function initColumnPopupDrag(){
+  const popup=document.getElementById('column-popup');
+  const header=document.getElementById('column-popup-header');
+  let isDragging=false,startX,startY,startLeft,startTop;
+  header.onmousedown=function(e){
+    if(e.target.tagName==='BUTTON') return;
+    isDragging=true;
+    startX=e.clientX; startY=e.clientY;
+    startLeft=popup.offsetLeft; startTop=popup.offsetTop;
+    e.preventDefault();
+  };
+  document.onmousemove=function(e){
+    if(!isDragging) return;
+    popup.style.left=(startLeft+e.clientX-startX)+'px';
+    popup.style.top=(startTop+e.clientY-startY)+'px';
+  };
+  document.onmouseup=function(){ isDragging=false; };
+}
 
 function getPerdaColumnId(){
   const col=state.columns.find(c=>c.name&&c.name.toLowerCase().replace(/\s+/g,'').includes('perda'));
@@ -3667,7 +3682,7 @@ function initKanbanDrag(){
   document.querySelectorAll('.kanban-row').forEach(row=>{
     let isDragging=false,startX,scrollLeft;
     row.addEventListener('mousedown',e=>{
-      if(e.target.closest('.lead-card')||e.target.closest('.col-add-btn')||e.target.closest('.col-expand-btn')) return;
+      if(e.target.closest('.lead-card')||e.target.closest('.col-expand-btn')) return;
       isDragging=true; row.style.cursor='grabbing';
       startX=e.pageX-row.offsetLeft;
       scrollLeft=row.scrollLeft;
