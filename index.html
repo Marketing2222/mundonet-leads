@@ -1792,8 +1792,11 @@
           <label class="form-label">Token de integração</label>
           <input type="password" id="api-ixc-token" class="form-control" placeholder="Token de integração do IXC (ex: 128:abc123...)">
         </div>
-        <button class="btn btn-primary" onclick="syncIXC()" id="btn-sync-ixc">🔄 Sincronizar Clientes</button>
-        <span style="font-size:10px;color:var(--text-muted);margin-left:8px" id="ixc-count"></span>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px">
+          <button class="btn btn-primary" onclick="syncIXC()" id="btn-sync-ixc">🔄 Sincronizar Clientes</button>
+          <button class="btn btn-ghost" onclick="testIXC()" style="font-size:11px;padding:6px 12px">🔍 Testar Conexão</button>
+        </div>
+        <span style="font-size:10px;color:var(--text-muted)" id="ixc-count"></span>
         <div style="display:flex;align-items:center;gap:12px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
           <div style="display:flex;align-items:center;gap:8px">
             <span style="font-size:11px;color:var(--text-secondary)">Auto-sync</span>
@@ -3654,6 +3657,23 @@ async function fetchIXCClients(){
 
 let lastSyncTime=null;
 let autoSyncInterval=null;
+
+async function testIXC(){
+  const url=apiConfig.ixc?.url;
+  const token=apiConfig.ixc?.token;
+  if(!url||!token){ toast('Configure URL e Token do IXC primeiro','error'); return; }
+  try{
+    const r=await fetch('/api/clients/test-ixc');
+    const data=await r.json();
+    let msg='Resultado do teste:\n\n';
+    data.results.forEach(x=>{
+      msg+=`${x.method}: ${x.status||x.error}\n`;
+      if(x.body) msg+=`  Body: ${x.body.substring(0,120)}\n`;
+      msg+='\n';
+    });
+    alert(msg);
+  }catch(e){ toast('Erro: '+e.message,'error'); }
+}
 
 async function syncIXC(silent){
   const url=apiConfig.ixc?.url;
