@@ -388,10 +388,9 @@ app.get('/api/clients/fetch-ixc', async (req, res) => {
     let page = 1;
     let hasMore = true;
     while (hasMore) {
-      const resp = await fetch(`${url}/clientes?page=${page}&limit=100`, {
+      const resp = await fetch(`${url}/cliente?page=${page}&limit=100`, {
         headers: {
           'Authorization': basicAuth,
-          'iusession': token,
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         }
@@ -441,7 +440,7 @@ app.get('/api/clients/test-ixc', async (req, res) => {
   const results = [];
   for (const m of methods) {
     try {
-      const resp = await fetch(`${url}/clientes?page=1&limit=1`, {
+      const resp = await fetch(`${url}/cliente?page=1&limit=1`, {
         headers: { ...m.headers, 'Content-Type': 'application/json', 'Accept': 'application/json' }
       });
       const body = await resp.text().catch(()=>'');
