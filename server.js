@@ -402,7 +402,7 @@ app.get('/api/clients/fetch-ixc', async (req, res) => {
           'Content-Type': 'application/x-www-form-urlencoded',
           'Accept': 'application/json'
         },
-        body: new URLSearchParams({ oper: '=', qtype: 'ativo', query: 'S', page: String(page), rp: '100', sortname: 'cliente.id', sortorder: 'desc' }).toString()
+        body: `oper=&qtype=ativo&query=S&page=${page}&rp=100&sortname=cliente.id&sortorder=desc`
       });
       if (!resp.ok) {
         const body = await resp.text().catch(()=>'');
@@ -485,7 +485,7 @@ app.get('/api/debug-ixc', async (req, res) => {
   const auth = ixcAuth(token);
   const tests = [];
 
-  const listParams = 'oper=%3D&qtype=ativo&query=S&page=1&rp=5&sortname=cliente.id&sortorder=desc';
+  const listParams = 'oper=&qtype=ativo&query=S&page=1&rp=5&sortname=cliente.id&sortorder=desc';
 
   const combos = [
     { name: 'POST + Basic(user:pass) + LIST', method: 'POST', headers: { 'Authorization': auth, 'iusession': token, 'Content-Type': 'application/x-www-form-urlencoded' }, body: listParams },
