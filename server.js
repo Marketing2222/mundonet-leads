@@ -402,7 +402,7 @@ app.get('/api/clients/fetch-ixc', async (req, res) => {
           'Content-Type': 'application/x-www-form-urlencoded',
           'Accept': 'application/json'
         },
-        body: `oper=&qtype=ativo&query=S&page=${page}&rp=100&sortname=cliente.id&sortorder=desc`
+        body: `_search=false&page=${page}&rp=100&sortname=cliente.id&sortorder=desc`
       });
       if (!resp.ok) {
         const body = await resp.text().catch(()=>'');
@@ -488,13 +488,21 @@ app.get('/api/debug-ixc', async (req, res) => {
   const listParams = 'oper=&qtype=ativo&query=S&page=1&rp=5&sortname=cliente.id&sortorder=desc';
 
   const combos = [
-    { name: 'POST + Basic(user:pass) + LIST', method: 'POST', headers: { 'Authorization': auth, 'iusession': token, 'Content-Type': 'application/x-www-form-urlencoded' }, body: listParams },
-    { name: 'POST + Basic(token inteiro) + LIST', method: 'POST', headers: { 'Authorization': 'Basic ' + Buffer.from(token).toString('base64'), 'Content-Type': 'application/x-www-form-urlencoded' }, body: listParams },
+    { name: 'POST + _search=false (lista jqGrid)', body: '_search=false&page=1&rp=5&sortname=cliente.id&sortorder=desc' },
+    { name: 'POST + nd timestamp', body: `nd=${Date.now()}&page=1&rp=5&sortname=cliente.id&sortorder=desc` },
+    { name: 'POST + _search + nd', body: `_search=false&nd=${Date.now()}&page=1&rp=5&sortname=cliente.id&sortorder=desc` },
+    { name: 'GET com params', method: 'GET', body: null, url_suffix: '?_search=false&page=1&rp=5&sortname=cliente.id&sortorder=desc' },
   ];
 
   for (const c of combos) {
     try {
-      const r = await fetch(`${url}/cliente`, { method: c.method, headers: { ...c.headers, 'Accept': 'application/json' }, body: c.body });
+      const reqUrl = `${url}/cliente${c.url_suffix || ''}`;
+      const opts = {
+        method: c.method || 'POST',
+        headers: { 'Authorization': auth, 'iusession': token, 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json' }
+      };
+      if (c.body) opts.body = c.body;
+      const r = await fetch(reqUrl, opts);
       const body = await r.text();
       tests.push({ name: c.name, status: r.status, body: body.substring(0, 800) });
     } catch(e) { tests.push({ name: c.name, error: e.message }); }
