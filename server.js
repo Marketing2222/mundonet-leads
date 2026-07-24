@@ -373,6 +373,14 @@ app.get('/api/config', (req, res) => { res.json(readObj('config')); });
 app.put('/api/config', (req, res) => { writeObj('config', req.body); res.json({ ok: true }); });
 
 // ---------- IXC PROXY ----------
+function ixcAuth(token) {
+  if (token.includes(':')) {
+    const [user, pass] = token.split(':');
+    return 'Basic ' + Buffer.from(`${user}:${pass}`).toString('base64');
+  }
+  return 'Basic ' + Buffer.from(token).toString('base64');
+}
+
 app.get('/api/clients/fetch-ixc', async (req, res) => {
   const cfg = readObj('config');
   let url = cfg.ixc_url;
@@ -381,19 +389,20 @@ app.get('/api/clients/fetch-ixc', async (req, res) => {
   if (!url.startsWith('http')) url = 'https://' + url;
   url = url.replace(/\/+$/, '');
 
-  const basicAuth = 'Basic ' + Buffer.from(token).toString('base64');
-
   try {
     const allClients = [];
     let page = 1;
     let hasMore = true;
     while (hasMore) {
-      const resp = await fetch(`${url}/cliente?page=${page}&limit=100`, {
+      const resp = await fetch(`${url}/cliente`, {
+        method: 'POST',
         headers: {
-          'Authorization': basicAuth,
-          'Content-Type': 'application/json',
+          'Authorization': ixcAuth(token),
+          'iusession': token,
+          'Content-Type': 'application/x-www-form-urlencoded',
           'Accept': 'application/json'
-        }
+        },
+        body: new URLSearchParams({ page: String(page), rp: '100', sortname: 'cliente.id', sortorder: 'desc' }).toString()
       });
       if (!resp.ok) {
         const body = await resp.text().catch(()=>'');
@@ -473,32 +482,24 @@ app.get('/api/debug-ixc', async (req, res) => {
   if (!url || !token) return res.status(400).json({ error: 'Configure URL e Token do IXC primeiro' });
   if (!url.startsWith('http')) url = 'https://' + url;
   url = url.replace(/\/+$/, '');
-  const basicAuth = 'Basic ' + Buffer.from(token).toString('base64');
-  const headers = { 'Authorization': basicAuth, 'Accept': 'application/json' };
+  const auth = ixcAuth(token);
+  const tests = [];
 
-  const endpoints = [
-    '/cliente', '/clientes', '/Cliente', '/Clientes',
-    '/cliente_cadastro', '/cliente_cadastros',
-    '/webservice/cliente', '/api/cliente',
-    '/v1/cliente', '/ws/cliente',
-    '/atendimento', '/chamado', '/chamados',
-    '/produto', '/produtos',
-    '/financeiro', '/fatura', '/faturas',
-    '/contrato', '/contratos',
+  const combos = [
+    { name: 'POST + Basic(user:pass) + iusession + form', method: 'POST', headers: { 'Authorization': auth, 'iusession': token, 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'page=1&rp=5&sortname=cliente.id&sortorder=desc' },
+    { name: 'POST + Basic(user:pass) + form', method: 'POST', headers: { 'Authorization': auth, 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'page=1&rp=5&sortname=cliente.id&sortorder=desc' },
+    { name: 'POST + iusession + form', method: 'POST', headers: { 'iusession': token, 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'page=1&rp=5&sortname=cliente.id&sortorder=desc' },
+    { name: 'POST + Basic(token inteiro) + form', method: 'POST', headers: { 'Authorization': 'Basic ' + Buffer.from(token).toString('base64'), 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'page=1&rp=5&sortname=cliente.id&sortorder=desc' },
   ];
 
-  const tests = [];
-  for (const ep of endpoints) {
+  for (const c of combos) {
     try {
-      const r = await fetch(`${url}${ep}?page=1&limit=1`, { headers });
+      const r = await fetch(`${url}/cliente`, { method: c.method, headers: { ...c.headers, 'Accept': 'application/json' }, body: c.body });
       const body = await r.text();
-      const isAvailable = !body.includes('não está disponível');
-      tests.push({ endpoint: ep, status: r.status, available: isAvailable, body: body.substring(0, 200) });
-    } catch(e) {
-      tests.push({ endpoint: ep, error: e.message });
-    }
+      tests.push({ name: c.name, status: r.status, body: body.substring(0, 500) });
+    } catch(e) { tests.push({ name: c.name, error: e.message }); }
   }
-  res.json({ url, tests });
+  res.json({ url, token_format: token.includes(':') ? 'user:pass (split)' : 'single', tests });
 });
 
 // ---------- PREFS ----------
