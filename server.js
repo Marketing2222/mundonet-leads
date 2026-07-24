@@ -286,9 +286,25 @@ app.post('/api/columns/sync', (req, res) => {
   res.json({ ok: true, count: columns.length });
 });
 
+// ---------- PUBLIC: CHECK WHATSAPP ----------
+app.post('/api/public-indicacao/check-whatsapp', (req, res) => {
+  const { whatsapp } = req.body;
+  if (!whatsapp) return res.status(400).json({ error: 'WhatsApp obrigatório' });
+  const leads = readStore('leads');
+  const clean = String(whatsapp).replace(/\D/g, '');
+  const match = leads.find(l => {
+    const leadWp = String(l.leadWhatsapp || '').replace(/\D/g, '');
+    return leadWp === clean && l.leadNome;
+  });
+  if (match) {
+    return res.json({ nome: match.leadNome });
+  }
+  res.json({ nome: null });
+});
+
 // ---------- PUBLIC INDICATION ----------
 app.post('/api/public-indicacao', (req, res) => {
-  const { isClient, clientName, leadName, leadWhatsapp, clientPix, pixType } = req.body;
+  const { isClient, clientCPF, clientName, leadName, leadWhatsapp, clientPix, pixType } = req.body;
   if (!clientName || !leadName || !leadWhatsapp) {
     return res.status(400).json({ error: 'Preencha todos os campos obrigatórios' });
   }

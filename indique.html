@@ -191,6 +191,11 @@
       box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
     }
 
+    .form-control:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
     /* Submit Button */
     .btn-submit {
       width: 100%;
@@ -473,22 +478,34 @@
         </div>
 
         <form id="referral-form" onsubmit="submitForm(event)">
+          <!-- Client: CPF Field (only for client tab) -->
+          <div class="form-group" id="cpf-group">
+            <label for="indicator-cpf">Seu CPF</label>
+            <input type="text" id="indicator-cpf" class="form-control" placeholder="000.000.000-00" oninput="maskCPF(this);onCPFChange()" maxlength="14">
+          </div>
+
+          <!-- Non-Client: WhatsApp Field (only for non-client tab) -->
+          <div class="form-group" id="my-whatsapp-group" style="display:none">
+            <label for="indicator-whatsapp">Seu WhatsApp</label>
+            <input type="text" id="indicator-whatsapp" class="form-control" placeholder="(XX) XXXXX-XXXX" oninput="maskPhone(this);onMyWhatsappChange()" maxlength="15">
+          </div>
+
           <!-- Indicator Name -->
           <div class="form-group">
             <label for="indicator-name" id="label-indicator-name">Seu Nome Completo</label>
-            <input type="text" id="indicator-name" class="form-control" placeholder="Digite seu nome completo" required style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
+            <input type="text" id="indicator-name" class="form-control" placeholder="Seu nome será preenchido automaticamente" required style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()" disabled>
           </div>
 
           <!-- Lead Name -->
           <div class="form-group">
             <label for="lead-name">Nome de quem vai indicar</label>
-            <input type="text" id="lead-name" class="form-control" placeholder="Nome do seu amigo" required style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
+            <input type="text" id="lead-name" class="form-control" placeholder="Nome do seu amigo" required style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()" disabled>
           </div>
 
           <!-- Lead WhatsApp -->
           <div class="form-group">
             <label for="lead-whatsapp">WhatsApp de quem vai indicar</label>
-            <input type="text" id="lead-whatsapp" class="form-control" placeholder="(XX) XXXXX-XXXX" oninput="maskPhone(this)" maxlength="15" required>
+            <input type="text" id="lead-whatsapp" class="form-control" placeholder="(XX) XXXXX-XXXX" oninput="maskPhone(this)" maxlength="15" required disabled>
           </div>
 
           <!-- PIX Key (Only shown for non-client) -->
@@ -506,11 +523,11 @@
                 <div class="pix-dropdown-item" data-type="aleatoria" onclick="selectPixType('aleatoria')">CHAVE ALEATÓRIA</div>
               </div>
             </div>
-            <input type="text" id="indicator-pix" class="form-control" placeholder="(XX) XXXXX-XXXX" oninput="maskPixByType(this)">
+            <input type="text" id="indicator-pix" class="form-control" placeholder="(XX) XXXXX-XXXX" oninput="maskPixByType(this)" disabled>
           </div>
 
           <!-- Submit Button -->
-          <button type="submit" class="btn-submit" id="btn-submit">
+          <button type="submit" class="btn-submit" id="btn-submit" disabled>
             <span class="spinner" id="btn-spinner"></span>
             <span id="btn-text">Enviar Indicação</span>
           </button>
@@ -551,8 +568,23 @@
   <script>
     let isClientMode = true;
     let customSuccessMsg = '';
+    let clientValidated = false;
 
-    // Apply Mask for Phone
+    // CPF Mask
+    function maskCPF(input) {
+      let v = input.value.replace(/\D/g, '');
+      if (v.length > 11) v = v.slice(0, 11);
+      if (v.length > 9) {
+        v = v.replace(/^(\d{3})(\d{3})(\d{3})(\d{1,2})$/, '$1.$2.$3-$4');
+      } else if (v.length > 6) {
+        v = v.replace(/^(\d{3})(\d{3})(\d{1,3})$/, '$1.$2.$3');
+      } else if (v.length > 3) {
+        v = v.replace(/^(\d{3})(\d{1,3})$/, '$1.$2');
+      }
+      input.value = v;
+    }
+
+    // Phone Mask
     function maskPhone(input) {
       let v = input.value.replace(/\D/g, '');
       if (v.length > 11) v = v.slice(0, 11);
@@ -566,6 +598,135 @@
         v = v.replace(/^(\d*)/, '($1');
       }
       input.value = v;
+    }
+
+    // CPF Lookup — placeholder para API IXC
+    async function lookupCPF(cpf) {
+      // TODO: integrar com API do IXC quando token estiver configurado
+      // const resp = await fetch('/api/client-cpf', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ cpf }) });
+      // const data = await resp.json();
+      // return data; // { nome: "LEONARDO DUARTE" }
+      return null; // placeholder: CPF não encontrado
+    }
+
+    // WhatsApp Lookup — busca indicações existentes
+    async function lookupWhatsApp(whatsapp) {
+      try {
+        const resp = await fetch('/api/public-indicacao/check-whatsapp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ whatsapp })
+        });
+        if (!resp.ok) return null;
+        const data = await resp.json();
+        return data; // { nome: "LEONARDO" } ou null
+      } catch(e) { return null; }
+    }
+
+    // CPF change handler
+    async function onCPFChange() {
+      const cpf = document.getElementById('indicator-cpf').value.replace(/\D/g, '');
+      const nameInput = document.getElementById('indicator-name');
+      const errorBox = document.getElementById('error-box');
+      errorBox.style.display = 'none';
+
+      if (cpf.length < 11) {
+        nameInput.value = '';
+        nameInput.placeholder = 'Seu nome será preenchido automaticamente';
+        clientValidated = false;
+        setFieldsLocked(true);
+        return;
+      }
+
+      // Busca CPF na API
+      const result = await lookupCPF(cpf);
+      if (result && result.nome) {
+        nameInput.value = result.nome.toUpperCase();
+        nameInput.readOnly = true;
+        nameInput.style.opacity = '0.7';
+        clientValidated = true;
+        setFieldsLocked(false);
+      } else {
+        nameInput.value = '';
+        nameInput.placeholder = 'CPF não encontrado no sistema';
+        nameInput.readOnly = false;
+        nameInput.style.opacity = '1';
+        clientValidated = false;
+        setFieldsLocked(true);
+        errorBox.textContent = 'CPF não encontrado. Verifique e tente novamente.';
+        errorBox.style.display = 'block';
+      }
+    }
+
+    // WhatsApp change handler (non-client)
+    async function onMyWhatsappChange() {
+      const wp = document.getElementById('indicator-whatsapp').value.replace(/\D/g, '');
+      const nameInput = document.getElementById('indicator-name');
+      const errorBox = document.getElementById('error-box');
+      errorBox.style.display = 'none';
+
+      if (wp.length < 10) {
+        nameInput.value = '';
+        nameInput.placeholder = 'Digite seu nome completo';
+        nameInput.readOnly = false;
+        nameInput.style.opacity = '1';
+        clientValidated = false;
+        setFieldsLocked(true);
+        return;
+      }
+
+      // Busca WhatsApp em indicações existentes
+      const result = await lookupWhatsApp(document.getElementById('indicator-whatsapp').value);
+      if (result && result.nome) {
+        nameInput.value = result.nome.toUpperCase();
+        nameInput.readOnly = true;
+        nameInput.style.opacity = '0.7';
+        clientValidated = true;
+        setFieldsLocked(false);
+      } else {
+        nameInput.value = '';
+        nameInput.placeholder = 'Digite seu nome completo';
+        nameInput.readOnly = false;
+        nameInput.style.opacity = '1';
+        clientValidated = false;
+        // Libera o campo nome para digitar, mas trava os de baixo até preencher
+        nameInput.focus();
+        setFieldsLocked(true);
+      }
+    }
+
+    // Name change handler — libera campos de baixo quando nome for preenchido
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('indicator-name').addEventListener('input', function() {
+        if (this.value.trim().length > 0 && clientValidated) {
+          setFieldsLocked(false);
+        } else if (this.value.trim().length === 0) {
+          setFieldsLocked(true);
+        }
+      });
+    });
+
+    // Lock/unlock referral fields
+    function setFieldsLocked(locked) {
+      const leadName = document.getElementById('lead-name');
+      const leadWhatsapp = document.getElementById('lead-whatsapp');
+      const pixInput = document.getElementById('indicator-pix');
+      const btnSubmit = document.getElementById('btn-submit');
+
+      leadName.disabled = locked;
+      leadWhatsapp.disabled = locked;
+      pixInput.disabled = locked;
+      btnSubmit.disabled = locked;
+
+      if (locked) {
+        leadName.value = '';
+        leadWhatsapp.value = '';
+        leadName.placeholder = 'Preencha seus dados primeiro';
+        leadWhatsapp.placeholder = 'Preencha seus dados primeiro';
+      } else {
+        leadName.placeholder = 'Nome do seu amigo';
+        leadWhatsapp.placeholder = '(XX) XXXXX-XXXX';
+      }
     }
 
     let pixType = 'celular';
@@ -617,7 +778,6 @@
         maskPhone(input);
         return;
       }
-      // cpfcnpj
       let v = input.value;
       let nums = v.replace(/\D/g, '');
       if (nums.length > 14) nums = nums.slice(0, 14);
@@ -644,27 +804,44 @@
     // Switch Tabs
     function switchTab(isClient) {
       isClientMode = isClient;
+      clientValidated = false;
       document.getElementById('error-box').style.display = 'none';
-      
+
       const tabClient = document.getElementById('tab-client');
       const tabNonClient = document.getElementById('tab-non-client');
-      const labelName = document.getElementById('label-indicator-name');
+      const cpfGroup = document.getElementById('cpf-group');
+      const myWpGroup = document.getElementById('my-whatsapp-group');
+      const nameInput = document.getElementById('indicator-name');
       const pixGroup = document.getElementById('pix-group');
       const pixInput = document.getElementById('indicator-pix');
+
+      // Reset name field
+      nameInput.value = '';
+      nameInput.readOnly = false;
+      nameInput.style.opacity = '1';
+      nameInput.disabled = true;
 
       if (isClient) {
         tabClient.classList.add('active');
         tabNonClient.classList.remove('active');
-        labelName.textContent = 'Seu Nome Completo';
+        cpfGroup.style.display = 'block';
+        myWpGroup.style.display = 'none';
         pixGroup.style.display = 'none';
         pixInput.removeAttribute('required');
+        nameInput.placeholder = 'Seu nome será preenchido automaticamente';
+        document.getElementById('indicator-cpf').value = '';
       } else {
         tabClient.classList.remove('active');
         tabNonClient.classList.add('active');
-        labelName.textContent = 'Seu Nome Completo';
+        cpfGroup.style.display = 'none';
+        myWpGroup.style.display = 'block';
         pixGroup.style.display = 'block';
         pixInput.setAttribute('required', 'true');
+        nameInput.placeholder = 'Digite seu nome completo';
+        document.getElementById('indicator-whatsapp').value = '';
       }
+
+      setFieldsLocked(true);
     }
 
     // Load Preferences dynamically
@@ -674,7 +851,6 @@
         if (!resp.ok) return;
         const prefs = await resp.json();
 
-        // Apply title & subtitle
         if (prefs.page_indique_title) {
           document.getElementById('page-title').textContent = prefs.page_indique_title;
           document.title = prefs.page_indique_title + ' — Mundonet';
@@ -682,14 +858,10 @@
         if (prefs.page_indique_subtitle) {
           document.getElementById('page-subtitle').textContent = prefs.page_indique_subtitle;
         }
-
-        // Apply Success Message template
         if (prefs.page_indique_success_message) {
           customSuccessMsg = prefs.page_indique_success_message;
           document.getElementById('success-msg-text').textContent = customSuccessMsg;
         }
-
-        // Apply custom colors to variables
         if (prefs.page_indique_bg_color) {
           document.body.style.setProperty('--bg-gradient', prefs.page_indique_bg_color);
         }
@@ -700,7 +872,6 @@
           document.body.style.setProperty('--text-primary', prefs.page_indique_text_color);
         }
 
-        // Apply Logo
         const logoWrapper = document.getElementById('logo-wrapper');
         const logoUrl = prefs.page_indique_logo || prefs.logo;
         if (logoUrl) {
@@ -709,13 +880,11 @@
           document.getElementById('logo-fallback-text').textContent = prefs.nome.charAt(0);
         }
 
-        // Apply Background Image
         const bgImgUrl = prefs.page_indique_bg_image;
         if (bgImgUrl) {
           document.getElementById('page-bg-image').style.backgroundImage = `url(${bgImgUrl})`;
         }
 
-        // Apply Footer text
         if (prefs.page_indique_footer) {
           document.getElementById('page-footer').textContent = prefs.page_indique_footer;
         }
@@ -727,7 +896,7 @@
     // Submit Form
     async function submitForm(e) {
       e.preventDefault();
-      
+
       const errorBox = document.getElementById('error-box');
       errorBox.style.display = 'none';
 
@@ -735,12 +904,12 @@
       const leadName = document.getElementById('lead-name').value.trim().toUpperCase();
       const leadWhatsapp = document.getElementById('lead-whatsapp').value.trim();
       const clientPix = document.getElementById('indicator-pix').value.trim();
+      const clientCPF = isClientMode ? document.getElementById('indicator-cpf').value.replace(/\D/g, '') : '';
 
       const btnSubmit = document.getElementById('btn-submit');
       const btnSpinner = document.getElementById('btn-spinner');
       const btnText = document.getElementById('btn-text');
 
-      // Loader on
       btnSubmit.disabled = true;
       btnSpinner.style.display = 'inline-block';
       btnText.textContent = 'Enviando...';
@@ -751,6 +920,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             isClient: isClientMode,
+            clientCPF,
             clientName,
             leadName,
             leadWhatsapp,
@@ -764,7 +934,6 @@
           throw new Error(data.error || 'Erro ao processar indicação');
         }
 
-        // Setup success screen
         document.getElementById('referral-link').textContent = data.link;
         document.getElementById('form-screen').style.display = 'none';
         document.getElementById('success-screen').style.display = 'block';
@@ -774,23 +943,19 @@
         errorBox.textContent = err.message || 'Houve um erro de conexão. Tente novamente.';
         errorBox.style.display = 'block';
       } finally {
-        // Loader off
         btnSubmit.disabled = false;
         btnSpinner.style.display = 'none';
         btnText.textContent = 'Enviar Indicação';
       }
     }
 
-    // Copy Link to clipboard
     function copyLink(btn) {
       const link = document.getElementById('referral-link').textContent;
       navigator.clipboard.writeText(link).then(() => {
         const toast = document.getElementById('toast');
         toast.classList.add('show');
-        
         const originalText = document.getElementById('copy-btn-text').textContent;
         document.getElementById('copy-btn-text').textContent = 'Copiado!';
-        
         setTimeout(() => {
           toast.classList.remove('show');
           document.getElementById('copy-btn-text').textContent = originalText;
@@ -800,16 +965,25 @@
       });
     }
 
-    // Reset and back to form
     function resetForm() {
       document.getElementById('lead-name').value = '';
       document.getElementById('lead-whatsapp').value = '';
       document.getElementById('form-screen').style.display = 'block';
       document.getElementById('success-screen').style.display = 'none';
       document.getElementById('error-box').style.display = 'none';
+      // Reset identification fields
+      if (isClientMode) {
+        document.getElementById('indicator-cpf').value = '';
+      } else {
+        document.getElementById('indicator-whatsapp').value = '';
+      }
+      document.getElementById('indicator-name').value = '';
+      document.getElementById('indicator-name').readOnly = false;
+      document.getElementById('indicator-name').style.opacity = '1';
+      clientValidated = false;
+      setFieldsLocked(true);
     }
 
-    // Initialize Page
     window.addEventListener('DOMContentLoaded', () => {
       loadPreferences();
     });
