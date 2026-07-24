@@ -1770,11 +1770,21 @@
         </div>
         <div class="form-group" style="margin-bottom:8px">
           <label class="form-label">URL da API</label>
-          <input type="text" id="api-ixc-url" class="form-control" placeholder="https://seudominio.ixcsoft.com.br/api">
+          <input type="text" id="api-ixc-url" class="form-control" placeholder="https://seudominio.ixcsoft.com.br/webservice/v1">
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <div class="form-group" style="margin-bottom:0;flex:1">
+            <label class="form-label">Login</label>
+            <input type="text" id="api-ixc-login" class="form-control" placeholder="Usuário do IXC">
+          </div>
+          <div class="form-group" style="margin-bottom:0;flex:1">
+            <label class="form-label">Senha</label>
+            <input type="password" id="api-ixc-senha" class="form-control" placeholder="Senha do IXC">
+          </div>
         </div>
         <div class="form-group" style="margin-bottom:10px">
-          <label class="form-label">Token / Chave</label>
-          <input type="password" id="api-ixc-token" class="form-control" placeholder="Bearer token ou chave de acesso">
+          <label class="form-label">Token / iusession (opcional se usar login/senha)</label>
+          <input type="password" id="api-ixc-token" class="form-control" placeholder="Se já tiver um iusession, cole aqui">
         </div>
         <button class="btn btn-primary" onclick="syncIXC()" id="btn-sync-ixc">🔄 Sincronizar Clientes</button>
         <span style="font-size:10px;color:var(--text-muted);margin-left:8px" id="ixc-count"></span>
@@ -3570,6 +3580,8 @@ async function trashClient(id){
 function openApiConfig(){
   document.getElementById('api-ixc-url').value=apiConfig.ixc?.url||'';
   document.getElementById('api-ixc-token').value=apiConfig.ixc?.token||'';
+  document.getElementById('api-ixc-login').value=apiConfig.ixc?.login||'';
+  document.getElementById('api-ixc-senha').value=apiConfig.ixc?.senha||'';
   document.getElementById('api-zapisp-url').value=apiConfig.zapisp?.url||'';
   document.getElementById('api-zapisp-token').value=apiConfig.zapisp?.token||'';
   document.getElementById('api-ixc-auto-sync').classList.toggle('on',!!apiConfig.ixc_auto_sync);
@@ -3580,12 +3592,12 @@ function openApiConfig(){
   openModal('modal-api-config');
 }
 async function saveApiConfig(){
-  apiConfig.ixc={url:document.getElementById('api-ixc-url').value.trim(),token:document.getElementById('api-ixc-token').value.trim()};
+    apiConfig.ixc={url:document.getElementById('api-ixc-url').value.trim(),token:document.getElementById('api-ixc-token').value.trim(),login:document.getElementById('api-ixc-login').value.trim(),senha:document.getElementById('api-ixc-senha').value.trim()};
   apiConfig.zapisp={url:document.getElementById('api-zapisp-url').value.trim(),token:document.getElementById('api-zapisp-token').value.trim()};
   apiConfig.ixc_auto_sync=document.getElementById('api-ixc-auto-sync').classList.contains('on');
   apiConfig.ixc_auto_sync_interval=parseInt(document.getElementById('api-ixc-sync-interval').value)||30;
   try {
-    await api('PUT','/api/config',{ixc_url:apiConfig.ixc.url,ixc_token:apiConfig.ixc.token,zapisp_url:apiConfig.zapisp.url,zapisp_token:apiConfig.zapisp.token,ixc_auto_sync:apiConfig.ixc_auto_sync,ixc_auto_sync_interval:apiConfig.ixc_auto_sync_interval});
+    await api('PUT','/api/config',{ixc_url:apiConfig.ixc.url,ixc_token:apiConfig.ixc.token,ixc_login:apiConfig.ixc.login,ixc_senha:apiConfig.ixc.senha,zapisp_url:apiConfig.zapisp.url,zapisp_token:apiConfig.zapisp.token,ixc_auto_sync:apiConfig.ixc_auto_sync,ixc_auto_sync_interval:apiConfig.ixc_auto_sync_interval});
   } catch(ex) { toast('Erro: '+ex.message,'error'); }
   if(apiConfig.ixc_auto_sync) startAutoSync(); else stopAutoSync();
   updateApiStatus();
@@ -3831,7 +3843,7 @@ async function init(){
     state.columns=cols;
     users=usr;
     clients=clnts;
-    apiConfig={ixc:{url:cfg.ixc_url||'',token:cfg.ixc_token||''},zapisp:{url:cfg.zapisp_url||'',token:cfg.zapisp_token||''},ixc_auto_sync:cfg.ixc_auto_sync||false,ixc_auto_sync_interval:cfg.ixc_auto_sync_interval||30};
+      apiConfig={ixc:{url:cfg.ixc_url||'',token:cfg.ixc_token||'',login:cfg.ixc_login||'',senha:cfg.ixc_senha||''},zapisp:{url:cfg.zapisp_url||'',token:cfg.zapisp_token||''},ixc_auto_sync:cfg.ixc_auto_sync||false,ixc_auto_sync_interval:cfg.ixc_auto_sync_interval||30};
     state.prefs=toCamel(prfs);
     if(!state.prefs.templates) state.prefs.templates=DEFAULT_TEMPLATES;
   } catch(e) {
