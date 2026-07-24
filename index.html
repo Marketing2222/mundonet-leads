@@ -749,7 +749,16 @@
     .client-item-info { flex: 1; min-width: 0; }
     .client-item-name { font-size: 12px; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .client-item-wpp { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
-    .client-item-arrow { color: var(--text-muted); font-size: 12px; flex-shrink: 0; margin-left: 8px; }
+    .client-item-actions { display: flex; gap: 4px; flex-shrink: 0; margin-left: 8px; }
+    .client-action-btn {
+      width: 26px; height: 26px; border-radius: 6px;
+      background: var(--bg-elevated); border: 1px solid var(--border);
+      color: var(--text-secondary); font-size: 12px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.15s; padding: 0;
+    }
+    .client-action-btn:hover { background: var(--bg-surface); border-color: var(--border-light); color: var(--text-primary); }
+    .client-action-btn.danger:hover { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.3); color: #f87171; }
     .clients-empty { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 12px; }
 
     /* ===== CLIENT MINI POPUP ===== */
@@ -3509,7 +3518,10 @@ function renderClientsList(filter=''){
         <div class="client-item-name">${escHtml(c.nome||'Sem nome')}</div>
         <div class="client-item-wpp">${escHtml(c.whatsapp||'Sem WhatsApp')}</div>
       </div>
-      <span class="client-item-arrow">›</span>
+      <div class="client-item-actions" onclick="event.stopPropagation()">
+        <button class="client-action-btn" onclick="archiveClient('${c.id}')" title="Arquivar">📦</button>
+        <button class="client-action-btn danger" onclick="trashClient('${c.id}')" title="Excluir">🗑️</button>
+      </div>
     </div>
   `).join('');
 }
@@ -3550,6 +3562,31 @@ function copyClientLink(){
   const link=document.getElementById('client-edit-link').value;
   if(!link){ toast('Nenhum link para copiar','error'); return; }
   navigator.clipboard.writeText(link).then(()=>toast('Link copiado!','success')).catch(()=>toast('Erro ao copiar','error'));
+}
+
+async function archiveClient(id){
+  const c=clients.find(x=>x.id===id); if(!c) return;
+  if(!confirm('Arquivar cliente "'+c.nome+'"?')) return;
+  try {
+    c.arquivado=true;
+    await api('PUT',`/api/clients/${id}`,c);
+    clients=clients.filter(x=>x.id!==id);
+    renderClientsList(document.getElementById('clients-search-input')?.value||'');
+    updateApiStatus();
+    toast('Cliente arquivado!','success');
+  } catch(ex) { toast('Erro: '+ex.message,'error'); }
+}
+
+async function trashClient(id){
+  const c=clients.find(x=>x.id===id); if(!c) return;
+  if(!confirm('Excluir cliente "'+c.nome+'"?')) return;
+  try {
+    await api('DELETE',`/api/clients/${id}`);
+    clients=clients.filter(x=>x.id!==id);
+    renderClientsList(document.getElementById('clients-search-input')?.value||'');
+    updateApiStatus();
+    toast('Cliente excluído!','success');
+  } catch(ex) { toast('Erro: '+ex.message,'error'); }
 }
 
 // ===== API CONFIG =====
