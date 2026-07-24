@@ -488,31 +488,30 @@ app.get('/api/debug-ixc', async (req, res) => {
   const listParams = 'oper=&qtype=ativo&query=S&page=1&rp=5&sortname=cliente.id&sortorder=desc';
 
   const combos = [
-    { name: 'POST /listar_cliente', route: '/listar_cliente' },
-    { name: 'POST /listar_cliente (nd)', route: '/listar_cliente', body: `_search=false&nd=${Date.now()}&page=1&rp=5&sortname=cliente.id&sortorder=desc` },
-    { name: 'GET /listar_cliente', method: 'GET', route: '/listar_cliente', body: null },
-    { name: 'POST /listar_cliente_simples', route: '/listar_cliente_simples' },
-    { name: 'POST /cliente_listar', route: '/cliente_listar' },
-    { name: 'GET /cliente_listar', method: 'GET', route: '/cliente_listar', body: null },
-    { name: 'POST /cliente/listar', route: '/cliente/listar' },
-    { name: 'GET /cliente/listar', method: 'GET', route: '/cliente/listar', body: null },
-    { name: 'POST /clientes/listar', route: '/clientes/listar' },
-    { name: 'POST /cliente_s', route: '/cliente_s' },
-    { name: 'POST /cliente_s (nd)', route: '/cliente_s', body: `_search=false&nd=${Date.now()}&page=1&rp=5&sortname=id&sortorder=desc` },
+    { name: 'POST /cliente + qtype=cliente.id oper=bw query vazio', body: 'qtype=cliente.id&oper=bw&query=&page=1&rp=5&sortname=cliente.id&sortorder=desc' },
+    { name: 'POST /cliente + qtype=id oper=eq query vazio', body: 'qtype=id&oper=eq&query=&page=1&rp=5&sortname=cliente.id&sortorder=desc' },
+    { name: 'POST /cliente body vazio', body: '' },
+    { name: 'POST /cliente JSON list', method: 'POST', json: true, body: JSON.stringify({ qtype:'cliente.id', oper:'bw', query:'', page:1, rp:5, sortname:'cliente.id', sortorder:'desc' }) },
+    { name: 'POST /cliente + X-Requested-With', headers_extra: { 'X-Requested-With': 'XMLHttpRequest' }, body: '_search=false&page=1&rp=5&sortname=cliente.id&sortorder=desc' },
+    { name: 'GET /cliente com Basic Auth', method: 'GET', body: null },
+    { name: 'POST /cliente_cadastro', route: '/cliente_cadastro' },
+    { name: 'GET /cliente_cadastro', method: 'GET', route: '/cliente_cadastro', body: null },
   ];
 
   for (const c of combos) {
     try {
       const reqUrl = `${url}${c.route || '/cliente'}${c.url_suffix || ''}`;
-      const opts = {
-        method: c.method || 'POST',
-        headers: { 'Authorization': auth, 'iusession': token, 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json' }
-      };
-      if (c.body) opts.body = c.body;
+      const hdrs = { 'Authorization': auth, 'iusession': token, 'Accept': 'application/json' };
+      if (c.json) hdrs['Content-Type'] = 'application/json';
+      else hdrs['Content-Type'] = 'application/x-www-form-urlencoded';
+      if (c.headers_extra) Object.assign(hdrs, c.headers_extra);
+      const opts = { method: c.method || 'POST', headers: hdrs };
+      if (c.body !== undefined && c.body !== null) opts.body = c.body;
       const r = await fetch(reqUrl, opts);
       const body = await r.text();
-      const ok = body.includes('"total"') || body.includes('"data"') || body.includes('"rows"');
-      tests.push({ name: c.name, status: r.status, success: ok, body: body.substring(0, 500) });
+      const hasList = body.includes('"total"') || body.includes('"rows"') || body.includes('"records"');
+      const hasError = body.includes('"error"');
+      tests.push({ name: c.name, status: r.status, result: hasList ? 'LIST OK!' : hasError ? 'ERROR' : 'OTHER', body: body.substring(0, 500) });
     } catch(e) { tests.push({ name: c.name, error: e.message }); }
   }
   res.json({ url, tests });
