@@ -465,6 +465,26 @@ app.get('/api/clients/test-ixc', async (req, res) => {
   res.json({ url, results });
 });
 
+// ---------- IXC DEBUG ----------
+app.get('/api/debug-ixc', async (req, res) => {
+  const cfg = readObj('config');
+  let url = cfg.ixc_url;
+  const token = cfg.ixc_token;
+  if (!url || !token) return res.status(400).json({ error: 'Configure URL e Token do IXC primeiro' });
+  if (!url.startsWith('http')) url = 'https://' + url;
+  url = url.replace(/\/+$/, '');
+  const basicAuth = 'Basic ' + Buffer.from(token).toString('base64');
+  try {
+    const resp = await fetch(`${url}/cliente?page=1&limit=5`, {
+      headers: { 'Authorization': basicAuth, 'Content-Type': 'application/json', 'Accept': 'application/json' }
+    });
+    const raw = await resp.text();
+    res.json({ status: resp.status, url: `${url}/cliente?page=1&limit=5`, raw: raw.substring(0, 2000) });
+  } catch (e) {
+    res.json({ error: e.message });
+  }
+});
+
 // ---------- PREFS ----------
 app.get('/api/prefs', (req, res) => { res.json(readObj('prefs')); });
 app.put('/api/prefs', (req, res) => { writeObj('prefs', req.body); res.json({ ok: true }); });
