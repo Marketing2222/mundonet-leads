@@ -376,9 +376,10 @@
     .card-action-btn {
       width: 22px; height: 22px; border-radius: 5px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 11px; transition: all 0.15s;
+      transition: all 0.15s; padding: 0;
       background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-muted);
     }
+    .card-action-btn svg { stroke: currentColor; flex-shrink: 0; }
     .card-action-btn:hover.move { color: var(--accent-blue); border-color: var(--accent-blue); background: rgba(59,130,246,0.1); }
     .card-action-btn:hover.edit { color: var(--accent-amber); border-color: var(--accent-amber); background: rgba(245,158,11,0.1); }
     .card-action-btn:hover.del  { color: var(--accent-red);  border-color: var(--accent-red);  background: rgba(239,68,68,0.1);  }
@@ -2128,9 +2129,9 @@ function renderCard(lead,col){
       <div class="card-footer">
         <span class="card-date">${date}</span>
         <div class="card-actions">
-          <button class="card-action-btn move" onclick="event.stopPropagation();openMove('${lead.id}')" title="Mover">↕</button>
-          <button class="card-action-btn edit" onclick="event.stopPropagation();openLead('${lead.id}')" title="Editar">✏</button>
-          <button class="card-action-btn del"  onclick="event.stopPropagation();confirmDelete('${lead.id}')" title="Excluir">🗑</button>
+          <button class="card-action-btn move" onclick="event.stopPropagation();openMove('${lead.id}')" title="Mover"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 5 5 12"/></svg></button>
+          <button class="card-action-btn edit" onclick="event.stopPropagation();openLead('${lead.id}')" title="Editar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M17 3a2.85 2.85 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></button>
+          <button class="card-action-btn del"  onclick="event.stopPropagation();confirmDelete('${lead.id}')" title="Excluir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
         </div>
       </div>
     </div>`;
