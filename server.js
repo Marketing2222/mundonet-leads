@@ -371,6 +371,45 @@ app.post('/api/public-indicacao', (req, res) => {
 app.get('/api/config', (req, res) => { res.json(readObj('config')); });
 app.put('/api/config', (req, res) => { writeObj('config', req.body); res.json({ ok: true }); });
 
+// ---------- IXC PROXY ----------
+app.get('/api/clients/fetch-ixc', async (req, res) => {
+  const cfg = readObj('config');
+  const url = cfg.ixc_url;
+  const token = cfg.ixc_token;
+  if (!url || !token) return res.status(400).json({ error: 'Configure URL e Token do IXC primeiro' });
+
+  try {
+    const allClients = [];
+    let page = 1;
+    let hasMore = true;
+    while (hasMore) {
+      const resp = await fetch(`${url}/clientes?page=${page}&limit=100`, {
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
+      });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const data = await resp.json();
+      const items = data.data || data.clients || data || [];
+      if (Array.isArray(items)) {
+        items.forEach(c => {
+          allClients.push({
+            id: c.id || ('ixc_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6)),
+            nome: c.nome || c.name || c.razao_social || '',
+            whatsapp: c.whatsapp || c.telefone || c.celular || c.phone || '',
+            link_indicacao: '',
+            editado: false
+          });
+        });
+      }
+      hasMore = items.length === 100;
+      page++;
+      if (page > 50) break;
+    }
+    res.json({ clients: allClients });
+  } catch (e) {
+    res.status(500).json({ error: 'Erro ao buscar clientes IXC: ' + e.message });
+  }
+});
+
 // ---------- PREFS ----------
 app.get('/api/prefs', (req, res) => { res.json(readObj('prefs')); });
 app.put('/api/prefs', (req, res) => { writeObj('prefs', req.body); res.json({ ok: true }); });

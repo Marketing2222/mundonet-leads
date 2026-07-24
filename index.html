@@ -3589,35 +3589,13 @@ function updateApiStatus(){
 
 // ===== IXC SYNC =====
 async function fetchIXCClients(){
-  const url=apiConfig.ixc?.url;
-  const token=apiConfig.ixc?.token;
-  if(!url||!token) return null;
-  const allClients=[];
-  let page=1;
-  let hasMore=true;
-  while(hasMore){
-    const resp=await fetch(`${url}/clientes?page=${page}&limit=100`,{
-      headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'}
-    });
-    if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const data=await resp.json();
-    const items=data.data||data.clients||data||[];
-    if(Array.isArray(items)){
-      items.forEach(c=>{
-        allClients.push({
-          id:c.id||('ixc_'+Date.now()+'_'+Math.random().toString(36).substr(2,6)),
-          nome:c.nome||c.name||c.razao_social||'',
-          whatsapp:c.whatsapp||c.telefone||c.celular||c.phone||'',
-          linkIndicacao:'',
-          editado:false
-        });
-      });
-    }
-    hasMore=items.length===100;
-    page++;
-    if(page>50) break;
+  const resp=await fetch('/api/clients/fetch-ixc');
+  if(!resp.ok){
+    const err=await resp.json().catch(()=>({error:'Erro desconhecido'}));
+    throw new Error(err.error||'Erro ao buscar clientes IXC');
   }
-  return allClients;
+  const data=await resp.json();
+  return data.clients||[];
 }
 
 let lastSyncTime=null;
@@ -3631,7 +3609,6 @@ async function syncIXC(silent){
   if(btn && !silent){ btn.textContent='🔄 Sincronizando...'; btn.disabled=true; }
   try{
     const allClients=await fetchIXCClients();
-    if(!allClients) return;
     const result=await api('POST','/api/clients/merge',{clients:allClients});
     const merged=await api('GET','/api/clients');
     clients=merged;
