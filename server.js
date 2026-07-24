@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import crypto from 'crypto';
+import fetch from 'node-fetch';
 
 const PORT = process.env.PORT || 80;
 const __filename = fileURLToPath(import.meta.url);
