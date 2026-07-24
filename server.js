@@ -387,9 +387,12 @@ app.get('/api/clients/fetch-ixc', async (req, res) => {
     let hasMore = true;
     while (hasMore) {
       const resp = await fetch(`${url}/clientes?page=${page}&limit=100`, {
-        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
+        headers: { 'iusession': token, 'Content-Type': 'application/json' }
       });
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      if (!resp.ok) {
+        const body = await resp.text().catch(()=>'');
+        throw new Error(`HTTP ${resp.status} - ${body.substring(0,200)}`);
+      }
       const data = await resp.json();
       const items = data.data || data.clients || data || [];
       if (Array.isArray(items)) {
