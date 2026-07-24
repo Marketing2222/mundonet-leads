@@ -373,41 +373,21 @@ app.get('/api/config', (req, res) => { res.json(readObj('config')); });
 app.put('/api/config', (req, res) => { writeObj('config', req.body); res.json({ ok: true }); });
 
 // ---------- IXC PROXY ----------
-async function ixcLogin(url, login, senha) {
-  const resp = await fetch(`${url}/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ login, senha })
-  });
-  if (!resp.ok) throw new Error(`Login IXC falhou: HTTP ${resp.status}`);
-  const data = await resp.json();
-  if (!data.iusession) throw new Error('Login IXC: iusession não retornada');
-  return data.iusession;
-}
-
 app.get('/api/clients/fetch-ixc', async (req, res) => {
   const cfg = readObj('config');
   let url = cfg.ixc_url;
   const token = cfg.ixc_token;
-  const login = cfg.ixc_login;
-  const senha = cfg.ixc_senha;
-  if (!url) return res.status(400).json({ error: 'Configure URL do IXC primeiro' });
+  if (!url || !token) return res.status(400).json({ error: 'Configure URL e Token do IXC primeiro' });
   if (!url.startsWith('http')) url = 'https://' + url;
   url = url.replace(/\/+$/, '');
 
   try {
-    let sessionToken = token;
-    if (login && senha) {
-      sessionToken = await ixcLogin(url, login, senha);
-    }
-    if (!sessionToken) return res.status(400).json({ error: 'Configure token ou login/senha do IXC' });
-
     const allClients = [];
     let page = 1;
     let hasMore = true;
     while (hasMore) {
       const resp = await fetch(`${url}/clientes?page=${page}&limit=100`, {
-        headers: { 'iusession': sessionToken, 'Content-Type': 'application/json' }
+        headers: { 'iusession': token, 'Content-Type': 'application/json' }
       });
       if (!resp.ok) {
         const body = await resp.text().catch(()=>'');
