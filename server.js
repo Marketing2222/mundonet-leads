@@ -375,9 +375,11 @@ app.put('/api/config', (req, res) => { writeObj('config', req.body); res.json({ 
 // ---------- IXC PROXY ----------
 app.get('/api/clients/fetch-ixc', async (req, res) => {
   const cfg = readObj('config');
-  const url = cfg.ixc_url;
+  let url = cfg.ixc_url;
   const token = cfg.ixc_token;
   if (!url || !token) return res.status(400).json({ error: 'Configure URL e Token do IXC primeiro' });
+  if (!url.startsWith('http')) url = 'https://' + url;
+  url = url.replace(/\/+$/, '');
 
   try {
     const allClients = [];
