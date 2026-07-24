@@ -266,12 +266,14 @@ app.post('/api/clients/merge', (req, res) => {
       if (existingMap[id].nome !== nome || existingMap[id].whatsapp !== whatsapp) {
         existingMap[id].nome = nome;
         existingMap[id].whatsapp = whatsapp;
+        if (c.cpf) existingMap[id].cpf = c.cpf;
+        if (c.email) existingMap[id].email = c.email;
         updated++;
       } else {
         kept++;
       }
     } else {
-      existingMap[id] = { id, nome, whatsapp, link_indicacao: c.link_indicacao || '', editado: c.editado || false };
+      existingMap[id] = { id, nome, whatsapp, cpf: c.cpf || '', email: c.email || '', link_indicacao: c.link_indicacao || '', editado: c.editado || false };
       added++;
     }
   });
@@ -488,14 +490,14 @@ app.get('/api/debug-ixc', async (req, res) => {
   const listParams = 'oper=&qtype=ativo&query=S&page=1&rp=5&sortname=cliente.id&sortorder=desc';
 
   const combos = [
-    { name: 'POST /cliente + qtype=cliente.id oper=bw query vazio', body: 'qtype=cliente.id&oper=bw&query=&page=1&rp=5&sortname=cliente.id&sortorder=desc' },
-    { name: 'POST /cliente + qtype=id oper=eq query vazio', body: 'qtype=id&oper=eq&query=&page=1&rp=5&sortname=cliente.id&sortorder=desc' },
-    { name: 'POST /cliente body vazio', body: '' },
-    { name: 'POST /cliente JSON list', method: 'POST', json: true, body: JSON.stringify({ qtype:'cliente.id', oper:'bw', query:'', page:1, rp:5, sortname:'cliente.id', sortorder:'desc' }) },
-    { name: 'POST /cliente + X-Requested-With', headers_extra: { 'X-Requested-With': 'XMLHttpRequest' }, body: '_search=false&page=1&rp=5&sortname=cliente.id&sortorder=desc' },
-    { name: 'GET /cliente com Basic Auth', method: 'GET', body: null },
-    { name: 'POST /cliente_cadastro', route: '/cliente_cadastro' },
-    { name: 'GET /cliente_cadastro', method: 'GET', route: '/cliente_cadastro', body: null },
+    { name: 'POST /cliente CPF wildcard 000', body: 'qtype=cnpj_cpf&oper=like&query=000&page=1&rp=5&sortname=cliente.id&sortorder=desc' },
+    { name: 'POST /cliente CPF bw vazio', body: 'qtype=cnpj_cpf&oper=bw&query=&page=1&rp=5&sortname=cliente.id&sortorder=desc' },
+    { name: 'POST /cliente ativo bw', body: 'qtype=ativo&oper=bw&query=S&page=1&rp=5&sortname=cliente.id&sortorder=desc' },
+    { name: 'POST /cliente ativo eq', body: 'qtype=ativo&oper=eq&query=S&page=1&rp=5&sortname=cliente.id&sortorder=desc' },
+    { name: 'POST /cliente razao_social bw', body: 'qtype=razao_social&oper=bw&query=&page=1&rp=5&sortname=cliente.id&sortorder=desc' },
+    { name: 'POST /cliente nome bw', body: 'qtype=nome&oper=bw&query=&page=1&rp=5&sortname=cliente.id&sortorder=desc' },
+    { name: 'POST /lead (testar rota)', body: 'page=1&rp=5&sortname=lead.id&sortorder=desc' },
+    { name: 'POST /prospeccao (testar rota)', body: 'page=1&rp=5&sortname=id&sortorder=desc' },
   ];
 
   for (const c of combos) {
