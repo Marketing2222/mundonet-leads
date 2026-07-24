@@ -887,6 +887,7 @@
     body:not(.ready) #clients-panel,
     body:not(.ready) #trash-panel { display: none !important; }
   </style>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -1574,8 +1575,8 @@
   <div class="clients-header">
     <span class="clients-header-title">📋 Clientes IXC</span>
     <div style="display:flex;gap:6px;align-items:center">
-      <button class="btn btn-ghost" onclick="document.getElementById('csv-file-input').click()" style="font-size:11px;padding:4px 10px;border:1px solid var(--border);border-radius:6px">📂 Importar CSV</button>
-      <input type="file" id="csv-file-input" accept=".csv,.txt" style="display:none" onchange="importCSV(this)">
+      <button class="btn btn-ghost" onclick="document.getElementById('csv-file-input').click()" style="font-size:11px;padding:4px 10px;border:1px solid var(--border);border-radius:6px">📂 Importar</button>
+      <input type="file" id="csv-file-input" accept=".csv,.txt,.xls,.xlsx" style="display:none" onchange="importFile(this)">
       <button class="clients-close" onclick="closeClientsPanel()">✕</button>
     </div>
   </div>
@@ -3549,22 +3550,37 @@ function renderClientsList(filter=''){
     </div>
   `).join('');
 }
-async function importCSV(input){
+async function importFile(input){
   const file=input.files[0]; if(!file) return;
-  const text=await file.text();
-  const lines=text.split(/\r?\n/).filter(l=>l.trim());
-  if(lines.length<2){ toast('CSV vazio ou sem dados','error'); return; }
-  const sep=lines[0].includes(';')?';':',';
-  const headers=lines[0].split(sep).map(h=>h.trim().toLowerCase().replace(/"/g,''));
-  const nameIdx=headers.findIndex(h=>h.includes('nome')||h.includes('razao')||h.includes('razão')||h.includes('name')||h.includes('cliente'));
+  let rows=[];
+  const ext=file.name.split('.').pop().toLowerCase();
+  try{
+    if(ext==='csv'||ext==='txt'){
+      const text=await file.text();
+      const lines=text.split(/\r?\n/).filter(l=>l.trim());
+      if(lines.length<2){ toast('Arquivo vazio','error'); return; }
+      const sep=lines[0].includes(';')?';':',';
+      rows.push(lines[0].split(sep).map(h=>h.trim().toLowerCase().replace(/"/g,'')));
+      for(let i=1;i<lines.length;i++) rows.push(lines[i].split(sep).map(c=>c.trim().replace(/"/g,'')));
+    } else if(ext==='xls'||ext==='xlsx'){
+      if(typeof XLSX==='undefined'){ toast('Biblioteca Excel não carregada. Recarregue a página.','error'); return; }
+      const data=await file.arrayBuffer();
+      const wb=XLSX.read(data,{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const json=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+      if(json.length<2){ toast('Planilha vazia','error'); return; }
+      rows=json.map(r=>r.map(c=>String(c).trim().toLowerCase()));
+    } else { toast('Formato não suportado. Use CSV, XLS ou XLSX.','error'); return; }
+  }catch(e){ toast('Erro ao ler arquivo: '+e.message,'error'); return; }
+  const headers=rows[0];
+  const nameIdx=headers.findIndex(h=>h.includes('nome')||h.includes('razao')||h.includes('razão')||h.includes('name')||h.includes('cliente')||h.includes('assinante'));
   const cpfIdx=headers.findIndex(h=>h.includes('cpf')||h.includes('cnpj')||h.includes('documento'));
-  const telIdx=headers.findIndex(h=>h.includes('telefone')||h.includes('whatsapp')||h.includes('celular')||h.includes('phone')||h.includes('fone'));
-  const emailIdx=headers.findIndex(h=>h.includes('email')||h.includes('e-mail'));
-  if(nameIdx===-1){ toast('CSV precisa ter coluna de Nome/Razão Social','error'); return; }
+  const telIdx=headers.findIndex(h=>h.includes('telefone')||h.includes('whatsapp')||h.includes('celular')||h.includes('phone')||h.includes('fone')||h.includes('contato'));
+  const emailIdx=headers.findIndex(h=>h.includes('email')||h.includes('e-mail')||h.includes('e_mail'));
+  if(nameIdx===-1){ toast('Coluna de Nome não encontrada. Cabeçalhos: '+headers.join(', '),'error'); return; }
   const clients=[];
-  for(let i=1;i<lines.length;i++){
-    const cols=lines[i].split(sep).map(c=>c.trim().replace(/"/g,''));
-    if(!cols[nameIdx]) continue;
+  for(let i=1;i<rows.length;i++){
+    const cols=rows[i]; if(!cols[nameIdx]) continue;
     clients.push({
       nome:cols[nameIdx]||'',
       whatsapp:telIdx>=0?(cols[telIdx]||''):'',
@@ -3574,7 +3590,7 @@ async function importCSV(input){
       editado:false
     });
   }
-  if(!clients.length){ toast('Nenhum cliente encontrado no CSV','error'); return; }
+  if(!clients.length){ toast('Nenhum cliente encontrado','error'); return; }
   try{
     const r=await api('POST','/api/clients/import',{clients});
     toast(`${r.added} novos, ${r.updated} atualizados`,'success');

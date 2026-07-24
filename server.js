@@ -282,6 +282,34 @@ app.post('/api/clients/merge', (req, res) => {
   res.json({ ok: true, total: merged.length, added, updated, kept });
 });
 
+app.post('/api/clients/import', (req, res) => {
+  const { clients } = req.body;
+  if (!Array.isArray(clients)) return res.status(400).json({ error: 'Array esperado' });
+  const existing = readStore('clients');
+  const existingMap = {};
+  existing.forEach(c => { existingMap[c.id || (c.nome+'_'+c.whatsapp)] = c; });
+  let added = 0, updated = 0, kept = 0;
+  clients.forEach(c => {
+    const key = (c.cpf && c.cpf.trim()) ? 'cpf_'+c.cpf.trim() : (c.nome.trim()+'_'+c.whatsapp.trim());
+    const nome = (c.nome || '').trim();
+    const whatsapp = (c.whatsapp || '').trim();
+    if (!nome) return;
+    if (existingMap[key]) {
+      if (c.whatsapp && existingMap[key].whatsapp !== whatsapp) { existingMap[key].whatsapp = whatsapp; updated++; }
+      if (c.cpf && !existingMap[key].cpf) { existingMap[key].cpf = c.cpf; updated++; }
+      if (c.email && !existingMap[key].email) { existingMap[key].email = c.email; updated++; }
+      if (!updated) kept++;
+    } else {
+      const id = uuid();
+      existingMap[key] = { id, nome, whatsapp, cpf: c.cpf || '', email: c.email || '', link_indicacao: '', editado: false };
+      added++;
+    }
+  });
+  const merged = Object.values(existingMap);
+  writeStore('clients', merged);
+  res.json({ ok: true, total: merged.length, added, updated, kept });
+});
+
 app.post('/api/columns/sync', (req, res) => {
   const { columns } = req.body;
   if (!Array.isArray(columns)) return res.status(400).json({ error: 'Array esperado' });
