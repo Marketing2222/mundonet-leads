@@ -1196,28 +1196,7 @@
 </div>
 
 <!-- ===== MODAL: MOVER LEAD ===== -->
-<div class="modal-overlay" id="modal-move">
-  <div class="modal-box" style="max-width:380px">
-    <div class="modal-header">
-      <h2 class="modal-title">↕️ Mover Lead</h2>
-      <button class="modal-close" onclick="closeModal('modal-move')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-group" style="margin-bottom:12px">
-        <label class="form-label">Coluna destino</label>
-        <select id="move-col-select" class="form-control"></select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Comentário (opcional)</label>
-        <textarea id="move-comment" class="form-control" placeholder="Registre uma observação..." style="min-height:70px"></textarea>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('modal-move')">Cancelar</button>
-      <button class="btn btn-primary" onclick="confirmMove()">Mover</button>
-    </div>
-  </div>
-</div>
+<!-- modal-move removed -->
 
 <!-- ===== MODAL: CONFIRMAÇÃO ===== -->
 <div class="modal-overlay" id="modal-confirm">
@@ -1945,7 +1924,7 @@ let apiConfig = { ixc:{ url:'', token:'' }, zapisp:{ url:'', token:'' } };
 let isAdminMode = false;
 let currentLeadId = null;
 let confirmCallback = null;
-let moveLeadId = null;
+// moveLeadId removed (no modal-move needed)
 let dragLeadId = null;
 let searchActive = false;
 
@@ -2129,7 +2108,8 @@ function renderCard(lead,col){
       <div class="card-footer">
         <span class="card-date">${date}</span>
         <div class="card-actions">
-          <button class="card-action-btn move" onclick="event.stopPropagation();openMove('${lead.id}')" title="Mover"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 5 5 12"/></svg></button>
+          <button class="card-action-btn move" onclick="event.stopPropagation();moveLeadUp('${lead.id}')" title="Mover para cima"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></button>
+          <button class="card-action-btn move" onclick="event.stopPropagation();moveLeadDown('${lead.id}')" title="Mover para baixo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg></button>
           <button class="card-action-btn edit" onclick="event.stopPropagation();openLead('${lead.id}')" title="Editar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M17 3a2.85 2.85 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></button>
           <button class="card-action-btn del"  onclick="event.stopPropagation();confirmDelete('${lead.id}')" title="Excluir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
         </div>
@@ -2488,31 +2468,27 @@ function confirmDelete(id){
 async function confirmAction(){ if(typeof confirmCallback==='function') await confirmCallback(); confirmCallback=null; closeModal('modal-confirm'); }
 
 // ===== MOVE =====
-function openMove(id){
-  moveLeadId=id;
-  const lead=getLead(id); if(!lead) return;
-  const sel=document.getElementById('move-col-select');
-  sel.innerHTML=sortedCols().map(c=>`<option value="${c.id}" ${c.id===lead.columnId?'selected':''} style="color:${c.color}">${c.name}</option>`).join('');
-  document.getElementById('move-comment').value='';
-  openModal('modal-move');
+function moveLeadUp(id){
+  const leads=state.leads.filter(l=>l.columnId===getLead(id)?.columnId);
+  const idx=leads.findIndex(l=>l.id===id);
+  if(idx<=0) return;
+  const a=leads[idx],b=leads[idx-1];
+  const ai=state.leads.indexOf(a),bi=state.leads.indexOf(b);
+  state.leads[ai]=b; state.leads[bi]=a;
+  api('PUT',`/api/leads/${a.id}`,{_order:state.leads.indexOf(a)});
+  api('PUT',`/api/leads/${b.id}`,{_order:state.leads.indexOf(b)});
+  render();
 }
-async function confirmMove(){
-  const lead=getLead(moveLeadId); if(!lead) return;
-  const toId=document.getElementById('move-col-select').value;
-  const comment=document.getElementById('move-comment').value.trim();
-  if(lead.columnId!==toId){
-    const ganhoId=getGanhoColumnId();
-    if(lead.columnId===ganhoId&&toId!==ganhoId){
-      lead.comissaoStatus='';lead.comissaoFormaPagamento='';lead.comissaoValor='';
-      lead.comissaoDataPagamento='';lead.comissaoObs='';lead.comissaoComprovante='';
-    }
-    addHistory(lead,comment||'Movido pelo admin',lead.columnId,toId);
-    lead.columnId=toId; lead.etapa=toId;
-    try { await api('PUT', `/api/leads/${lead.id}`, toSnake(lead)); } catch(ex) { toast('Erro: '+ex.message,'error'); }
-    render();
-    toast(`Lead movido para "${getCol(toId)?.name}"`, 'success');
-  }
-  closeModal('modal-move'); moveLeadId=null;
+function moveLeadDown(id){
+  const leads=state.leads.filter(l=>l.columnId===getLead(id)?.columnId);
+  const idx=leads.findIndex(l=>l.id===id);
+  if(idx<0||idx>=leads.length-1) return;
+  const a=leads[idx],b=leads[idx+1];
+  const ai=state.leads.indexOf(a),bi=state.leads.indexOf(b);
+  state.leads[ai]=b; state.leads[bi]=a;
+  api('PUT',`/api/leads/${a.id}`,{_order:state.leads.indexOf(a)});
+  api('PUT',`/api/leads/${b.id}`,{_order:state.leads.indexOf(b)});
+  render();
 }
 
 // ===== COLUMNS =====
