@@ -381,17 +381,24 @@ app.get('/api/clients/fetch-ixc', async (req, res) => {
   if (!url.startsWith('http')) url = 'https://' + url;
   url = url.replace(/\/+$/, '');
 
+  const basicAuth = 'Basic ' + Buffer.from(token).toString('base64');
+
   try {
     const allClients = [];
     let page = 1;
     let hasMore = true;
     while (hasMore) {
       const resp = await fetch(`${url}/clientes?page=${page}&limit=100`, {
-        headers: { 'iusession': token, 'Content-Type': 'application/json' }
+        headers: {
+          'Authorization': basicAuth,
+          'iusession': token,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
       });
       if (!resp.ok) {
         const body = await resp.text().catch(()=>'');
-        throw new Error(`HTTP ${resp.status} - ${body.substring(0,200)}`);
+        throw new Error(`HTTP ${resp.status} ${resp.statusText} - ${body.substring(0,300)}`);
       }
       const data = await resp.json();
       const items = data.data || data.clients || data || [];
@@ -414,6 +421,36 @@ app.get('/api/clients/fetch-ixc', async (req, res) => {
   } catch (e) {
     res.status(500).json({ error: 'Erro ao buscar clientes IXC: ' + e.message });
   }
+});
+
+// ---------- IXC TEST ----------
+app.get('/api/clients/test-ixc', async (req, res) => {
+  const cfg = readObj('config');
+  let url = cfg.ixc_url;
+  const token = cfg.ixc_token;
+  if (!url || !token) return res.status(400).json({ error: 'Configure URL e Token do IXC primeiro' });
+  if (!url.startsWith('http')) url = 'https://' + url;
+  url = url.replace(/\/+$/, '');
+
+  const methods = [
+    { name: 'Basic Auth (token inteiro)', headers: { 'Authorization': 'Basic ' + Buffer.from(token).toString('base64') } },
+    { name: 'iusession header', headers: { 'iusession': token } },
+    { name: 'Bearer token', headers: { 'Authorization': 'Bearer ' + token } },
+  ];
+
+  const results = [];
+  for (const m of methods) {
+    try {
+      const resp = await fetch(`${url}/clientes?page=1&limit=1`, {
+        headers: { ...m.headers, 'Content-Type': 'application/json', 'Accept': 'application/json' }
+      });
+      const body = await resp.text().catch(()=>'');
+      results.push({ method: m.name, status: resp.status, statusText: resp.statusText, body: body.substring(0,200) });
+    } catch (e) {
+      results.push({ method: m.name, error: e.message });
+    }
+  }
+  res.json({ url, results });
 });
 
 // ---------- PREFS ----------
