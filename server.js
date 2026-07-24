@@ -474,15 +474,54 @@ app.get('/api/debug-ixc', async (req, res) => {
   if (!url.startsWith('http')) url = 'https://' + url;
   url = url.replace(/\/+$/, '');
   const basicAuth = 'Basic ' + Buffer.from(token).toString('base64');
+
+  const tests = [];
+
+  // Test 1: login with token
   try {
-    const resp = await fetch(`${url}/cliente?page=1&limit=5`, {
-      headers: { 'Authorization': basicAuth, 'Content-Type': 'application/json', 'Accept': 'application/json' }
+    const r1 = await fetch(`${url}/login`, {
+      method: 'POST',
+      headers: { 'Authorization': basicAuth, 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({})
     });
-    const raw = await resp.text();
-    res.json({ status: resp.status, url: `${url}/cliente?page=1&limit=5`, raw: raw.substring(0, 2000) });
-  } catch (e) {
-    res.json({ error: e.message });
-  }
+    tests.push({ endpoint: '/login POST', status: r1.status, body: (await r1.text()).substring(0, 500) });
+  } catch(e) { tests.push({ endpoint: '/login POST', error: e.message }); }
+
+  // Test 2: login with token as iusession
+  try {
+    const r2 = await fetch(`${url}/login`, {
+      method: 'POST',
+      headers: { 'iusession': token, 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({})
+    });
+    tests.push({ endpoint: '/login POST (iusession)', status: r2.status, body: (await r2.text()).substring(0, 500) });
+  } catch(e) { tests.push({ endpoint: '/login POST (iusession)', error: e.message }); }
+
+  // Test 3: just /cliente with basic auth
+  try {
+    const r3 = await fetch(`${url}/cliente?page=1&limit=1`, {
+      headers: { 'Authorization': basicAuth, 'Accept': 'application/json' }
+    });
+    tests.push({ endpoint: '/cliente (basic)', status: r3.status, body: (await r3.text()).substring(0, 500) });
+  } catch(e) { tests.push({ endpoint: '/cliente (basic)', error: e.message }); }
+
+  // Test 4: /clientes plural
+  try {
+    const r4 = await fetch(`${url}/clientes?page=1&limit=1`, {
+      headers: { 'Authorization': basicAuth, 'Accept': 'application/json' }
+    });
+    tests.push({ endpoint: '/clientes (basic)', status: r4.status, body: (await r4.text()).substring(0, 500) });
+  } catch(e) { tests.push({ endpoint: '/clientes (basic)', error: e.message }); }
+
+  // Test 5: root webservice
+  try {
+    const r5 = await fetch(`${url}/`, {
+      headers: { 'Authorization': basicAuth, 'Accept': 'application/json' }
+    });
+    tests.push({ endpoint: '/ (root)', status: r5.status, body: (await r5.text()).substring(0, 500) });
+  } catch(e) { tests.push({ endpoint: '/ (root)', error: e.message }); }
+
+  res.json({ url, tests });
 });
 
 // ---------- PREFS ----------
