@@ -402,7 +402,7 @@ app.get('/api/clients/fetch-ixc', async (req, res) => {
           'Content-Type': 'application/x-www-form-urlencoded',
           'Accept': 'application/json'
         },
-        body: new URLSearchParams({ page: String(page), rp: '100', sortname: 'cliente.id', sortorder: 'desc' }).toString()
+        body: new URLSearchParams({ oper: '=', qtype: 'ativo', query: 'S', page: String(page), rp: '100', sortname: 'cliente.id', sortorder: 'desc' }).toString()
       });
       if (!resp.ok) {
         const body = await resp.text().catch(()=>'');
@@ -485,21 +485,21 @@ app.get('/api/debug-ixc', async (req, res) => {
   const auth = ixcAuth(token);
   const tests = [];
 
+  const listParams = 'oper=%3D&qtype=ativo&query=S&page=1&rp=5&sortname=cliente.id&sortorder=desc';
+
   const combos = [
-    { name: 'POST + Basic(user:pass) + iusession + form', method: 'POST', headers: { 'Authorization': auth, 'iusession': token, 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'page=1&rp=5&sortname=cliente.id&sortorder=desc' },
-    { name: 'POST + Basic(user:pass) + form', method: 'POST', headers: { 'Authorization': auth, 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'page=1&rp=5&sortname=cliente.id&sortorder=desc' },
-    { name: 'POST + iusession + form', method: 'POST', headers: { 'iusession': token, 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'page=1&rp=5&sortname=cliente.id&sortorder=desc' },
-    { name: 'POST + Basic(token inteiro) + form', method: 'POST', headers: { 'Authorization': 'Basic ' + Buffer.from(token).toString('base64'), 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'page=1&rp=5&sortname=cliente.id&sortorder=desc' },
+    { name: 'POST + Basic(user:pass) + LIST', method: 'POST', headers: { 'Authorization': auth, 'iusession': token, 'Content-Type': 'application/x-www-form-urlencoded' }, body: listParams },
+    { name: 'POST + Basic(token inteiro) + LIST', method: 'POST', headers: { 'Authorization': 'Basic ' + Buffer.from(token).toString('base64'), 'Content-Type': 'application/x-www-form-urlencoded' }, body: listParams },
   ];
 
   for (const c of combos) {
     try {
       const r = await fetch(`${url}/cliente`, { method: c.method, headers: { ...c.headers, 'Accept': 'application/json' }, body: c.body });
       const body = await r.text();
-      tests.push({ name: c.name, status: r.status, body: body.substring(0, 500) });
+      tests.push({ name: c.name, status: r.status, body: body.substring(0, 800) });
     } catch(e) { tests.push({ name: c.name, error: e.message }); }
   }
-  res.json({ url, token_format: token.includes(':') ? 'user:pass (split)' : 'single', tests });
+  res.json({ url, tests });
 });
 
 // ---------- PREFS ----------
