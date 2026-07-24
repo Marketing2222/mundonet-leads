@@ -400,7 +400,20 @@ app.get('/api/clients/fetch-ixc', async (req, res) => {
         throw new Error(`HTTP ${resp.status} ${resp.statusText} - ${body.substring(0,300)}`);
       }
       const data = await resp.json();
-      const items = data.data || data.clients || data || [];
+      console.log('IXC response keys:', Object.keys(data));
+      console.log('IXC response sample:', JSON.stringify(data).substring(0, 500));
+      let items = [];
+      if (Array.isArray(data)) items = data;
+      else if (data.data && Array.isArray(data.data)) items = data.data;
+      else if (data.clientes && Array.isArray(data.clientes)) items = data.clientes;
+      else if (data.registros && Array.isArray(data.registros)) items = data.registros;
+      else if (data.rows && Array.isArray(data.rows)) items = data.rows;
+      else if (data.results && Array.isArray(data.results)) items = data.results;
+      else {
+        for (const key of Object.keys(data)) {
+          if (Array.isArray(data[key]) && data[key].length > 0 && data[key][0].id) { items = data[key]; break; }
+        }
+      }
       if (Array.isArray(items)) {
         items.forEach(c => {
           allClients.push({
@@ -444,7 +457,7 @@ app.get('/api/clients/test-ixc', async (req, res) => {
         headers: { ...m.headers, 'Content-Type': 'application/json', 'Accept': 'application/json' }
       });
       const body = await resp.text().catch(()=>'');
-      results.push({ method: m.name, status: resp.status, statusText: resp.statusText, body: body.substring(0,200) });
+      results.push({ method: m.name, status: resp.status, statusText: resp.statusText, body: body.substring(0,500) });
     } catch (e) {
       results.push({ method: m.name, error: e.message });
     }
