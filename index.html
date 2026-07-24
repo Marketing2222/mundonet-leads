@@ -2933,8 +2933,10 @@ function renderTemplateManage(){
       <span class="tpl-item-label">${escHtml(t.label)}</span>
       <span class="tpl-item-text">${escHtml(t.text)}</span>
       <div class="tpl-item-btns">
-        <button class="col-manage-btn" onclick="editTemplate(${i})" title="Editar" style="color:var(--accent-amber)">✏</button>
-        <button class="col-manage-btn" onclick="removeTemplate(${i})" title="Excluir" style="color:var(--accent-red)">🗑</button>
+        <button class="col-manage-btn" onclick="moveTemplateUp(${i})" title="Mover para cima"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></button>
+        <button class="col-manage-btn" onclick="moveTemplateDown(${i})" title="Mover para baixo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg></button>
+        <button class="col-manage-btn" onclick="editTemplate(${i})" title="Editar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M17 3a2.85 2.85 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></button>
+        <button class="col-manage-btn" onclick="removeTemplate(${i})" title="Excluir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
       </div>
     </div>`).join('');
 }
@@ -2956,6 +2958,22 @@ function removeTemplate(i){
   state.prefs.templates.splice(i,1);
   renderTemplateManage();
   toast('Template removido!','info');
+}
+function moveTemplateUp(i){
+  if(i<=0) return;
+  state.prefs=state.prefs||{};
+  state.prefs.templates=getTemplates();
+  const a=state.prefs.templates[i],b=state.prefs.templates[i-1];
+  state.prefs.templates[i]=b; state.prefs.templates[i-1]=a;
+  renderTemplateManage();
+}
+function moveTemplateDown(i){
+  state.prefs=state.prefs||{};
+  state.prefs.templates=getTemplates();
+  if(i>=state.prefs.templates.length-1) return;
+  const a=state.prefs.templates[i],b=state.prefs.templates[i+1];
+  state.prefs.templates[i]=b; state.prefs.templates[i+1]=a;
+  renderTemplateManage();
 }
 function editTemplate(i){
   const tpls=getTemplates();
