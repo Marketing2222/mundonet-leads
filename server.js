@@ -488,15 +488,22 @@ app.get('/api/debug-ixc', async (req, res) => {
   const listParams = 'oper=&qtype=ativo&query=S&page=1&rp=5&sortname=cliente.id&sortorder=desc';
 
   const combos = [
-    { name: 'POST + _search=false (lista jqGrid)', body: '_search=false&page=1&rp=5&sortname=cliente.id&sortorder=desc' },
-    { name: 'POST + nd timestamp', body: `nd=${Date.now()}&page=1&rp=5&sortname=cliente.id&sortorder=desc` },
-    { name: 'POST + _search + nd', body: `_search=false&nd=${Date.now()}&page=1&rp=5&sortname=cliente.id&sortorder=desc` },
-    { name: 'GET com params', method: 'GET', body: null, url_suffix: '?_search=false&page=1&rp=5&sortname=cliente.id&sortorder=desc' },
+    { name: 'POST /listar_cliente', route: '/listar_cliente' },
+    { name: 'POST /listar_cliente (nd)', route: '/listar_cliente', body: `_search=false&nd=${Date.now()}&page=1&rp=5&sortname=cliente.id&sortorder=desc` },
+    { name: 'GET /listar_cliente', method: 'GET', route: '/listar_cliente', body: null },
+    { name: 'POST /listar_cliente_simples', route: '/listar_cliente_simples' },
+    { name: 'POST /cliente_listar', route: '/cliente_listar' },
+    { name: 'GET /cliente_listar', method: 'GET', route: '/cliente_listar', body: null },
+    { name: 'POST /cliente/listar', route: '/cliente/listar' },
+    { name: 'GET /cliente/listar', method: 'GET', route: '/cliente/listar', body: null },
+    { name: 'POST /clientes/listar', route: '/clientes/listar' },
+    { name: 'POST /cliente_s', route: '/cliente_s' },
+    { name: 'POST /cliente_s (nd)', route: '/cliente_s', body: `_search=false&nd=${Date.now()}&page=1&rp=5&sortname=id&sortorder=desc` },
   ];
 
   for (const c of combos) {
     try {
-      const reqUrl = `${url}/cliente${c.url_suffix || ''}`;
+      const reqUrl = `${url}${c.route || '/cliente'}${c.url_suffix || ''}`;
       const opts = {
         method: c.method || 'POST',
         headers: { 'Authorization': auth, 'iusession': token, 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json' }
@@ -504,7 +511,8 @@ app.get('/api/debug-ixc', async (req, res) => {
       if (c.body) opts.body = c.body;
       const r = await fetch(reqUrl, opts);
       const body = await r.text();
-      tests.push({ name: c.name, status: r.status, body: body.substring(0, 800) });
+      const ok = body.includes('"total"') || body.includes('"data"') || body.includes('"rows"');
+      tests.push({ name: c.name, status: r.status, success: ok, body: body.substring(0, 500) });
     } catch(e) { tests.push({ name: c.name, error: e.message }); }
   }
   res.json({ url, tests });
