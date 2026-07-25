@@ -370,14 +370,14 @@ app.post('/api/columns/sync', (req, res) => {
 app.post('/api/public-indicacao/check-whatsapp', (req, res) => {
   const { whatsapp } = req.body;
   if (!whatsapp) return res.status(400).json({ error: 'WhatsApp obrigatório' });
-  const leads = readStore('leads');
+  const clients = readStore('clients');
   const clean = String(whatsapp).replace(/\D/g, '');
-  const match = leads.find(l => {
-    const leadWp = String(l.leadWhatsapp || '').replace(/\D/g, '');
-    return leadWp === clean && l.leadNome;
+  const match = clients.find(c => {
+    const cWp = String(c.whatsapp || '').replace(/\D/g, '');
+    return cWp === clean;
   });
   if (match) {
-    return res.json({ nome: match.leadNome });
+    return res.json({ nome: match.nome });
   }
   res.json({ nome: null });
 });
