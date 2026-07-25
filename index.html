@@ -1595,6 +1595,8 @@
     <div style="display:flex;gap:6px;align-items:center">
       <button class="btn btn-ghost" onclick="toggleSelectMode()" id="btn-select-clients" style="font-size:11px;padding:5px 8px;border:1px solid var(--border);border-radius:6px" title="Selecionar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 12l2 2 4-4"/></svg></button>
       <button class="btn btn-ghost" onclick="document.getElementById('csv-file-input').click()" style="font-size:11px;padding:5px 8px;border:1px solid var(--border);border-radius:6px" title="Importar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M10 9l-4 4h8l-4-4z"/><line x1="12" y1="13" x2="12" y2="17"/></svg></button>
+      <button class="btn btn-ghost" onclick="document.getElementById('debug-pdf-input').click()" style="font-size:11px;padding:5px 8px;border:1px solid var(--border);border-radius:6px" title="Debug PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></button>
+      <input type="file" id="debug-pdf-input" accept=".pdf" style="display:none" onchange="debugPDF(this)">
       <button class="btn btn-ghost" onclick="openAddClientPopup()" style="font-size:11px;padding:5px 8px;border:1px solid var(--border);border-radius:6px" title="Adicionar cliente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
       <input type="file" id="csv-file-input" accept=".csv,.txt,.xls,.xlsx,.pdf" style="display:none" onchange="importFile(this)">
       <button class="clients-close" onclick="closeClientsPanel()">✕</button>
@@ -3802,6 +3804,48 @@ async function parseCSV(file){
   const rows=[];
   for(let i=0;i<lines.length;i++) rows.push(lines[i].split(sep).map(c=>c.trim().replace(/"/g,'')));
   return rows;
+}
+
+async function debugPDF(input){
+  const file=input.files[0]; if(!file) return;
+  try{
+    const arrayBuf=await file.arrayBuffer();
+    const pdf=await pdfjsLib.getDocument({data:arrayBuf}).promise;
+    let output='=== DEBUG PDF ===\nArquivo: '+file.name+'\nPáginas: '+pdf.numPages+'\n\n';
+    for(let p=1;p<=pdf.numPages;p++){
+      const page=await pdf.getPage(p);
+      const content=await page.getTextContent();
+      output+='--- PÁGINA '+p+' ---\n';
+      output+='--- ITENS RAW (text|x|y) ---\n';
+      const items=[];
+      content.items.forEach(item=>{
+        const tx=item.transform;
+        items.push({text:item.str, x:Math.round(tx[4]), y:Math.round(tx[5])});
+      });
+      items.sort((a,b)=>a.y===b.y?a.x-b.x:b.y-a.y);
+      const lines={};
+      items.forEach(item=>{
+        const yKey=item.y;
+        if(!lines[yKey]) lines[yKey]=[];
+        lines[yKey].push(item);
+      });
+      const sortedY=Object.keys(lines).map(Number).sort((a,b)=>b-a);
+      sortedY.forEach(y=>{
+        const lineItems=lines[y].sort((a,b)=>a.x-b.x);
+        output+='[Y='+y+'] '+lineItems.map(i=>i.text).join(' | ')+'\n';
+      });
+      output+='\n--- TEXTO POR PÁGINA ---\n';
+      const textItems=content.items.map(i=>i.str).filter(s=>s.trim());
+      output+=textItems.join('\n')+'\n\n';
+    }
+    const blob=new Blob([output],{type:'text/plain'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=file.name.replace(/\.pdf$/i,'_debug.txt');
+    a.click();
+    toast('Debug baixado! Envie o arquivo .txt','success');
+  }catch(e){ toast('Erro no debug: '+e.message,'error'); }
+  input.value='';
 }
 
 async function parseExcel(file){
