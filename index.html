@@ -3614,38 +3614,6 @@ async function parsePDF(file){
     lines[yKey].push(item);
   });
   const sortedY=Object.keys(lines).map(Number).sort((a,b)=>b-a);
-  const tableRows=[];
-  sortedY.forEach(y=>{
-    const items=lines[y].sort((a,b)=>a.x-b.x);
-    const texts=items.map(i=>i.text);
-    const fullLine=texts.join(' ').trim();
-    if(!fullLine) return;
-    const phoneMatch=fullLine.match(/\(\d{2}\)\s*\d{4,5}[\-\s]?\d{4}/);
-    const cpfMatch=fullLine.match(/\d{3}[\.\s]\d{3}[\.\s]\d{3}[\-\s]?\d{2}/);
-    const cnpjMatch=fullLine.match(/\d{2}[\.\s]\d{3}[\.\s]\d{3}[\/\s]\d{4}[\-\s]?\d{2}/);
-    const emailMatch=fullLine.match(/[\w\.\-]+@[\w\.\-]+\.\w+/);
-    if(!phoneMatch && !cpfMatch && !cnpjMatch && !emailMatch) return;
-    let cliente='', telefone='', cpf='', email='';
-    telefone=phoneMatch?phoneMatch[0]:'';
-    cpf=cnpjMatch?cnpjMatch[0]:(cpfMatch?cpfMatch[0]:'');
-    email=emailMatch?emailMatch[0]:'';
-    const nameParts=[];
-    items.forEach(item=>{
-      const t=item.text.trim();
-      if(!t) return;
-      if(t.match(/^\(\d{2}\)/)||t.match(/^\d{4,5}[\-\s]?\d{4}$/)) return;
-      if(t.match(/^\d{3}[\.\s]\d{3}[\.\s]\d{3}/)) return;
-      if(t.match(/^\d{2}[\.\s]\d{3}[\.\s]\d{3}[\/]/)) return;
-      if(t.match(/^[\w\.\-]+@[\w\.\-]+\.\w+$/)) return;
-      if(t.match(/^\d{4,6}$/)) return;
-      nameParts.push(t);
-    });
-    cliente=nameParts.join(' ').replace(/^\d+[\.\-\/]?\d*[\.\-\/]?\d*[\.\-\/]?\d*[\.\-\/]?\d*\s*/,'').trim();
-    if(cliente && cliente.length>2){
-      tableRows.push(['Cliente','Telefone','CPF/CNPJ','E-mail']);
-      break;
-    }
-  });
   const result=[];
   result.push(['Cliente','Telefone','CPF/CNPJ','E-mail']);
   sortedY.forEach(y=>{
