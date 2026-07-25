@@ -3578,10 +3578,10 @@ async function importFile(input){
   const telIdx=headers.findIndex(h=>h.includes('telefone')||h.includes('whatsapp')||h.includes('celular')||h.includes('phone')||h.includes('fone')||h.includes('contato'));
   const emailIdx=headers.findIndex(h=>h.includes('email')||h.includes('e-mail')||h.includes('e_mail'));
   if(nameIdx===-1){ toast('Coluna de Nome não encontrada. Cabeçalhos: '+headers.join(', '),'error'); return; }
-  const clients=[];
+  const importedClients=[];
   for(let i=1;i<rows.length;i++){
     const cols=rows[i]; if(!cols[nameIdx]) continue;
-    clients.push({
+    importedClients.push({
       nome:cols[nameIdx]||'',
       whatsapp:telIdx>=0?(cols[telIdx]||''):'',
       cpf:cpfIdx>=0?(cols[cpfIdx]||''):'',
@@ -3590,9 +3590,9 @@ async function importFile(input){
       editado:false
     });
   }
-  if(!clients.length){ toast('Nenhum cliente encontrado','error'); return; }
+  if(!importedClients.length){ toast('Nenhum cliente encontrado','error'); return; }
   try{
-    const r=await api('POST','/api/clients/import',{clients});
+    const r=await api('POST','/api/clients/import',{clients:importedClients});
     toast(`${r.added} novos, ${r.updated} atualizados`,'success');
     const merged=await api('GET','/api/clients');
     clients=merged;
