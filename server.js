@@ -273,7 +273,7 @@ app.get('/api/clients', (req, res) => {
 });
 app.post('/api/clients', (req, res) => {
   const c = req.body;
-  const cli = { id: c.id || uuid(), nome: c.nome, whatsapp: c.whatsapp||'', link_indicacao: c.link_indicacao||'', editado: c.editado || false };
+  const cli = { id: c.id || uuid(), nome: c.nome, whatsapp: c.whatsapp||'', cpf: c.cpf||'', link_indicacao: c.link_indicacao||'', editado: c.editado || false };
   const list = readStore('clients');
   list.push(cli); writeStore('clients', list);
   res.json(cli);
