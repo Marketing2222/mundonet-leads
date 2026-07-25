@@ -3569,7 +3569,13 @@ async function importFile(input){
       const ws=wb.Sheets[wb.SheetNames[0]];
       const json=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
       if(json.length<2){ toast('Planilha vazia','error'); return; }
-      rows=json.map(r=>r.map(c=>String(c).trim().toLowerCase()));
+      let headerRow=0;
+      for(let r=0;r<Math.min(json.length,10);r++){
+        const row=json[r].map(c=>String(c).toLowerCase());
+        if(row.some(c=>c.includes('nome')||c.includes('razao')||c.includes('razão')||c.includes('cliente'))){ headerRow=r; break; }
+      }
+      const dataRows=json.slice(headerRow).map(r=>r.map(c=>String(c).trim().toLowerCase()));
+      rows=dataRows;
     } else { toast('Formato não suportado. Use CSV, XLS ou XLSX.','error'); return; }
   }catch(e){ toast('Erro ao ler arquivo: '+e.message,'error'); return; }
   const headers=rows[0];
@@ -3578,6 +3584,7 @@ async function importFile(input){
   const telIdx=headers.findIndex(h=>h.includes('telefone')||h.includes('whatsapp')||h.includes('celular')||h.includes('phone')||h.includes('fone')||h.includes('contato'));
   const emailIdx=headers.findIndex(h=>h.includes('email')||h.includes('e-mail')||h.includes('e_mail'));
   if(nameIdx===-1){ toast('Coluna de Nome não encontrada. Cabeçalhos: '+headers.join(', '),'error'); return; }
+  toast(`Encontradas ${rows.length-1} linhas de dados...`,'info');
   const importedClients=[];
   for(let i=1;i<rows.length;i++){
     const cols=rows[i]; if(!cols[nameIdx]) continue;
