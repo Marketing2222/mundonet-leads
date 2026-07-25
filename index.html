@@ -761,7 +761,9 @@
     .client-action-btn:hover { background: var(--bg-surface); border-color: var(--border-light); color: var(--text-primary); }
     .client-action-btn.danger:hover { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.3); color: #f87171; }
     .select-mode .client-item-actions { display: none !important; }
-    .client-item .client-checkbox { display: none; accent-color: var(--accent-blue); width: 16px; height: 16px; flex-shrink: 0; }
+    .client-item .client-checkbox { display: none; width: 18px; height: 18px; flex-shrink: 0; border-radius: 50%; border: 2px solid var(--text-muted); appearance: none; -webkit-appearance: none; cursor: pointer; transition: all 0.15s; position: relative; background: transparent; }
+    .client-item .client-checkbox:checked { border-color: var(--accent-blue); background: var(--accent-blue); }
+    .client-item .client-checkbox:checked::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 6px; height: 6px; border-radius: 50%; background: #fff; }
     .select-mode .client-item .client-checkbox { display: block; }
     .select-mode .client-item { cursor: pointer; }
     .select-mode .client-item:hover { background: rgba(59,130,246,0.08); }
@@ -957,7 +959,8 @@
           <button class="toolbar-btn" onclick="if(!isAdminMode){toast('Faça login primeiro','error');return}openSettings()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Senha</button>
         </div>
       </div>
-      <button class="toolbar-btn" onclick="if(!isAdminMode){toast('Faça login primeiro','error');return}openTrash()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg> Lixeira</button>
+      <button class="toolbar-btn" onclick="if(!isAdminMode){toast('Faça login primeiro','error');return}openArchived()" title="Arquivados"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="5" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg></button>
+      <button class="toolbar-btn" onclick="if(!isAdminMode){toast('Faça login primeiro','error');return}openTrash()" title="Lixeira"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
       <button class="toolbar-btn" id="btn-dashboard-toggle" onclick="toggleDashboard()" title="Dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg> Dashboard</button>
     </div>
     <div class="header-divider"></div>
@@ -1618,11 +1621,11 @@
     </div>
     <div class="form-group" style="margin-bottom:10px">
       <label class="form-label">WhatsApp</label>
-      <input type="text" id="client-edit-whatsapp" class="form-control">
+      <input type="text" id="client-edit-whatsapp" class="form-control" oninput="maskPhone(this)" maxlength="15" placeholder="(00) 00000-0000">
     </div>
     <div class="form-group">
       <label class="form-label">CPF/CNPJ</label>
-      <input type="text" id="client-edit-cpf" class="form-control" placeholder="000.000.000-00">
+      <input type="text" id="client-edit-cpf" class="form-control" oninput="maskCpfCnpj(this)" maxlength="18" placeholder="000.000.000-00">
     </div>
   </div>
   <div class="client-edit-footer">
@@ -1868,6 +1871,19 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="modal-archived">
+  <div class="modal-box" style="max-width:600px">
+    <div class="modal-header">
+      <h2 class="modal-title">📦 Arquivados</h2>
+      <button class="modal-close" onclick="closeModal('modal-archived')">✕</button>
+    </div>
+    <div class="modal-body" id="archived-list" style="max-height:60vh;overflow-y:auto"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-archived')">Fechar</button>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div id="toast-container"></div>
 
@@ -1890,6 +1906,21 @@ function maskPhone(input) {
     v = v.replace(/^(\d\d)(\d{0,5})/, '($1) $2');
   } else if (v.length > 0) {
     v = v.replace(/^(\d*)/, '($1');
+  }
+  input.value = v;
+}
+
+function maskCpfCnpj(input) {
+  let v = input.value.replace(/\D/g, '');
+  if (v.length > 14) v = v.slice(0, 14);
+  if (v.length > 11) {
+    v = v.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{0,2}).*/, '$1.$2.$3/$4-$5');
+  } else if (v.length > 9) {
+    v = v.replace(/^(\d{3})(\d{3})(\d{3})(\d{0,2}).*/, '$1.$2.$3-$4');
+  } else if (v.length > 6) {
+    v = v.replace(/^(\d{3})(\d{3})(\d{0,3}).*/, '$1.$2.$3');
+  } else if (v.length > 3) {
+    v = v.replace(/^(\d{3})(\d{0,3}).*/, '$1.$2');
   }
   input.value = v;
 }
@@ -3611,10 +3642,9 @@ async function batchArchive(){
   if(!confirm(`Arquivar ${selectedClients.size} cliente(s)?`)) return;
   for(const id of selectedClients){
     const c=clients.find(x=>x.id===id);
-    if(c){ c.arquivado=true; try{await api('PUT',`/api/clients/${c.id}`,c)}catch(e){} }
+    if(c){ try{await api('POST','/api/archived',c); await api('DELETE',`/api/clients/${c.id}`)}catch(e){} }
   }
-  const merged=await api('GET','/api/clients');
-  clients=merged;
+  clients=clients.filter(c=>!selectedClients.has(c.id));
   selectedClients.clear();
   renderClientsList(document.getElementById('clients-search-input')?.value||'');
   toast('Clientes arquivados!','success');
@@ -3622,15 +3652,16 @@ async function batchArchive(){
 
 async function batchTrash(){
   if(!selectedClients.size){ toast('Nenhum cliente selecionado','error'); return; }
-  if(!confirm(`Excluir ${selectedClients.size} cliente(s)? Esta ação não pode ser desfeita.`)) return;
+  if(!confirm(`Mover ${selectedClients.size} cliente(s) para a lixeira?`)) return;
   for(const id of selectedClients){
+    const c=clients.find(x=>x.id===id);
+    if(c){ c._source='client'; c._deleted_at=new Date().toISOString(); try{await api('POST','/api/trash',c)}catch(e){} }
     try{await api('DELETE',`/api/clients/${id}`)}catch(e){}
   }
-  const merged=await api('GET','/api/clients');
-  clients=merged;
+  clients=clients.filter(c=>!selectedClients.has(c.id));
   selectedClients.clear();
   renderClientsList(document.getElementById('clients-search-input')?.value||'');
-  toast('Clientes excluídos!','success');
+  toast('Clientes movidos para lixeira!','success');
 }
 async function importFile(input){
   const file=input.files[0]; if(!file) return;
@@ -3790,8 +3821,8 @@ async function archiveClient(id){
   const c=clients.find(x=>x.id===id); if(!c) return;
   if(!confirm('Arquivar cliente "'+c.nome+'"?')) return;
   try {
-    c.arquivado=true;
-    await api('PUT',`/api/clients/${id}`,c);
+    await api('POST','/api/archived',c);
+    await api('DELETE',`/api/clients/${id}`);
     clients=clients.filter(x=>x.id!==id);
     renderClientsList(document.getElementById('clients-search-input')?.value||'');
     updateApiStatus();
@@ -3803,11 +3834,13 @@ async function trashClient(id){
   const c=clients.find(x=>x.id===id); if(!c) return;
   if(!confirm('Excluir cliente "'+c.nome+'"?')) return;
   try {
+    c._source='client'; c._deleted_at=new Date().toISOString();
+    await api('POST','/api/trash',c);
     await api('DELETE',`/api/clients/${id}`);
     clients=clients.filter(x=>x.id!==id);
     renderClientsList(document.getElementById('clients-search-input')?.value||'');
     updateApiStatus();
-    toast('Cliente excluído!','success');
+    toast('Cliente movido para lixeira!','success');
   } catch(ex) { toast('Erro: '+ex.message,'error'); }
 }
 
@@ -4047,18 +4080,30 @@ function renderTrashList(){
   if(!trashData.length){ el.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-muted)">🗑️ A lixeira está vazia</div>'; return; }
   el.innerHTML=trashData.map(l=>{
     const dt=l._deleted_at?new Date(l._deleted_at).toLocaleString('pt-BR'):'';
-    const col=l.column_id?(sortedCols().find(c=>c.id===l.column_id)||{}).name||l.column_id:'';
-    return `<div class="trash-item"><div class="trash-item-info"><div class="trash-item-name">${escHtml(l.leadNome||'Sem nome')}</div><div class="trash-item-meta">Cliente: ${escHtml(l.clienteNome||'—')} · Coluna: ${escHtml(col)} · Excluído: ${escHtml(dt)}</div></div><div class="trash-item-btns"><button class="btn btn-success" style="padding:5px 12px;font-size:11px" onclick="restoreLead('${l.id}')">♻️ Recuperar</button><button class="btn btn-danger" style="padding:5px 12px;font-size:11px" onclick="permanentDelete('${l.id}')">🗑️ Deletar</button></div></div>`;
+    const source=l._source||'lead';
+    const sourceLabel=source==='client'?'Cliente':source==='template'?'Template':source==='column'?'Coluna':'Lead';
+    const sourceIcon=source==='client'?'👤':source==='template'?'📝':source==='column'?'📊':'📌';
+    const name=l.leadNome||l.nome||l.label||'Sem nome';
+    const detail=source==='client'?(l.whatsapp?' · WhatsApp: '+l.whatsapp:''):(l.clienteNome?' · Cliente: '+l.clienteNome:'')+(l.column_id?' · Coluna: '+(sortedCols().find(c=>c.id===l.column_id)||{}).name||'':'');
+    return `<div class="trash-item"><div class="trash-item-info"><div class="trash-item-name">${escHtml(name)}</div><div class="trash-item-meta">${sourceIcon} ${sourceLabel} · Excluído: ${escHtml(dt)}${escHtml(detail)}</div></div><div class="trash-item-btns"><button class="btn btn-success" style="padding:5px 12px;font-size:11px" onclick="restoreItem('${l.id}','${source}')">♻️ Recuperar</button><button class="btn btn-danger" style="padding:5px 12px;font-size:11px" onclick="permanentDelete('${l.id}')">🗑️ Deletar</button></div></div>`;
   }).join('');
 }
-async function restoreLead(id){
-  await api('POST',`/api/trash/${id}/restore`);
-  const lead=trashData.find(x=>x.id===id);
-  if(lead){ delete lead._deleted_at; state.leads.push(lead); }
+async function restoreItem(id, source){
+  if(source==='client'){
+    await api('POST',`/api/trash/${id}/restore-client`);
+    const c=trashData.find(x=>x.id===id);
+    if(c){ delete c._deleted_at; delete c._source; clients.push(c); }
+  } else {
+    await api('POST',`/api/trash/${id}/restore`);
+    const lead=trashData.find(x=>x.id===id);
+    if(lead){ delete lead._deleted_at; delete lead._source; state.leads.push(lead); }
+  }
   trashData=trashData.filter(x=>x.id!==id);
-  renderTrashList(); render();
-  toast('Lead recuperado!','success');
+  renderTrashList();
+  if(source==='client'){ renderClientsList(); } else { render(); }
+  toast('Item recuperado!','success');
 }
+async function restoreLead(id){ return restoreItem(id, 'lead'); }
 function permanentDelete(id){
   const lead=trashData.find(x=>x.id===id);
   document.getElementById('confirm-icon').textContent='⚠️';
@@ -4075,6 +4120,39 @@ function confirmEmptyTrash(){
   document.getElementById('confirm-msg').textContent=`Excluir permanentemente todos os ${trashData.length} leads da lixeira? Essa ação NÃO pode ser desfeita.`;
   document.getElementById('confirm-ok-btn').textContent='Esvaziar';
   confirmCallback=async ()=>{ await api('DELETE','/api/trash'); trashData=[]; renderTrashList(); toast('Lixeira esvaziada','info'); };
+  openModal('modal-confirm');
+}
+
+let archivedData=[];
+async function openArchived(){
+  archivedData=await api('GET','/api/archived');
+  renderArchivedList();
+  openModal('modal-archived');
+}
+function renderArchivedList(){
+  const el=document.getElementById('archived-list');
+  if(!archivedData.length){ el.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-muted)">📦 Nenhum cliente arquivado</div>'; return; }
+  el.innerHTML=archivedData.map(c=>{
+    const dt=c._archived_at?new Date(c._archived_at).toLocaleString('pt-BR'):'';
+    return `<div class="trash-item"><div class="trash-item-info"><div class="trash-item-name">${escHtml(c.nome||'Sem nome')}</div><div class="trash-item-meta">👤 Cliente · Arquivado: ${escHtml(dt)}${c.whatsapp?' · WhatsApp: '+escHtml(c.whatsapp):''}</div></div><div class="trash-item-btns"><button class="btn btn-success" style="padding:5px 12px;font-size:11px" onclick="restoreArchived('${c.id}')">♻️ Restaurar</button><button class="btn btn-danger" style="padding:5px 12px;font-size:11px" onclick="deleteArchived('${c.id}')">🗑️ Deletar</button></div></div>`;
+  }).join('');
+}
+async function restoreArchived(id){
+  await api('POST',`/api/archived/${id}/restore`);
+  archivedData=archivedData.filter(x=>x.id!==id);
+  const c=archivedData.find(x=>x.id===id);
+  renderArchivedList();
+  clients=await api('GET','/api/clients');
+  renderClientsList(document.getElementById('clients-search-input')?.value||'');
+  toast('Cliente restaurado!','success');
+}
+function deleteArchived(id){
+  const c=archivedData.find(x=>x.id===id);
+  document.getElementById('confirm-icon').textContent='⚠️';
+  document.getElementById('confirm-title').textContent='Excluir Permanentemente';
+  document.getElementById('confirm-msg').textContent=`Excluir "${c?.nome||'sem nome'}" permanentemente? Essa ação NÃO pode ser desfeita.`;
+  document.getElementById('confirm-ok-btn').textContent='Excluir para sempre';
+  confirmCallback=async ()=>{ await api('DELETE',`/api/archived/${id}`); archivedData=archivedData.filter(x=>x.id!==id); renderArchivedList(); toast('Excluído permanentemente','info'); };
   openModal('modal-confirm');
 }
 

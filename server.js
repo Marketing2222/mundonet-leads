@@ -188,7 +188,7 @@ app.delete('/api/leads/:id', (req, res) => {
 app.get('/api/trash', (req, res) => { res.json(readStore('trash')); });
 app.post('/api/trash', (req, res) => {
   const lead = req.body;
-  lead._deleted_at = new Date().toISOString();
+  if (!lead._deleted_at) lead._deleted_at = new Date().toISOString();
   const trash = readStore('trash');
   trash.push(lead);
   writeStore('trash', trash);
@@ -200,11 +200,26 @@ app.post('/api/trash/:id/restore', (req, res) => {
   if (idx === -1) return res.status(404).json({ error: 'Não encontrado' });
   const lead = trash[idx];
   delete lead._deleted_at;
+  delete lead._source;
   trash.splice(idx, 1);
   writeStore('trash', trash);
   const leads = readStore('leads');
   leads.push(lead);
   writeStore('leads', leads);
+  res.json({ ok: true });
+});
+app.post('/api/trash/:id/restore-client', (req, res) => {
+  let trash = readStore('trash');
+  const idx = trash.findIndex(x => x.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: 'Não encontrado' });
+  const client = trash[idx];
+  delete client._deleted_at;
+  delete client._source;
+  trash.splice(idx, 1);
+  writeStore('trash', trash);
+  const clients = readStore('clients');
+  clients.push(client);
+  writeStore('clients', clients);
   res.json({ ok: true });
 });
 app.delete('/api/trash/:id', (req, res) => {
@@ -215,6 +230,40 @@ app.delete('/api/trash/:id', (req, res) => {
 });
 app.delete('/api/trash', (req, res) => {
   writeStore('trash', []);
+  res.json({ ok: true });
+});
+
+// ---------- ARCHIVED ----------
+app.get('/api/archived', (req, res) => { res.json(readStore('archived')); });
+app.post('/api/archived', (req, res) => {
+  const client = req.body;
+  client._archived_at = new Date().toISOString();
+  const archived = readStore('archived');
+  archived.push(client);
+  writeStore('archived', archived);
+  res.json({ ok: true });
+});
+app.post('/api/archived/:id/restore', (req, res) => {
+  let archived = readStore('archived');
+  const idx = archived.findIndex(x => x.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: 'Não encontrado' });
+  const client = archived[idx];
+  delete client._archived_at;
+  archived.splice(idx, 1);
+  writeStore('archived', archived);
+  const clients = readStore('clients');
+  clients.push(client);
+  writeStore('clients', clients);
+  res.json({ ok: true });
+});
+app.delete('/api/archived/:id', (req, res) => {
+  let archived = readStore('archived');
+  archived = archived.filter(x => x.id !== req.params.id);
+  writeStore('archived', archived);
+  res.json({ ok: true });
+});
+app.delete('/api/archived', (req, res) => {
+  writeStore('archived', []);
   res.json({ ok: true });
 });
 
@@ -559,6 +608,7 @@ app.get('/api/backup', (req, res) => {
     clients: readStore('clients'),
     users: readStore('users').map(u => ({ id:u.id, username:u.username, display_name:u.display_name })),
     trash: readStore('trash'),
+    archived: readStore('archived'),
     config: readObj('config'),
     prefs: readObj('prefs'),
   });
@@ -569,6 +619,7 @@ app.post('/api/restore', (req, res) => {
   if (data.leads) writeStore('leads', data.leads);
   if (data.clients) writeStore('clients', data.clients);
   if (data.trash) writeStore('trash', data.trash);
+  if (data.archived) writeStore('archived', data.archived);
   if (data.config) writeObj('config', data.config);
   if (data.prefs) writeObj('prefs', data.prefs);
   res.json({ ok: true });
@@ -584,7 +635,7 @@ app.get('*', (req, res) => { res.sendFile(path.join(__dirname, 'index.html')); }
 app.listen(PORT, '0.0.0.0', () => {
   console.log('Server running on port ' + PORT);
   console.log('DATA_DIR:', DATA_DIR);
-  const files = ['leads.json','columns.json','users.json','clients.json','trash.json','config.json','prefs.json'];
+  const files = ['leads.json','columns.json','users.json','clients.json','trash.json','archived.json','config.json','prefs.json'];
   files.forEach(f => {
     const fp = path.join(DATA_DIR, f);
     const exists = fs.existsSync(fp);
