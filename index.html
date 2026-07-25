@@ -888,6 +888,8 @@
     body:not(.ready) #trash-panel { display: none !important; }
   </style>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
 </head>
 <body>
 
@@ -1576,7 +1578,7 @@
     <span class="clients-header-title">📋 Clientes IXC</span>
     <div style="display:flex;gap:6px;align-items:center">
       <button class="btn btn-ghost" onclick="document.getElementById('csv-file-input').click()" style="font-size:11px;padding:4px 10px;border:1px solid var(--border);border-radius:6px">📂 Importar</button>
-      <input type="file" id="csv-file-input" accept=".csv,.txt,.xls,.xlsx" style="display:none" onchange="importFile(this)">
+      <input type="file" id="csv-file-input" accept=".csv,.txt,.xls,.xlsx,.pdf" style="display:none" onchange="importFile(this)">
       <button class="clients-close" onclick="closeClientsPanel()">✕</button>
     </div>
   </div>
@@ -1605,11 +1607,8 @@
       <input type="text" id="client-edit-whatsapp" class="form-control">
     </div>
     <div class="form-group">
-      <label class="form-label">Link de Indicação</label>
-      <div class="link-copy-row">
-        <input type="text" id="client-edit-link" class="form-control" placeholder="https://...">
-        <button class="link-copy-btn" onclick="copyClientLink()" title="Copiar link">📋</button>
-      </div>
+      <label class="form-label">CPF/CNPJ</label>
+      <input type="text" id="client-edit-cpf" class="form-control" placeholder="000.000.000-00">
     </div>
   </div>
   <div class="client-edit-footer">
@@ -3530,66 +3529,53 @@ function renderClientsList(filter=''){
   const el=document.getElementById('clients-list');
   const syncEl=document.getElementById('clients-last-sync');
   if(syncEl) syncEl.textContent=lastSyncTime?'Último sync: '+lastSyncTime.toLocaleString('pt-BR'):'';
-  if(!clients.length){ el.innerHTML='<div class="clients-empty">Nenhum cliente importado.<br>Sincronize via API IXC no painel admin.</div>'; return; }
+  if(!clients.length){ el.innerHTML='<div class="clients-empty">Nenhum cliente importado.<br>Importe um arquivo CSV, Excel ou PDF.</div>'; return; }
   let list=clients;
   if(filter){
     const q=filter.toLowerCase();
-    list=list.filter(c=>(c.nome||'').toLowerCase().includes(q)||(c.whatsapp||'').toLowerCase().includes(q));
+    list=list.filter(c=>(c.nome||'').toLowerCase().includes(q)||(c.whatsapp||'').toLowerCase().includes(q)||(c.cpf||'').toLowerCase().includes(q));
   }
   if(!list.length){ el.innerHTML='<div class="clients-empty">Nenhum cliente encontrado.</div>'; return; }
   el.innerHTML=list.map(c=>`
     <div class="client-item" onclick="openClientEdit('${c.id}')">
       <div class="client-item-info">
         <div class="client-item-name">${escHtml(c.nome||'Sem nome')}</div>
-        <div class="client-item-wpp">${escHtml(c.whatsapp||'Sem WhatsApp')}</div>
+        ${c.whatsapp?`<div class="client-item-wpp">${escHtml(c.whatsapp)}</div>`:''}
       </div>
       <div class="client-item-actions" onclick="event.stopPropagation()">
-        <button class="client-action-btn" onclick="archiveClient('${c.id}')" title="Arquivar">📦</button>
-        <button class="client-action-btn danger" onclick="trashClient('${c.id}')" title="Excluir">🗑️</button>
+        <button class="client-action-btn" onclick="archiveClient('${c.id}')" title="Arquivar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M8 7h8M8 11h5"/></svg></button>
+        <button class="client-action-btn danger" onclick="trashClient('${c.id}')" title="Excluir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
       </div>
     </div>
   `).join('');
 }
 async function importFile(input){
   const file=input.files[0]; if(!file) return;
-  let rows=[];
   const ext=file.name.split('.').pop().toLowerCase();
+  let parsedRows=[];
   try{
-    if(ext==='csv'||ext==='txt'){
-      const text=await file.text();
-      const lines=text.split(/\r?\n/).filter(l=>l.trim());
-      if(lines.length<2){ toast('Arquivo vazio','error'); return; }
-      const sep=lines[0].includes(';')?';':',';
-      rows.push(lines[0].split(sep).map(h=>h.trim().toLowerCase().replace(/"/g,'')));
-      for(let i=1;i<lines.length;i++) rows.push(lines[i].split(sep).map(c=>c.trim().replace(/"/g,'')));
+    if(ext==='pdf'){
+      parsedRows=await parsePDF(file);
+    } else if(ext==='csv'||ext==='txt'){
+      parsedRows=await parseCSV(file);
     } else if(ext==='xls'||ext==='xlsx'){
-      if(typeof XLSX==='undefined'){ toast('Biblioteca Excel não carregada. Recarregue a página.','error'); return; }
-      const data=await file.arrayBuffer();
-      const wb=XLSX.read(data,{type:'array'});
-      const ws=wb.Sheets[wb.SheetNames[0]];
-      const json=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
-      if(json.length<2){ toast('Planilha vazia','error'); return; }
-      let headerRow=0;
-      for(let r=0;r<Math.min(json.length,10);r++){
-        const row=json[r].map(c=>String(c).toLowerCase());
-        if(row.some(c=>c.includes('nome')||c.includes('razao')||c.includes('razão')||c.includes('cliente'))){ headerRow=r; break; }
-      }
-      const dataRows=json.slice(headerRow).map(r=>r.map(c=>String(c).trim().toLowerCase()));
-      rows=dataRows;
-    } else { toast('Formato não suportado. Use CSV, XLS ou XLSX.','error'); return; }
-  }catch(e){ toast('Erro ao ler arquivo: '+e.message,'error'); return; }
-  const headers=rows[0];
+      parsedRows=await parseExcel(file);
+    } else { toast('Formato não suportado','error'); return; }
+  }catch(e){ toast('Erro ao ler: '+e.message,'error'); return; }
+  if(!parsedRows.length){ toast('Nenhum dado encontrado','error'); return; }
+  const headers=parsedRows[0].map(h=>h.toLowerCase());
   const nameIdx=headers.findIndex(h=>h.includes('nome')||h.includes('razao')||h.includes('razão')||h.includes('name')||h.includes('cliente')||h.includes('assinante'));
   const cpfIdx=headers.findIndex(h=>h.includes('cpf')||h.includes('cnpj')||h.includes('documento'));
   const telIdx=headers.findIndex(h=>h.includes('telefone')||h.includes('whatsapp')||h.includes('celular')||h.includes('phone')||h.includes('fone')||h.includes('contato'));
   const emailIdx=headers.findIndex(h=>h.includes('email')||h.includes('e-mail')||h.includes('e_mail'));
   if(nameIdx===-1){ toast('Coluna de Nome não encontrada. Cabeçalhos: '+headers.join(', '),'error'); return; }
-  toast(`Encontradas ${rows.length-1} linhas de dados...`,'info');
   const importedClients=[];
-  for(let i=1;i<rows.length;i++){
-    const cols=rows[i]; if(!cols[nameIdx]) continue;
+  for(let i=1;i<parsedRows.length;i++){
+    const cols=parsedRows[i]; if(!cols[nameIdx]) continue;
+    let nome=cols[nameIdx]||'';
+    nome=nome.replace(/^\d+[\.\-\/]?\d*[\.\-\/]?\d*[\.\-\/]?\d*[\.\-\/]?\d*\s*/,'').trim();
     importedClients.push({
-      nome:cols[nameIdx]||'',
+      nome,
       whatsapp:telIdx>=0?(cols[telIdx]||''):'',
       cpf:cpfIdx>=0?(cols[cpfIdx]||''):'',
       email:emailIdx>=0?(cols[emailIdx]||''):'',
@@ -3607,6 +3593,114 @@ async function importFile(input){
   }catch(e){ toast('Erro: '+e.message,'error'); }
   input.value='';
 }
+
+async function parsePDF(file){
+  const arrayBuf=await file.arrayBuffer();
+  const pdf=await pdfjsLib.getDocument({data:arrayBuf}).promise;
+  const allItems=[];
+  for(let p=1;p<=pdf.numPages;p++){
+    const page=await pdf.getPage(p);
+    const content=await page.getTextContent();
+    content.items.forEach(item=>{
+      const tx=item.transform;
+      allItems.push({text:item.str.trim(), x:tx[4], y:Math.round(tx[5])});
+    });
+  }
+  allItems.sort((a,b)=>a.y===b.y?a.x-b.x:b.y-a.y);
+  const lines={};
+  allItems.forEach(item=>{
+    const yKey=item.y;
+    if(!lines[yKey]) lines[yKey]=[];
+    lines[yKey].push(item);
+  });
+  const sortedY=Object.keys(lines).map(Number).sort((a,b)=>b-a);
+  const tableRows=[];
+  sortedY.forEach(y=>{
+    const items=lines[y].sort((a,b)=>a.x-b.x);
+    const texts=items.map(i=>i.text);
+    const fullLine=texts.join(' ').trim();
+    if(!fullLine) return;
+    const phoneMatch=fullLine.match(/\(\d{2}\)\s*\d{4,5}[\-\s]?\d{4}/);
+    const cpfMatch=fullLine.match(/\d{3}[\.\s]\d{3}[\.\s]\d{3}[\-\s]?\d{2}/);
+    const cnpjMatch=fullLine.match(/\d{2}[\.\s]\d{3}[\.\s]\d{3}[\/\s]\d{4}[\-\s]?\d{2}/);
+    const emailMatch=fullLine.match(/[\w\.\-]+@[\w\.\-]+\.\w+/);
+    if(!phoneMatch && !cpfMatch && !cnpjMatch && !emailMatch) return;
+    let cliente='', telefone='', cpf='', email='';
+    telefone=phoneMatch?phoneMatch[0]:'';
+    cpf=cnpjMatch?cnpjMatch[0]:(cpfMatch?cpfMatch[0]:'');
+    email=emailMatch?emailMatch[0]:'';
+    const nameParts=[];
+    items.forEach(item=>{
+      const t=item.text.trim();
+      if(!t) return;
+      if(t.match(/^\(\d{2}\)/)||t.match(/^\d{4,5}[\-\s]?\d{4}$/)) return;
+      if(t.match(/^\d{3}[\.\s]\d{3}[\.\s]\d{3}/)) return;
+      if(t.match(/^\d{2}[\.\s]\d{3}[\.\s]\d{3}[\/]/)) return;
+      if(t.match(/^[\w\.\-]+@[\w\.\-]+\.\w+$/)) return;
+      if(t.match(/^\d{4,6}$/)) return;
+      nameParts.push(t);
+    });
+    cliente=nameParts.join(' ').replace(/^\d+[\.\-\/]?\d*[\.\-\/]?\d*[\.\-\/]?\d*[\.\-\/]?\d*\s*/,'').trim();
+    if(cliente && cliente.length>2){
+      tableRows.push(['Cliente','Telefone','CPF/CNPJ','E-mail']);
+      break;
+    }
+  });
+  const result=[];
+  result.push(['Cliente','Telefone','CPF/CNPJ','E-mail']);
+  sortedY.forEach(y=>{
+    const items=lines[y].sort((a,b)=>a.x-b.x);
+    const fullLine=items.map(i=>i.text).join(' ').trim();
+    const phoneMatch=fullLine.match(/\(\d{2}\)\s*\d{4,5}[\-\s]?\d{4}/);
+    const cpfMatch=fullLine.match(/\d{3}[\.\s]\d{3}[\.\s]\d{3}[\-\s]?\d{2}/);
+    const cnpjMatch=fullLine.match(/\d{2}[\.\s]\d{3}[\.\s]\d{3}[\/\s]\d{4}[\-\s]?\d{2}/);
+    const emailMatch=fullLine.match(/[\w\.\-]+@[\w\.\-]+\.\w+/);
+    if(!phoneMatch && !cpfMatch && !cnpjMatch && !emailMatch) return;
+    let telefone=phoneMatch?phoneMatch[0]:'';
+    let cpf=cnpjMatch?cnpjMatch[0]:(cpfMatch?cpfMatch[0]:'');
+    let email=emailMatch?emailMatch[0]:'';
+    const nameParts=[];
+    items.forEach(item=>{
+      const t=item.text.trim();
+      if(!t) return;
+      if(t.match(/^\(\d{2}\)/)||t.match(/^\d{4,5}[\-\s]?\d{4}$/)) return;
+      if(t.match(/^\d{3}[\.\s]\d{3}[\.\s]\d{3}/)) return;
+      if(t.match(/^\d{2}[\.\s]\d{3}[\.\s]\d{3}[\/]/)) return;
+      if(t.match(/^[\w\.\-]+@[\w\.\-]+\.\w+$/)) return;
+      if(t.match(/^\d{4,6}$/)) return;
+      nameParts.push(t);
+    });
+    let cliente=nameParts.join(' ').replace(/^\d+[\.\-\/]?\d*[\.\-\/]?\d*[\.\-\/]?\d*[\.\-\/]?\d*\s*/,'').trim();
+    if(cliente&&cliente.length>2) result.push([cliente,telefone,cpf,email]);
+  });
+  toast(`PDF: ${result.length-1} clientes encontrados`,'info');
+  return result;
+}
+
+async function parseCSV(file){
+  const text=await file.text();
+  const lines=text.split(/\r?\n/).filter(l=>l.trim());
+  if(lines.length<2) return[];
+  const sep=lines[0].includes(';')?';':',';
+  const rows=[];
+  for(let i=0;i<lines.length;i++) rows.push(lines[i].split(sep).map(c=>c.trim().replace(/"/g,'')));
+  return rows;
+}
+
+async function parseExcel(file){
+  if(typeof XLSX==='undefined'){ throw new Error('Biblioteca Excel não carregada'); }
+  const data=await file.arrayBuffer();
+  const wb=XLSX.read(data,{type:'array'});
+  const ws=wb.Sheets[wb.SheetNames[0]];
+  const json=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+  if(json.length<2) return[];
+  let headerRow=0;
+  for(let r=0;r<Math.min(json.length,10);r++){
+    const row=json[r].map(c=>String(c).toLowerCase());
+    if(row.some(c=>c.includes('nome')||c.includes('razao')||c.includes('razão')||c.includes('cliente'))){ headerRow=r; break; }
+  }
+  return json.slice(headerRow).map(r=>r.map(c=>String(c).trim().toLowerCase()));
+}
 function filterClients(q){ renderClientsList(q); }
 
 // ===== CLIENT EDIT POPUP =====
@@ -3616,7 +3710,7 @@ function openClientEdit(id){
   currentClientId=id;
   document.getElementById('client-edit-nome').value=c.nome||'';
   document.getElementById('client-edit-whatsapp').value=c.whatsapp||'';
-  document.getElementById('client-edit-link').value=c.linkIndicacao||'';
+  document.getElementById('client-edit-cpf').value=c.cpf||'';
   const popup=document.getElementById('client-edit-popup');
   popup.classList.add('open');
   const rect=document.getElementById('clients-panel').getBoundingClientRect();
@@ -3632,18 +3726,13 @@ async function saveClientEdit(){
   const c=clients.find(x=>x.id===currentClientId); if(!c) return;
   c.nome=document.getElementById('client-edit-nome').value.trim();
   c.whatsapp=document.getElementById('client-edit-whatsapp').value.trim();
-  c.linkIndicacao=document.getElementById('client-edit-link').value.trim();
+  c.cpf=document.getElementById('client-edit-cpf').value.trim();
   c.editado=true;
   try { await api('PUT',`/api/clients/${c.id}`,c); } catch(ex) { toast('Erro: '+ex.message,'error'); }
   closeClientEdit();
   renderClientsList(document.getElementById('clients-search-input')?.value||'');
   populateFilterClientes();
   toast('Cliente atualizado!','success');
-}
-function copyClientLink(){
-  const link=document.getElementById('client-edit-link').value;
-  if(!link){ toast('Nenhum link para copiar','error'); return; }
-  navigator.clipboard.writeText(link).then(()=>toast('Link copiado!','success')).catch(()=>toast('Erro ao copiar','error'));
 }
 
 async function archiveClient(id){
