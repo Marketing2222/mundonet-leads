@@ -480,8 +480,8 @@
         <form id="referral-form" onsubmit="submitForm(event)">
           <!-- Client: CPF Field (only for client tab) -->
           <div class="form-group" id="cpf-group">
-            <label for="indicator-cpf">Seu CPF</label>
-            <input type="text" id="indicator-cpf" class="form-control" placeholder="000.000.000-00" oninput="maskCPF(this);onCPFChange()" maxlength="14">
+            <label for="indicator-cpf">Seu CPF ou CNPJ</label>
+            <input type="text" id="indicator-cpf" class="form-control" placeholder="000.000.000-00 ou 00.000.000/0000-00" oninput="maskCPF(this);onCPFChange()" maxlength="18">
           </div>
 
           <!-- Non-Client: WhatsApp Field (only for non-client tab) -->
@@ -572,13 +572,17 @@
     // CPF Mask
     function maskCPF(input) {
       let v = input.value.replace(/\D/g, '');
-      if (v.length > 11) v = v.slice(0, 11);
-      if (v.length > 9) {
-        v = v.replace(/^(\d{3})(\d{3})(\d{3})(\d{1,2})$/, '$1.$2.$3-$4');
+      if (v.length > 14) v = v.slice(0, 14);
+      if (v.length > 12) {
+        v = v.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{0,2})$/, '$1.$2.$3/$4-$5');
+      } else if (v.length > 11) {
+        v = v.replace(/^(\d{2})(\d{3})(\d{3})(\d{0,4})$/, '$1.$2.$3/$4');
+      } else if (v.length > 8) {
+        v = v.replace(/^(\d{3})(\d{3})(\d{3})(\d{0,2})$/, '$1.$2.$3-$4');
       } else if (v.length > 6) {
-        v = v.replace(/^(\d{3})(\d{3})(\d{1,3})$/, '$1.$2.$3');
+        v = v.replace(/^(\d{3})(\d{3})(\d{0,3})$/, '$1.$2.$3');
       } else if (v.length > 3) {
-        v = v.replace(/^(\d{3})(\d{1,3})$/, '$1.$2');
+        v = v.replace(/^(\d{3})(\d{0,3})$/, '$1.$2');
       }
       input.value = v;
     }
@@ -601,11 +605,16 @@
 
     // CPF Lookup — placeholder para API IXC
     async function lookupCPF(cpf) {
-      // TODO: integrar com API do IXC quando token estiver configurado
-      // const resp = await fetch('/api/client-cpf', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ cpf }) });
-      // const data = await resp.json();
-      // return data; // { nome: "LEONARDO DUARTE" }
-      return null; // placeholder: CPF não encontrado
+      try {
+        const resp = await fetch('/api/public-indicacao/check-cpf', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cpf })
+        });
+        if (!resp.ok) return null;
+        const data = await resp.json();
+        return data;
+      } catch(e) { return null; }
     }
 
     // WhatsApp Lookup — busca indicações existentes
@@ -622,7 +631,7 @@
       } catch(e) { return null; }
     }
 
-    // CPF change handler
+    // CPF/CNPJ change handler
     async function onCPFChange() {
       const cpf = document.getElementById('indicator-cpf').value.replace(/\D/g, '');
       const nameInput = document.getElementById('indicator-name');
@@ -637,7 +646,6 @@
         return;
       }
 
-      // Busca CPF na API
       const result = await lookupCPF(cpf);
       if (result && result.nome) {
         nameInput.value = result.nome.toUpperCase();
@@ -647,12 +655,12 @@
         setFieldsLocked(false);
       } else {
         nameInput.value = '';
-        nameInput.placeholder = 'CPF não encontrado no sistema';
+        nameInput.placeholder = 'CPF/CNPJ não encontrado no sistema';
         nameInput.readOnly = false;
         nameInput.style.opacity = '1';
         clientValidated = false;
         setFieldsLocked(true);
-        errorBox.textContent = 'CPF não encontrado. Verifique e tente novamente.';
+        errorBox.textContent = 'CPF/CNPJ não encontrado. Verifique e tente novamente.';
         errorBox.style.display = 'block';
       }
     }

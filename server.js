@@ -381,6 +381,21 @@ app.post('/api/public-indicacao/check-whatsapp', (req, res) => {
   }
   res.json({ nome: null });
 });
+app.post('/api/public-indicacao/check-cpf', (req, res) => {
+  const { cpf } = req.body;
+  if (!cpf) return res.status(400).json({ error: 'CPF obrigatório' });
+  const clean = String(cpf).replace(/\D/g, '');
+  if (clean.length < 11) return res.json({ nome: null });
+  const clients = readStore('clients');
+  const match = clients.find(c => {
+    const cCpf = String(c.cpf || '').replace(/\D/g, '');
+    return cCpf === clean;
+  });
+  if (match && match.nome) {
+    return res.json({ nome: match.nome });
+  }
+  res.json({ nome: null });
+});
 
 // ---------- PUBLIC INDICATION ----------
 app.post('/api/public-indicacao', (req, res) => {
