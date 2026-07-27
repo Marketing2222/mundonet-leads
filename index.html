@@ -4176,15 +4176,24 @@ function confirmDeleteUser(id){
 
 // ===== TRASH =====
 let trashData=[];
+let trashPage=0;
+const TRASH_PER_PAGE=100;
+
 async function openTrash(){
   trashData=await api('GET','/api/trash');
+  trashPage=0;
   renderTrashList();
   openModal('modal-trash');
 }
 function renderTrashList(){
   const el=document.getElementById('trash-list');
-  if(!trashData.length){ el.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-muted)">🗑️ A lixeira está vazia</div>'; return; }
-  el.innerHTML=trashData.map(l=>{
+  if(!trashData.length){ el.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-muted)">A lixeira está vazia</div>'; return; }
+  const total=trashData.length;
+  const maxPage=Math.ceil(total/TRASH_PER_PAGE)-1;
+  if(trashPage>maxPage) trashPage=maxPage;
+  const end=Math.min((trashPage+1)*TRASH_PER_PAGE,total);
+  const slice=trashData.slice(0,end);
+  let html=slice.map(l=>{
     const dt=l._deleted_at?new Date(l._deleted_at).toLocaleString('pt-BR'):'';
     const source=l._source||'lead';
     const sourceLabel=source==='client'?'Cliente':source==='template'?'Template':source==='column'?'Coluna':'Lead';
@@ -4193,7 +4202,12 @@ function renderTrashList(){
     const detail=source==='client'?(l.whatsapp?' · WhatsApp: '+l.whatsapp:''):(l.clienteNome?' · Cliente: '+l.clienteNome:'')+(l.column_id?' · Coluna: '+(sortedCols().find(c=>c.id===l.column_id)||{}).name||'':'');
     return `<div class="trash-item"><div class="trash-item-info"><div class="trash-item-name">${escHtml(name)}</div><div class="trash-item-meta">${sourceIcon} ${sourceLabel} · Excluído: ${escHtml(dt)}${escHtml(detail)}</div></div><div class="trash-item-btns"><button class="btn btn-success" style="padding:5px 12px;font-size:11px" onclick="restoreItem('${l.id}','${source}')">♻️ Recuperar</button><button class="btn btn-danger" style="padding:5px 12px;font-size:11px" onclick="permanentDelete('${l.id}')">🗑️ Deletar</button></div></div>`;
   }).join('');
+  if(end<total){
+    html+=`<div style="text-align:center;padding:10px"><button class="btn btn-ghost" onclick="loadMoreTrash()" style="font-size:11px;padding:6px 16px">Carregar mais (${end} de ${total})</button></div>`;
+  }
+  el.innerHTML=html;
 }
+function loadMoreTrash(){ trashPage++; renderTrashList(); }
 async function restoreItem(id, source){
   if(source==='client'){
     await api('POST',`/api/trash/${id}/restore-client`);
