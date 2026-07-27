@@ -63,7 +63,7 @@ function fixClientNamesUppercase() {
     }
   });
   list.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
-  writeStore('clients', list);
+  if (fixed > 0) writeStore('clients', list);
   console.log('fixClientNamesUppercase: ' + fixed + ' nomes corrigidos, ' + list.length + ' clientes ordenados');
 }
 fixClientNamesUppercase();
@@ -339,7 +339,7 @@ app.post('/api/clients/batch-archive', (req, res) => {
 app.post('/api/clients/sync', (req, res) => {
   const { clients } = req.body;
   if (!Array.isArray(clients)) return res.status(400).json({ error: 'Array esperado' });
-  writeStore('clients', clients.map(c => ({ id: c.id||uuid(), nome: c.nome, whatsapp: c.whatsapp||'', link_indicacao: c.link_indicacao||'', editado: c.editado||false })));
+  writeStore('clients', clients.map(c => ({ id: c.id||uuid(), nome: c.nome, whatsapp: c.whatsapp||'', cpf: c.cpf||'', email: c.email||'', link_indicacao: c.link_indicacao||'', editado: c.editado||false })));
   res.json({ ok: true, count: clients.length });
 });
 
@@ -390,10 +390,11 @@ app.post('/api/clients/import', (req, res) => {
     const whatsapp = (c.whatsapp || '').trim();
     if (!nome) return;
     if (existingMap[key]) {
-      if (c.whatsapp && existingMap[key].whatsapp !== whatsapp) { existingMap[key].whatsapp = whatsapp; updated++; }
-      if (c.cpf && !existingMap[key].cpf) { existingMap[key].cpf = c.cpf; updated++; }
-      if (c.email && !existingMap[key].email) { existingMap[key].email = c.email; updated++; }
-      if (!updated) kept++;
+      let thisUpdated = 0;
+      if (c.whatsapp && existingMap[key].whatsapp !== whatsapp) { existingMap[key].whatsapp = whatsapp; thisUpdated++; }
+      if (c.cpf && !existingMap[key].cpf) { existingMap[key].cpf = c.cpf; thisUpdated++; }
+      if (c.email && !existingMap[key].email) { existingMap[key].email = c.email; thisUpdated++; }
+      if (thisUpdated) updated++; else kept++;
     } else {
       const id = uuid();
       existingMap[key] = { id, nome, whatsapp, cpf: c.cpf || '', email: c.email || '', link_indicacao: '', editado: false };

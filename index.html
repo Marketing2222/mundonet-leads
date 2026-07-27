@@ -2763,7 +2763,7 @@ async function doImport(){
       clients=p.clients;
     }
     closeModal('modal-export'); render();
-    toast(`${p.leads.length} leads importados!`,'success');
+    toast(`${(p.leads||[]).length} leads importados!`,'success');
   } catch(e){ toast('Erro: '+e.message,'error'); }
 }
 
@@ -4276,7 +4276,6 @@ function renderArchivedList(){
 async function restoreArchived(id){
   await api('POST',`/api/archived/${id}/restore`);
   archivedData=archivedData.filter(x=>x.id!==id);
-  const c=archivedData.find(x=>x.id===id);
   renderArchivedList();
   clients=await api('GET','/api/clients');
   renderClientsList(document.getElementById('clients-search-input')?.value||'');
