@@ -174,7 +174,7 @@ app.delete('/api/columns/:id', (req, res) => {
 });
 
 // ---------- LEADS ----------
-app.get('/api/leads', (req, res) => { res.json(readStore('leads')); });
+app.get('/api/leads', (req, res) => { res.json(readStore('leads').sort((a, b) => (b.criado_em || b.data_convite || '').localeCompare(a.criado_em || a.data_convite || ''))); });
 app.post('/api/leads', (req, res) => {
   const l = req.body;
   const now = new Date().toISOString();
