@@ -3596,6 +3596,7 @@ async function uploadComprovante(leadId,input){
 
 // ===== CLIENTS PANEL =====
 function openClientsPanel(){
+  clientsPage=0;
   document.getElementById('clients-panel').classList.add('open');
   renderClientsList();
 }
@@ -3606,18 +3607,27 @@ function closeClientsPanel(){
 let selectMode=false;
 let selectedClients=new Set();
 
+let clientsPage=0;
+const CLIENTS_PER_PAGE=100;
+
 function renderClientsList(filter=''){
   const el=document.getElementById('clients-list');
   const syncEl=document.getElementById('clients-last-sync');
   if(syncEl) syncEl.textContent=lastSyncTime?'Último sync: '+lastSyncTime.toLocaleString('pt-BR'):'';
-  if(!clients.length){ el.innerHTML='<div class="clients-empty">Nenhum cliente importado.<br>Importe um arquivo CSV, Excel ou PDF.</div>'; return; }
+  if(!clients.length){ el.innerHTML='<div class="clients-empty">Nenhum cliente importado.<br>Importe um arquivo Excel ou CSV.</div>'; return; }
   let list=clients;
   if(filter){
     const q=filter.toLowerCase();
     list=list.filter(c=>(c.nome||'').toLowerCase().includes(q)||(c.whatsapp||'').toLowerCase().includes(q)||(c.cpf||'').toLowerCase().includes(q));
   }
   if(!list.length){ el.innerHTML='<div class="clients-empty">Nenhum cliente encontrado.</div>'; return; }
-  el.innerHTML=list.map(c=>`
+  const total=list.length;
+  const maxPage=Math.ceil(total/CLIENTS_PER_PAGE)-1;
+  if(clientsPage>maxPage) clientsPage=maxPage;
+  const start=clientsPage*CLIENTS_PER_PAGE;
+  const end=Math.min(start+CLIENTS_PER_PAGE,total);
+  const slice=list.slice(0,end);
+  let html=slice.map(c=>`
     <div class="client-item" onclick="${selectMode?`toggleClientSelect('${c.id}')`:`openClientEdit('${c.id}')`}">
       <input type="checkbox" class="client-checkbox" ${selectedClients.has(c.id)?'checked':''} onclick="event.stopPropagation();toggleClientSelect('${c.id}')" style="${selectMode?'':''}">
       <div class="client-item-info">
@@ -3630,7 +3640,15 @@ function renderClientsList(filter=''){
       </div>
     </div>
   `).join('');
+  if(end<total){
+    html+=`<div style="text-align:center;padding:10px"><button class="btn btn-ghost" onclick="loadMoreClients()" style="font-size:11px;padding:6px 16px">Carregar mais (${end} de ${total})</button></div>`;
+  }
+  el.innerHTML=html;
   updateSelectedCount();
+}
+function loadMoreClients(){
+  clientsPage++;
+  renderClientsList(document.getElementById('clients-search-input')?.value||'');
 }
 
 function toggleSelectMode(){
@@ -3763,7 +3781,7 @@ async function parseExcel(file){
   }
   return json.slice(headerRow).map(r=>r.map(c=>String(c).trim()));
 }
-function filterClients(q){ renderClientsList(q); }
+function filterClients(q){ clientsPage=0; renderClientsList(q); }
 
 // ===== CLIENT EDIT POPUP =====
 let currentClientId=null;
