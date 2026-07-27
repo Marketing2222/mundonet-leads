@@ -62,8 +62,9 @@ function fixClientNamesUppercase() {
       fixed++;
     }
   });
-  if (fixed > 0) writeStore('clients', list);
-  console.log('fixClientNamesUppercase: ' + fixed + ' nomes corrigidos');
+  list.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+  writeStore('clients', list);
+  console.log('fixClientNamesUppercase: ' + fixed + ' nomes corrigidos, ' + list.length + ' clientes ordenados');
 }
 fixClientNamesUppercase();
 
