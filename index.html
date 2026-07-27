@@ -3641,6 +3641,8 @@ function openClientsPanel(){
   const btn=document.getElementById('alpha-filter-btn');
   if(btn){ btn.textContent='A-Z'; btn.classList.remove('active'); }
   document.getElementById('clients-panel').classList.add('open');
+  const listEl=document.getElementById('clients-list');
+  if(listEl) listEl.scrollTop=0;
   renderClientsList();
 }
 function closeClientsPanel(){
