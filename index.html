@@ -3720,7 +3720,7 @@ async function importFile(input){
     let nome=cols[nameIdx]||'';
     nome=nome.replace(/^\d+[\.\-\/]?\d*[\.\-\/]?\d*[\.\-\/]?\d*[\.\-\/]?\d*\s*/,'').trim();
     importedClients.push({
-      nome,
+      nome:nome.toUpperCase(),
       whatsapp:telIdx>=0?(cols[telIdx]||''):'',
       cpf:cpfIdx>=0?(cols[cpfIdx]||''):'',
       email:emailIdx>=0?(cols[emailIdx]||''):'',
@@ -3761,7 +3761,7 @@ async function parseExcel(file){
     const row=json[r].map(c=>String(c).toLowerCase());
     if(row.some(c=>c.includes('nome')||c.includes('razao')||c.includes('razão')||c.includes('cliente'))){ headerRow=r; break; }
   }
-  return json.slice(headerRow).map(r=>r.map(c=>String(c).trim().toLowerCase()));
+  return json.slice(headerRow).map(r=>r.map(c=>String(c).trim()));
 }
 function filterClients(q){ renderClientsList(q); }
 
