@@ -307,6 +307,34 @@ app.delete('/api/clients/:id', (req, res) => {
   writeStore('clients', list);
   res.json({ ok: true });
 });
+app.post('/api/clients/batch-trash', (req, res) => {
+  const { ids } = req.body;
+  if (!Array.isArray(ids)) return res.status(400).json({ error: 'Array esperado' });
+  const idSet = new Set(ids);
+  let list = readStore('clients');
+  const trashed = list.filter(c => idSet.has(c.id));
+  trashed.forEach(c => { c._source = 'client'; c._deleted_at = new Date().toISOString(); });
+  const trash = readStore('trash');
+  trash.push(...trashed);
+  writeStore('trash', trash);
+  list = list.filter(c => !idSet.has(c.id));
+  writeStore('clients', list);
+  res.json({ ok: true, deleted: idSet.size });
+});
+app.post('/api/clients/batch-archive', (req, res) => {
+  const { ids } = req.body;
+  if (!Array.isArray(ids)) return res.status(400).json({ error: 'Array esperado' });
+  const idSet = new Set(ids);
+  let list = readStore('clients');
+  const archived = list.filter(c => idSet.has(c.id));
+  archived.forEach(c => { c._archived_at = new Date().toISOString(); });
+  const arch = readStore('archived');
+  arch.push(...archived);
+  writeStore('archived', arch);
+  list = list.filter(c => !idSet.has(c.id));
+  writeStore('clients', list);
+  res.json({ ok: true, archived: idSet.size });
+});
 app.post('/api/clients/sync', (req, res) => {
   const { clients } = req.body;
   if (!Array.isArray(clients)) return res.status(400).json({ error: 'Array esperado' });

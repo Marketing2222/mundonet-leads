@@ -3737,10 +3737,8 @@ function updateSelectedCount(){
 async function batchArchive(){
   if(!selectedClients.size){ toast('Nenhum cliente selecionado','error'); return; }
   if(!confirm(`Arquivar ${selectedClients.size} cliente(s)?`)) return;
-  for(const id of selectedClients){
-    const c=clients.find(x=>x.id===id);
-    if(c){ try{await api('POST','/api/archived',c); await api('DELETE',`/api/clients/${c.id}`)}catch(e){} }
-  }
+  const ids=[...selectedClients];
+  try{ await api('POST','/api/clients/batch-archive',{ids}); }catch(e){ toast('Erro: '+e.message,'error'); return; }
   clients=clients.filter(c=>!selectedClients.has(c.id));
   selectedClients.clear();
   renderClientsList(document.getElementById('clients-search-input')?.value||'');
@@ -3750,11 +3748,8 @@ async function batchArchive(){
 async function batchTrash(){
   if(!selectedClients.size){ toast('Nenhum cliente selecionado','error'); return; }
   if(!confirm(`Mover ${selectedClients.size} cliente(s) para a lixeira?`)) return;
-  for(const id of selectedClients){
-    const c=clients.find(x=>x.id===id);
-    if(c){ c._source='client'; c._deleted_at=new Date().toISOString(); try{await api('POST','/api/trash',c)}catch(e){} }
-    try{await api('DELETE',`/api/clients/${id}`)}catch(e){}
-  }
+  const ids=[...selectedClients];
+  try{ await api('POST','/api/clients/batch-trash',{ids}); }catch(e){ toast('Erro: '+e.message,'error'); return; }
   clients=clients.filter(c=>!selectedClients.has(c.id));
   selectedClients.clear();
   renderClientsList(document.getElementById('clients-search-input')?.value||'');
