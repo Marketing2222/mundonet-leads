@@ -3658,7 +3658,7 @@ function renderClientsList(filter=''){
   const syncEl=document.getElementById('clients-last-sync');
   if(syncEl) syncEl.textContent=lastSyncTime?'Último sync: '+lastSyncTime.toLocaleString('pt-BR'):'';
   if(!clients.length){ el.innerHTML='<div class="clients-empty">Nenhum cliente importado.<br>Importe um arquivo Excel ou CSV.</div>'; return; }
-  let list=clients;
+  let list=[...clients].sort((a,b)=>(a.nome||'').localeCompare(b.nome||''));
   if(alphaFilter){
     list=list.filter(c=>(c.nome||'').toUpperCase().startsWith(alphaFilter));
   }
