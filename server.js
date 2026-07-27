@@ -502,6 +502,13 @@ app.post('/api/public-indicacao', (req, res) => {
   };
 
   const leads = readStore('leads');
+  const duplicateLead = leads.find(l =>
+    (l.cliente_nome || '').toUpperCase() === String(clientName).trim().toUpperCase() &&
+    (l.lead_nome || '').toUpperCase() === String(leadName).trim().toUpperCase()
+  );
+  if (duplicateLead) {
+    return res.status(400).json({ error: 'Essa indicação já foi realizada anteriormente.' });
+  }
   leads.push(lead);
   writeStore('leads', leads);
 

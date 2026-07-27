@@ -695,8 +695,7 @@
         nameInput.placeholder = 'Digite seu nome completo';
         nameInput.readOnly = false;
         nameInput.style.opacity = '1';
-        clientValidated = false;
-        // Libera o campo nome para digitar, mas trava os de baixo até preencher
+        clientValidated = true;
         nameInput.focus();
         setFieldsLocked(true);
       }
