@@ -336,7 +336,10 @@ app.post('/api/clients/import', (req, res) => {
   if (!Array.isArray(clients)) return res.status(400).json({ error: 'Array esperado' });
   const existing = readStore('clients');
   const existingMap = {};
-  existing.forEach(c => { existingMap[c.id || (c.nome+'_'+c.whatsapp)] = c; });
+  existing.forEach(c => {
+    const ek = (c.cpf && String(c.cpf).trim()) ? 'cpf_'+String(c.cpf).trim() : ((c.nome||'').trim()+'_'+(c.whatsapp||'').trim());
+    existingMap[ek] = c;
+  });
   let added = 0, updated = 0, kept = 0;
   clients.forEach(c => {
     const key = (c.cpf && c.cpf.trim()) ? 'cpf_'+c.cpf.trim() : (c.nome.trim()+'_'+c.whatsapp.trim());
