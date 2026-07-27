@@ -53,6 +53,20 @@ function ensureAdminUser() {
 }
 ensureAdminUser();
 
+function fixClientNamesUppercase() {
+  const list = readStore('clients');
+  let fixed = 0;
+  list.forEach(c => {
+    if (c.nome && c.nome !== c.nome.toUpperCase()) {
+      c.nome = c.nome.toUpperCase();
+      fixed++;
+    }
+  });
+  if (fixed > 0) writeStore('clients', list);
+  console.log('fixClientNamesUppercase: ' + fixed + ' nomes corrigidos');
+}
+fixClientNamesUppercase();
+
 const columns = readStore('columns');
 if (columns.length === 0) {
   const defaults = [
