@@ -3646,6 +3646,19 @@ function openClientsPanel(){
 function closeClientsPanel(){
   document.getElementById('clients-panel').classList.remove('open');
   closeClientEdit();
+  clientsPage=0;
+  alphaFilter='';
+  selectMode=false;
+  selectedClients.clear();
+  const searchInput=document.getElementById('clients-search-input');
+  if(searchInput) searchInput.value='';
+  const btn=document.getElementById('alpha-filter-btn');
+  if(btn){ btn.textContent='A-Z'; btn.classList.remove('active'); }
+  document.getElementById('select-all-bar').style.display='none';
+  document.getElementById('select-actions-bar').style.display='none';
+  document.getElementById('clients-panel').classList.remove('select-mode');
+  const selBtn=document.getElementById('btn-select-clients');
+  if(selBtn) selBtn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 12l2 2 4-4"/></svg>';
 }
 let selectMode=false;
 let selectedClients=new Set();
@@ -4181,7 +4194,7 @@ let trashPage=0;
 const TRASH_PER_PAGE=100;
 
 async function openTrash(){
-  trashData=await api('GET','/api/trash');
+  trashData=(await api('GET','/api/trash')).sort((a,b)=>(b._deleted_at||'').localeCompare(a._deleted_at||''));
   trashPage=0;
   renderTrashList();
   openModal('modal-trash');
