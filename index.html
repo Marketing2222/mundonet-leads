@@ -903,8 +903,6 @@
     body:not(.ready) #trash-panel { display: none !important; }
   </style>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
 </head>
 <body>
 
@@ -1594,11 +1592,9 @@
     <span class="clients-header-title">📋 Clientes IXC</span>
     <div style="display:flex;gap:6px;align-items:center">
       <button class="btn btn-ghost" onclick="toggleSelectMode()" id="btn-select-clients" style="font-size:11px;padding:5px 8px;border:1px solid var(--border);border-radius:6px" title="Selecionar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 12l2 2 4-4"/></svg></button>
-      <button class="btn btn-ghost" onclick="document.getElementById('csv-file-input').click()" style="font-size:11px;padding:5px 8px;border:1px solid var(--border);border-radius:6px" title="Importar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M10 9l-4 4h8l-4-4z"/><line x1="12" y1="13" x2="12" y2="17"/></svg></button>
-      <button class="btn btn-ghost" onclick="document.getElementById('debug-pdf-input').click()" style="font-size:11px;padding:5px 8px;border:1px solid var(--border);border-radius:6px" title="Debug PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></button>
-      <input type="file" id="debug-pdf-input" accept=".pdf" style="display:none" onchange="debugPDF(this)">
+      <button class="btn btn-ghost" onclick="document.getElementById('csv-file-input').click()" style="font-size:11px;padding:5px 8px;border:1px solid var(--border);border-radius:6px" title="Importar Excel/CSV"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></button>
       <button class="btn btn-ghost" onclick="openAddClientPopup()" style="font-size:11px;padding:5px 8px;border:1px solid var(--border);border-radius:6px" title="Adicionar cliente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
-      <input type="file" id="csv-file-input" accept=".csv,.txt,.xls,.xlsx,.pdf" style="display:none" onchange="importFile(this)">
+      <input type="file" id="csv-file-input" accept=".csv,.txt,.xls,.xlsx" style="display:none" onchange="importFile(this)">
       <button class="clients-close" onclick="closeClientsPanel()">✕</button>
     </div>
   </div>
@@ -1611,7 +1607,7 @@
   </div>
   <div style="padding:4px 14px;font-size:10px;color:var(--text-muted)" id="clients-last-sync"></div>
   <div class="clients-list" id="clients-list">
-    <div class="clients-empty">Nenhum cliente importado.<br>Importe um arquivo CSV, Excel ou PDF.</div>
+    <div class="clients-empty">Nenhum cliente importado.<br>Importe um arquivo Excel ou CSV.</div>
   </div>
   <div id="select-actions-bar" style="display:none;padding:10px 14px;border-top:1px solid var(--border);gap:8px;justify-content:center">
     <button class="btn btn-ghost" onclick="batchArchive()" style="font-size:11px;padding:6px 14px;border:1px solid var(--border);border-radius:6px">📦 Arquivar (<span id="batch-count">0</span>)</button>
@@ -3705,9 +3701,7 @@ async function importFile(input){
   const ext=file.name.split('.').pop().toLowerCase();
   let parsedRows=[];
   try{
-    if(ext==='pdf'){
-      parsedRows=await parsePDF(file);
-    } else if(ext==='csv'||ext==='txt'){
+    if(ext==='csv'||ext==='txt'){
       parsedRows=await parseCSV(file);
     } else if(ext==='xls'||ext==='xlsx'){
       parsedRows=await parseExcel(file);
@@ -3745,57 +3739,6 @@ async function importFile(input){
   input.value='';
 }
 
-async function parsePDF(file){
-  const arrayBuf=await file.arrayBuffer();
-  const pdf=await pdfjsLib.getDocument({data:arrayBuf}).promise;
-  const allItems=[];
-  for(let p=1;p<=pdf.numPages;p++){
-    const page=await pdf.getPage(p);
-    const content=await page.getTextContent();
-    content.items.forEach(item=>{
-      const tx=item.transform;
-      allItems.push({text:item.str.trim(), x:tx[4], y:Math.round(tx[5])});
-    });
-  }
-  allItems.sort((a,b)=>a.y===b.y?a.x-b.x:b.y-a.y);
-  const lines={};
-  allItems.forEach(item=>{
-    const yKey=item.y;
-    if(!lines[yKey]) lines[yKey]=[];
-    lines[yKey].push(item);
-  });
-  const sortedY=Object.keys(lines).map(Number).sort((a,b)=>b-a);
-  const result=[];
-  result.push(['Cliente','Telefone','CPF/CNPJ','E-mail']);
-  sortedY.forEach(y=>{
-    const items=lines[y].sort((a,b)=>a.x-b.x);
-    const fullLine=items.map(i=>i.text).join(' ').trim();
-    const phoneMatch=fullLine.match(/\(\d{2}\)\s*\d{4,5}[\-\s]?\d{4}/);
-    const cpfMatch=fullLine.match(/\d{3}[\.\s]\d{3}[\.\s]\d{3}[\-\s]?\d{2}/);
-    const cnpjMatch=fullLine.match(/\d{2}[\.\s]\d{3}[\.\s]\d{3}[\/\s]\d{4}[\-\s]?\d{2}/);
-    const emailMatch=fullLine.match(/[\w\.\-]+@[\w\.\-]+\.\w+/);
-    if(!phoneMatch && !cpfMatch && !cnpjMatch && !emailMatch) return;
-    let telefone=phoneMatch?phoneMatch[0]:'';
-    let cpf=cnpjMatch?cnpjMatch[0]:(cpfMatch?cpfMatch[0]:'');
-    let email=emailMatch?emailMatch[0]:'';
-    const nameParts=[];
-    items.forEach(item=>{
-      const t=item.text.trim();
-      if(!t) return;
-      if(t.match(/^\(\d{2}\)/)||t.match(/^\d{4,5}[\-\s]?\d{4}$/)) return;
-      if(t.match(/^\d{3}[\.\s]\d{3}[\.\s]\d{3}/)) return;
-      if(t.match(/^\d{2}[\.\s]\d{3}[\.\s]\d{3}[\/]/)) return;
-      if(t.match(/^[\w\.\-]+@[\w\.\-]+\.\w+$/)) return;
-      if(t.match(/^\d{4,6}$/)) return;
-      nameParts.push(t);
-    });
-    let cliente=nameParts.join(' ').replace(/^\d+[\.\-\/]?\d*[\.\-\/]?\d*[\.\-\/]?\d*[\.\-\/]?\d*\s*/,'').trim();
-    if(cliente&&cliente.length>2) result.push([cliente,telefone,cpf,email]);
-  });
-  toast(`PDF: ${result.length-1} clientes encontrados`,'info');
-  return result;
-}
-
 async function parseCSV(file){
   const text=await file.text();
   const lines=text.split(/\r?\n/).filter(l=>l.trim());
@@ -3804,48 +3747,6 @@ async function parseCSV(file){
   const rows=[];
   for(let i=0;i<lines.length;i++) rows.push(lines[i].split(sep).map(c=>c.trim().replace(/"/g,'')));
   return rows;
-}
-
-async function debugPDF(input){
-  const file=input.files[0]; if(!file) return;
-  try{
-    const arrayBuf=await file.arrayBuffer();
-    const pdf=await pdfjsLib.getDocument({data:arrayBuf}).promise;
-    let output='=== DEBUG PDF ===\nArquivo: '+file.name+'\nPáginas: '+pdf.numPages+'\n\n';
-    for(let p=1;p<=pdf.numPages;p++){
-      const page=await pdf.getPage(p);
-      const content=await page.getTextContent();
-      output+='--- PÁGINA '+p+' ---\n';
-      output+='--- ITENS RAW (text|x|y) ---\n';
-      const items=[];
-      content.items.forEach(item=>{
-        const tx=item.transform;
-        items.push({text:item.str, x:Math.round(tx[4]), y:Math.round(tx[5])});
-      });
-      items.sort((a,b)=>a.y===b.y?a.x-b.x:b.y-a.y);
-      const lines={};
-      items.forEach(item=>{
-        const yKey=item.y;
-        if(!lines[yKey]) lines[yKey]=[];
-        lines[yKey].push(item);
-      });
-      const sortedY=Object.keys(lines).map(Number).sort((a,b)=>b-a);
-      sortedY.forEach(y=>{
-        const lineItems=lines[y].sort((a,b)=>a.x-b.x);
-        output+='[Y='+y+'] '+lineItems.map(i=>i.text).join(' | ')+'\n';
-      });
-      output+='\n--- TEXTO POR PÁGINA ---\n';
-      const textItems=content.items.map(i=>i.str).filter(s=>s.trim());
-      output+=textItems.join('\n')+'\n\n';
-    }
-    const blob=new Blob([output],{type:'text/plain'});
-    const a=document.createElement('a');
-    a.href=URL.createObjectURL(blob);
-    a.download=file.name.replace(/\.pdf$/i,'_debug.txt');
-    a.click();
-    toast('Debug baixado! Envie o arquivo .txt','success');
-  }catch(e){ toast('Erro no debug: '+e.message,'error'); }
-  input.value='';
 }
 
 async function parseExcel(file){
