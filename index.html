@@ -611,7 +611,7 @@
     .col-manage-btn:hover { background: var(--bg-card); color: var(--text-primary); }
 
     /* ===== CONFIRM ===== */
-    #modal-confirm { max-width: 360px; z-index: 2000 !important; backdrop-filter: none !important; background: rgba(0,0,0,0.4) !important; }
+    #modal-confirm { max-width: 360px; z-index: 2000 !important; }
     .confirm-icon { font-size: 42px; text-align: center; margin-bottom: 12px; }
     .confirm-msg  { font-size: 14px; color: var(--text-secondary); text-align: center; line-height: 1.6; }
 
@@ -1247,7 +1247,7 @@
 <!-- modal-move removed -->
 
 <!-- ===== MODAL: CONFIRMAÇÃO ===== -->
-<div class="modal-overlay" id="modal-confirm">
+<div class="modal-overlay" id="modal-confirm" style="backdrop-filter:none;background:rgba(0,0,0,0.5)">
   <div class="modal-box" style="max-width:360px">
     <div class="modal-body" style="padding:28px;text-align:center">
       <div class="confirm-icon" id="confirm-icon">⚠️</div>
@@ -2238,7 +2238,7 @@ function renderCard(lead,col){
       style="--col-color:${col.color}">
       <div class="card-top">
         <span class="card-lead-name">${escHtml(lead.leadNome||'Lead sem nome')}</span>
-        ${lead.comissaoStatus==='pago'?`<span class="card-badge" style="background:rgba(16,185,129,0.15);color:#34d399;display:flex;flex-direction:column;line-height:1.1"><span style="font-size:8px;letter-spacing:.05em">PAGO</span><span>${timeAgo(lead.criadoEm,lead.comissaoDataPagamento?new Date(lead.comissaoDataPagamento).getTime():null)}</span></span>`:''}
+        ${lead.comissaoStatus==='pago'?`<span class="card-badge" style="background:rgba(16,185,129,0.15);color:#34d399;display:flex;flex-direction:column;line-height:1.1"><span style="font-size:8px;letter-spacing:.05em">PAGO</span><span>${timeAgo(lead.criadoEm,lead.comissaoDataPagamento?new Date(lead.comissaoDataPagamento).getTime():null)}</span></span>`:`<span class="card-badge" style="background:${col.color}1a;color:${col.color}">${timeAgo(lead.criadoEm)}</span>`}
       </div>
       <div class="card-info">
         ${lead.clienteNome?`<div class="card-row"><span class="card-row-icon">👤</span><span class="card-row-text">${escHtml(lead.clienteNome)}</span></div>`:''}
