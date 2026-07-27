@@ -481,7 +481,7 @@
           <!-- Client: CPF Field (only for client tab) -->
           <div class="form-group" id="cpf-group">
             <label for="indicator-cpf">Seu CPF ou CNPJ</label>
-            <input type="text" id="indicator-cpf" class="form-control" placeholder="000.000.000-00 ou 00.000.000/0000-00" oninput="maskCPF(this);onCPFChange()" maxlength="18">
+            <input type="text" id="indicator-cpf" class="form-control" placeholder="CPF OU CNPJ" oninput="maskCPF(this);onCPFChange()" maxlength="18">
           </div>
 
           <!-- Non-Client: WhatsApp Field (only for non-client tab) -->
@@ -499,13 +499,13 @@
           <!-- Lead Name -->
           <div class="form-group">
             <label for="lead-name">Nome de quem vai indicar</label>
-            <input type="text" id="lead-name" class="form-control" placeholder="Nome do seu amigo" required style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()" disabled>
+            <input type="text" id="lead-name" class="form-control" placeholder="" required style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()" disabled>
           </div>
 
           <!-- Lead WhatsApp -->
           <div class="form-group">
             <label for="lead-whatsapp">WhatsApp de quem vai indicar</label>
-            <input type="text" id="lead-whatsapp" class="form-control" placeholder="(XX) XXXXX-XXXX" oninput="maskPhone(this)" maxlength="15" required disabled>
+            <input type="text" id="lead-whatsapp" class="form-control" placeholder="" oninput="maskPhone(this)" maxlength="15" required disabled>
           </div>
 
           <!-- PIX Key (Only shown for non-client) -->
@@ -728,11 +728,11 @@
       if (locked) {
         leadName.value = '';
         leadWhatsapp.value = '';
-        leadName.placeholder = 'Preencha seus dados primeiro';
-        leadWhatsapp.placeholder = 'Preencha seus dados primeiro';
+        leadName.placeholder = '';
+        leadWhatsapp.placeholder = '';
       } else {
-        leadName.placeholder = 'Nome do seu amigo';
-        leadWhatsapp.placeholder = '(XX) XXXXX-XXXX';
+        leadName.placeholder = '';
+        leadWhatsapp.placeholder = '';
       }
     }
 
