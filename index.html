@@ -611,7 +611,7 @@
     .col-manage-btn:hover { background: var(--bg-card); color: var(--text-primary); }
 
     /* ===== CONFIRM ===== */
-    #modal-confirm { max-width: 360px; }
+    #modal-confirm { max-width: 360px; z-index: 2000 !important; }
     .confirm-icon { font-size: 42px; text-align: center; margin-bottom: 12px; }
     .confirm-msg  { font-size: 14px; color: var(--text-secondary); text-align: center; line-height: 1.6; }
 
@@ -4200,7 +4200,7 @@ function renderTrashList(){
     const sourceIcon=source==='client'?'👤':source==='template'?'📝':source==='column'?'📊':'📌';
     const name=l.leadNome||l.nome||l.label||'Sem nome';
     const detail=source==='client'?(l.whatsapp?' · WhatsApp: '+l.whatsapp:''):(l.clienteNome?' · Cliente: '+l.clienteNome:'')+(l.column_id?' · Coluna: '+(sortedCols().find(c=>c.id===l.column_id)||{}).name||'':'');
-    return `<div class="trash-item"><div class="trash-item-info"><div class="trash-item-name">${escHtml(name)}</div><div class="trash-item-meta">${sourceIcon} ${sourceLabel} · Excluído: ${escHtml(dt)}${escHtml(detail)}</div></div><div class="trash-item-btns"><button class="btn btn-success" style="padding:5px 12px;font-size:11px" onclick="restoreItem('${l.id}','${source}')">♻️ Recuperar</button><button class="btn btn-danger" style="padding:5px 12px;font-size:11px" onclick="permanentDelete('${l.id}')">🗑️ Deletar</button></div></div>`;
+    return `<div class="trash-item"><div class="trash-item-info"><div class="trash-item-name">${escHtml(name)}</div><div class="trash-item-meta">${sourceIcon} ${sourceLabel} · Excluído: ${escHtml(dt)}${escHtml(detail)}</div></div><div class="trash-item-btns"><button class="btn btn-success" style="padding:6px 8px;font-size:13px" onclick="restoreItem('${l.id}','${source}')" title="Recuperar">♻️</button><button class="btn btn-danger" style="padding:6px 8px;font-size:13px" onclick="permanentDelete('${l.id}')" title="Deletar permanentemente">🗑️</button></div></div>`;
   }).join('');
   if(end<total){
     html+=`<div style="text-align:center;padding:10px"><button class="btn btn-ghost" onclick="loadMoreTrash()" style="font-size:11px;padding:6px 16px">Carregar mais (${end} de ${total})</button></div>`;
