@@ -53,16 +53,18 @@ const app = express();
 app.use(express.json({ limit: '10mb' }));
 
 // ---------- PROTECT INDEX.HTML (before static middleware) ----------
+// Check Host header to decide which page to serve:
+// - mundoisp.mundonet.com → index.html (admin login)
+// - indique.mundonet.com  → indique.html (public form)
+// - localhost / IP         → index.html (admin for development)
 app.get('/index.html', (req, res) => {
-  const cookies = parseCookies(req);
-  const session = getSession(cookies.session);
-  if (!session) return res.redirect('/indique.html');
+  const host = (req.headers.host || '').toLowerCase();
+  if (host.includes('indique')) return res.redirect('/indique.html');
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 app.get('/', (req, res) => {
-  const cookies = parseCookies(req);
-  const session = getSession(cookies.session);
-  if (!session) return res.redirect('/indique.html');
+  const host = (req.headers.host || '').toLowerCase();
+  if (host.includes('indique')) return res.redirect('/indique.html');
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
