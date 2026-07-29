@@ -52,33 +52,20 @@ function clearCookie(res, name) {
 const app = express();
 app.use(express.json({ limit: '10mb' }));
 
-// ---------- PROTECT INDEX.HTML (before static middleware) ----------
-// Check Host header to decide which page to serve:
-// - mundoisp.mundonet.com → index.html (admin login)
-// - indique.mundonet.com  → indique.html (public form)
-// - localhost / IP         → index.html (admin for development)
-app.get('/index.html', (req, res) => {
-  const host = (req.headers.host || '').toLowerCase();
-  if (host.includes('indique')) return res.redirect('/indique.html');
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
-app.get('/', (req, res) => {
-  const host = (req.headers.host || '').toLowerCase();
-  if (host.includes('indique')) return res.redirect('/indique.html');
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
+// ---------- PUBLIC PAGES (before static) ----------
+app.get('/indique', (req, res) => { res.sendFile(path.join(__dirname, 'indique.html')); });
+app.get('/indique/', (req, res) => { res.sendFile(path.join(__dirname, 'indique.html')); });
+app.get('/indique.html', (req, res) => { res.sendFile(path.join(__dirname, 'indique.html')); });
+app.get('/indique-e-ganhe', (req, res) => { res.sendFile(path.join(__dirname, 'indique.html')); });
 
-// ---------- STATIC FILES (public: indique.html, assets) ----------
-app.use((req, res, next) => {
-  // Allow indique.html and its assets freely
-  if (req.path === '/indique.html' || req.path === '/indique' || req.path === '/indique/' || req.path === '/indique-e-ganhe') return next();
-  // Allow static assets (css, js, images, fonts)
-  if (req.path.match(/\.(css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|map)$/)) return next();
-  // Allow favicon
-  if (req.path === '/favicon.ico') return next();
-  next();
-});
-app.use(express.static(__dirname));
+// ---------- PROTECT ADMIN (before static) ----------
+// Always serve index.html — login screen is built into it.
+// APIs are protected server-side, so data stays safe.
+app.get('/index.html', (req, res) => { res.sendFile(path.join(__dirname, 'index.html')); });
+app.get('/', (req, res) => { res.sendFile(path.join(__dirname, 'index.html')); });
+
+// ---------- STATIC FILES (no index auto-serve) ----------
+app.use(express.static(__dirname, { index: false }));
 
 // ---------- JSON file storage ----------
 function readStore(name) {
@@ -793,11 +780,6 @@ app.post('/api/restore', (req, res) => {
   if (data.prefs) writeObj('prefs', data.prefs);
   res.json({ ok: true });
 });
-
-// ---------- PUBLIC PAGES ----------
-app.get('/indique', (req, res) => { res.sendFile(path.join(__dirname, 'indique.html')); });
-app.get('/indique/', (req, res) => { res.sendFile(path.join(__dirname, 'indique.html')); });
-app.get('/indique-e-ganhe', (req, res) => { res.sendFile(path.join(__dirname, 'indique.html')); });
 
 // ---------- SPA fallback (public -> indique.html) ----------
 app.get('*', (req, res) => { res.sendFile(path.join(__dirname, 'indique.html')); });
