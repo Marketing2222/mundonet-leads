@@ -109,7 +109,7 @@
     .logo-name { font-size: 13px; font-weight: 800; color: var(--text-primary); letter-spacing: 0.03em; white-space: nowrap; }
     .logo-sub { display: none; }
     .header-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-    .header-center { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; overflow: hidden; }
+    .header-center { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; }
     .header-toolbar { display: none; align-items: center; gap: 6px; flex-wrap: wrap; }
     body.admin-mode .header-toolbar { display: flex; }
     .header-divider { width: 1px; height: 20px; background: var(--border); margin: 0 2px; }
@@ -177,7 +177,7 @@
       display: none; position: absolute; top: calc(100% + 4px); left: 0;
       background: var(--bg-surface); min-width: 160px;
       box-shadow: var(--shadow-lg); border-radius: 6px;
-      z-index: 100; border: 1px solid var(--border);
+      z-index: 110; border: 1px solid var(--border);
       flex-direction: column; padding: 4px; gap: 2px;
     }
     .dropdown-content::before { content: ''; position: absolute; top: -6px; left: 0; right: 0; height: 6px; }
@@ -1042,6 +1042,7 @@
   </div>
 
   <div class="header-right">
+    <a id="btn-ver-indique" href="/indique.html" target="_blank" style="display:none;align-items:center;gap:5px;padding:6px 10px;border-radius:var(--radius-sm);background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);color:#34d399;font-size:11px;font-weight:600;text-decoration:none;white-space:nowrap;transition:all 0.2s" onmouseover="this.style.background='rgba(16,185,129,0.22)'" onmouseout="this.style.background='rgba(16,185,129,0.12)'">🌐 Ver site de indicação</a>
     <button id="btn-theme" onclick="toggleTheme()" title="Alternar tema">☀️</button>
     <button id="btn-admin-toggle" onclick="toggleAdmin()">
       <span>⚙️ Admin</span><span class="admin-dot"></span>
@@ -2019,8 +2020,6 @@
 
 // ===== CONSTANTS =====
 const API_BASE = window.location.origin;
-const DEFAULT_ADMIN = { user: 'admin', pass: '123456' };
-const SESSION_KEY = 'mundonet_session';
 
 function maskPhone(input) {
   let v = input.value.replace(/\D/g, '');
@@ -2147,9 +2146,17 @@ function toSnake(o) {
   return r;
 }
 function getUserName() { return currentUser?.nome || currentUser?.user || 'Sistema'; }
-function checkSession() { return sessionStorage.getItem(SESSION_KEY) === 'ok'; }
-function setSession()   { sessionStorage.setItem(SESSION_KEY,'ok'); }
-function clearSession() { sessionStorage.removeItem(SESSION_KEY); }
+async function checkSession() {
+  try {
+    const resp = await fetch('/api/session', { credentials: 'same-origin' });
+    if (resp.ok) {
+      const data = await resp.json();
+      currentUser = { id: data.id, user: data.username, nome: data.display_name };
+      return true;
+    }
+  } catch(e) {}
+  return false;
+}
 function togglePassVisibility(inputId, btn) {
   const inp = document.getElementById(inputId);
   if (!inp) return;
@@ -2368,6 +2375,8 @@ function openSwitchUser(){
   const btn=document.getElementById('btn-admin-toggle');
   btn.classList.remove('active');
   btn.querySelector('span:first-child').textContent='⚙️ Admin';
+  const indBtn=document.getElementById('btn-ver-indique');
+  if(indBtn) indBtn.style.display='none';
   showLoginPage();
 }
 async function doLogin(){
@@ -2375,12 +2384,7 @@ async function doLogin(){
   const p=document.getElementById('login-pass').value.trim();
   const err=document.getElementById('login-error');
   try {
-    let resp;
-    if (u.toLowerCase() === DEFAULT_ADMIN.user.toLowerCase() && p === DEFAULT_ADMIN.pass) {
-      resp = { id: 'admin-id', username: 'admin', display_name: 'Administrador' };
-    } else {
-      resp = await api('POST','/api/login',{username:u,password:p});
-    }
+    const resp = await api('POST','/api/login',{username:u,password:p});
     err.style.display='none';
     document.getElementById('login-user').value='';
     document.getElementById('login-pass').value='';
@@ -2390,7 +2394,7 @@ async function doLogin(){
       document.getElementById('btn-admin-toggle').querySelector('span:first-child').textContent=getUserName();
       toast('Trocou para '+getUserName()+'!','success');
     } else {
-      setSession(); closeModal('modal-login'); enableAdmin();
+      closeModal('modal-login'); enableAdmin();
     }
   } catch(e) { console.error('Erro no login:', e); err.style.display='block'; }
 }
@@ -2400,21 +2404,10 @@ async function doLoginPage(){
   const err=document.getElementById('login-page-error');
   if(!u||!p){ err.textContent='Preencha todos os campos'; err.style.display='block'; return; }
   try {
-    let resp;
-    if (u.toLowerCase() === DEFAULT_ADMIN.user.toLowerCase() && p === DEFAULT_ADMIN.pass) {
-      resp = { id: 'admin-id', username: 'admin', display_name: 'Administrador' };
-      try {
-        const apiResp = await api('POST','/api/login',{username:u,password:p});
-        if(apiResp && apiResp.id) resp = apiResp;
-      } catch(apiErr) {
-        console.warn('API não respondeu, entrando via admin local:', apiErr);
-      }
-    } else {
-      resp = await api('POST','/api/login',{username:u,password:p});
-    }
+    const resp = await api('POST','/api/login',{username:u,password:p});
     err.style.display='none';
     currentUser={id:resp.id,user:resp.username,nome:resp.display_name};
-    setSession(); enableAdmin();
+    enableAdmin();
     document.body.classList.add('ready');
     document.getElementById('login-screen').classList.add('hidden');
   } catch(e) {
@@ -2507,14 +2500,19 @@ function enableAdmin(){
     const span=btn.querySelector('span:first-child');
     if(span) span.textContent=getUserName();
   }
+  const indBtn=document.getElementById('btn-ver-indique');
+  if(indBtn) indBtn.style.display='flex';
   if(typeof render==='function') render();
   if(typeof toast==='function') toast('Logado como '+getUserName()+'!','success');
 }
-function doLogout(){
-  isAdminMode=false; clearSession(); currentUser=null;
+async function doLogout(){
+  try { await fetch('/api/logout', { method: 'POST', credentials: 'same-origin' }); } catch(e) {}
+  isAdminMode=false; currentUser=null;
   const btn=document.getElementById('btn-admin-toggle');
   btn.classList.remove('active');
   btn.querySelector('span:first-child').textContent='⚙️ Admin';
+  const indBtn=document.getElementById('btn-ver-indique');
+  if(indBtn) indBtn.style.display='none';
   document.body.classList.remove('ready');
   showLoginPage();
   render();
@@ -4428,7 +4426,8 @@ async function init(){
   applyPrefs();
   applyLoginPagePrefs();
   initFilterBar();
-  if(checkSession()){
+  const loggedIn = await checkSession();
+  if(loggedIn){
     document.body.classList.add('ready');
     document.getElementById('login-screen').classList.add('hidden');
     enableAdmin();

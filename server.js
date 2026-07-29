@@ -6,6 +6,8 @@ import crypto from 'crypto';
 import fetch from 'node-fetch';
 
 const PORT = process.env.PORT || 80;
+const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomUUID();
+const SESSION_TTL = 8 * 60 * 60 * 1000; // 8 hours
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const DATA_DIR = process.env.DB_PATH || path.join(__dirname, 'data');
@@ -13,8 +15,67 @@ console.log('DATA_DIR:', DATA_DIR, '| DB_PATH env:', process.env.DB_PATH || '(no
 
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
+// ---------- SESSION STORE ----------
+const sessions = new Map();
+
+function createSession(userId, username, displayName) {
+  const token = crypto.randomUUID();
+  sessions.set(token, { userId, username, displayName, createdAt: Date.now() });
+  return token;
+}
+function getSession(token) {
+  if (!token) return null;
+  const s = sessions.get(token);
+  if (!s) return null;
+  if (Date.now() - s.createdAt > SESSION_TTL) { sessions.delete(token); return null; }
+  return s;
+}
+function destroySession(token) { sessions.delete(token); }
+
+// ---------- COOKIE HELPERS ----------
+function parseCookies(req) {
+  const cookies = {};
+  const header = req.headers.cookie || '';
+  header.split(';').forEach(c => {
+    const [key, ...val] = c.split('=');
+    if (key) cookies[key.trim()] = decodeURIComponent(val.join('=').trim());
+  });
+  return cookies;
+}
+function setCookie(res, name, value, maxAge) {
+  res.setHeader('Set-Cookie', `${name}=${encodeURIComponent(value)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}`);
+}
+function clearCookie(res, name) {
+  res.setHeader('Set-Cookie', `${name}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`);
+}
+
 const app = express();
 app.use(express.json({ limit: '10mb' }));
+
+// ---------- PROTECT INDEX.HTML (before static middleware) ----------
+app.get('/index.html', (req, res) => {
+  const cookies = parseCookies(req);
+  const session = getSession(cookies.session);
+  if (!session) return res.redirect('/indique.html');
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+app.get('/', (req, res) => {
+  const cookies = parseCookies(req);
+  const session = getSession(cookies.session);
+  if (!session) return res.redirect('/indique.html');
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// ---------- STATIC FILES (public: indique.html, assets) ----------
+app.use((req, res, next) => {
+  // Allow indique.html and its assets freely
+  if (req.path === '/indique.html' || req.path === '/indique' || req.path === '/indique-e-ganhe') return next();
+  // Allow static assets (css, js, images, fonts)
+  if (req.path.match(/\.(css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|map)$/)) return next();
+  // Allow favicon
+  if (req.path === '/favicon.ico') return next();
+  next();
+});
 app.use(express.static(__dirname));
 
 // ---------- JSON file storage ----------
@@ -98,7 +159,15 @@ app.post('/api/login', (req, res) => {
   const usersList = readStore('users');
   const row = usersList.find(u => (u.username || '').trim().toLowerCase() === cleanUsername);
   if (!row || row.password !== hashPass(cleanPassword)) return res.status(401).json({ error: 'Credenciais inválidas' });
+  const token = createSession(row.id, row.username, row.display_name);
+  setCookie(res, 'session', token, SESSION_TTL / 1000);
   res.json({ id: row.id, username: row.username, display_name: row.display_name });
+});
+app.post('/api/logout', (req, res) => {
+  const cookies = parseCookies(req);
+  if (cookies.session) destroySession(cookies.session);
+  clearCookie(res, 'session');
+  res.json({ ok: true });
 });
 app.post('/api/switch-user', (req, res) => {
   const { username, password } = req.body || {};
@@ -108,7 +177,36 @@ app.post('/api/switch-user', (req, res) => {
   const usersList = readStore('users');
   const row = usersList.find(u => (u.username || '').trim().toLowerCase() === cleanUsername);
   if (!row || row.password !== hashPass(cleanPassword)) return res.status(401).json({ error: 'Credenciais inválidas' });
+  const cookies = parseCookies(req);
+  if (cookies.session) destroySession(cookies.session);
+  const token = createSession(row.id, row.username, row.display_name);
+  setCookie(res, 'session', token, SESSION_TTL / 1000);
   res.json({ id: row.id, username: row.username, display_name: row.display_name });
+});
+
+// ---------- AUTH MIDDLEWARE (protect admin + API) ----------
+function requireAuth(req, res, next) {
+  const cookies = parseCookies(req);
+  const session = getSession(cookies.session);
+  if (!session) return res.status(401).json({ error: 'Sessão expirada. Faça login novamente.' });
+  req.user = session;
+  next();
+}
+
+// Protect all API routes except login and public endpoints
+app.use('/api', (req, res, next) => {
+  if (req.path === '/login') return next();
+  if (req.path.startsWith('/public-indicacao')) return next(); // public form
+  if (req.path === '/prefs' && req.method === 'GET') return next(); // public prefs for indique.html
+  requireAuth(req, res, next);
+});
+
+// Check session status
+app.get('/api/session', (req, res) => {
+  const cookies = parseCookies(req);
+  const session = getSession(cookies.session);
+  if (!session) return res.status(401).json({ error: 'Não autenticado' });
+  res.json({ id: session.userId, username: session.username, display_name: session.displayName });
 });
 
 // ---------- USERS ----------
@@ -698,8 +796,8 @@ app.post('/api/restore', (req, res) => {
 app.get('/indique', (req, res) => { res.sendFile(path.join(__dirname, 'indique.html')); });
 app.get('/indique-e-ganhe', (req, res) => { res.sendFile(path.join(__dirname, 'indique.html')); });
 
-// ---------- SPA fallback ----------
-app.get('*', (req, res) => { res.sendFile(path.join(__dirname, 'index.html')); });
+// ---------- SPA fallback (public -> indique.html) ----------
+app.get('*', (req, res) => { res.sendFile(path.join(__dirname, 'indique.html')); });
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log('Server running on port ' + PORT);
