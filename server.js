@@ -52,6 +52,16 @@ function clearCookie(res, name) {
 const app = express();
 app.use(express.json({ limit: '10mb' }));
 
+// ---------- NO-CACHE for HTML ----------
+app.use((req, res, next) => {
+  if (req.path.endsWith('.html') || req.path === '/' || req.path === '/indique' || req.path === '/indique/') {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+  next();
+});
+
 // ---------- PUBLIC PAGES (before static) ----------
 app.get('/indique', (req, res) => { res.sendFile(path.join(__dirname, 'indique.html')); });
 app.get('/indique/', (req, res) => { res.sendFile(path.join(__dirname, 'indique.html')); });
