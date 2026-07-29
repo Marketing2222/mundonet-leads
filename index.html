@@ -1991,14 +1991,15 @@
     <button class="clients-close" onclick="closePanelAdminCampanha()">✕</button>
   </div>
   <div style="flex:1;overflow-y:auto;padding:16px">
-    <p style="font-size:11px;color:var(--text-muted);margin-bottom:14px">Configure o botão de campanha que aparece no toolbar.</p>
-    <div class="form-group" style="margin-bottom:14px">
-      <label class="form-label">Link / URL</label>
+    <!-- BOTÃO NO TOOLBAR -->
+    <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Botão no Toolbar</p>
+    <div class="form-group" style="margin-bottom:12px">
+      <label class="form-label">Link / URL do botão</label>
       <input type="text" id="acmp-link" class="form-control" placeholder="https://exemplo.com/campanha">
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
       <div class="form-group">
-        <label class="form-label">Cor de Fundo do Botão</label>
+        <label class="form-label">Cor de Fundo</label>
         <div style="display:flex;gap:6px;align-items:center">
           <input type="color" id="acmp-btn-color" value="#f59e0b" style="width:36px;height:32px;border:none;border-radius:6px;cursor:pointer;background:transparent" oninput="document.getElementById('acmp-btn-color-hex').textContent=this.value">
           <span style="font-size:11px;color:var(--text-muted)" id="acmp-btn-color-hex">#f59e0b</span>
@@ -2013,7 +2014,7 @@
       </div>
     </div>
     <div class="form-group" style="margin-bottom:14px">
-      <label class="form-label">Ícone do Botão (Opcional)</label>
+      <label class="form-label">Ícone do Botão</label>
       <div style="display:flex;gap:8px;align-items:center">
         <div id="acmp-icon-preview" style="width:36px;height:36px;border-radius:8px;background:var(--bg-elevated);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;overflow:hidden">🚀</div>
         <div style="display:flex;gap:6px;align-items:center">
@@ -2023,10 +2024,180 @@
         </div>
       </div>
     </div>
-    <div style="padding:12px;border-radius:var(--radius-sm);background:var(--bg-elevated);border:1px solid var(--border);text-align:center">
-      <span style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:6px">Pré-visualização</span>
+    <div style="padding:10px;border-radius:var(--radius-sm);background:var(--bg-elevated);border:1px solid var(--border);text-align:center;margin-bottom:18px">
+      <span style="font-size:10px;color:var(--text-muted);display:block;margin-bottom:4px">Preview</span>
       <button id="acmp-preview" class="toolbar-btn" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);color:#fbbf24;pointer-events:none"><span id="acmp-preview-icon">🚀</span> Admin Campanha</button>
     </div>
+
+    <!-- LANDING PAGE -->
+    <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px;padding-top:14px;border-top:1px solid var(--border)">Landing Page da Campanha</p>
+    <div class="form-group" style="margin-bottom:10px">
+      <label class="form-label">Logo da Campanha</label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div id="acmp-logo-preview" style="width:36px;height:36px;border-radius:8px;background:var(--bg-elevated);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:var(--accent-blue);flex-shrink:0;overflow:hidden">M</div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button class="btn btn-ghost" onclick="document.getElementById('acmp-logo-file').click()" style="font-size:12px;padding:7px 12px">📤 Upload</button>
+          <input type="file" id="acmp-logo-file" accept="image/*" style="display:none" onchange="handleAcmpLogoUpload(this)">
+          <button class="btn btn-danger" onclick="removeAcmpLogo()" style="font-size:11px;padding:6px 10px;display:none" id="acmp-logo-remove-btn">🗑</button>
+        </div>
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:10px">
+      <label class="form-label">Título Hero</label>
+      <input type="text" id="acmp-hero-title" class="form-control" placeholder="Indique e Ganhe">
+    </div>
+    <div class="form-group" style="margin-bottom:10px">
+      <label class="form-label">Subtítulo Hero</label>
+      <input type="text" id="acmp-hero-subtitle" class="form-control" placeholder="Indique seus amigos e concorra a prêmios!">
+    </div>
+    <div class="form-group" style="margin-bottom:10px">
+      <label class="form-label">Banner Hero (Imagem)</label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div id="acmp-hero-preview" style="width:60px;height:36px;border-radius:6px;background:var(--bg-elevated);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text-muted);flex-shrink:0;overflow:hidden">Banner</div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button class="btn btn-ghost" onclick="document.getElementById('acmp-hero-file').click()" style="font-size:12px;padding:7px 12px">📤 Upload</button>
+          <input type="file" id="acmp-hero-file" accept="image/*" style="display:none" onchange="handleAcmpHeroUpload(this)">
+          <button class="btn btn-danger" onclick="removeAcmpHero()" style="font-size:11px;padding:6px 10px;display:none" id="acmp-hero-remove-btn">🗑</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMO CONCORRER -->
+    <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px;padding-top:14px;border-top:1px solid var(--border)">Como Concorrar (4 passos)</p>
+    <div class="form-group" style="margin-bottom:8px">
+      <label class="form-label">Título da seção</label>
+      <input type="text" id="acmp-steps-title" class="form-control" placeholder="Como Concorrer?">
+    </div>
+    <div id="acmp-steps-list">
+      <div style="margin-bottom:10px;padding:10px;background:var(--bg-elevated);border-radius:8px;border:1px solid var(--border)">
+        <div style="font-size:11px;font-weight:700;color:var(--accent-blue);margin-bottom:6px">Passo 1</div>
+        <input type="text" id="acmp-step1-title" class="form-control" placeholder="Título do passo 1" style="margin-bottom:6px;font-size:12px;padding:8px 10px">
+        <input type="text" id="acmp-step1-desc" class="form-control" placeholder="Descrição do passo 1" style="font-size:12px;padding:8px 10px">
+      </div>
+      <div style="margin-bottom:10px;padding:10px;background:var(--bg-elevated);border-radius:8px;border:1px solid var(--border)">
+        <div style="font-size:11px;font-weight:700;color:var(--accent-blue);margin-bottom:6px">Passo 2</div>
+        <input type="text" id="acmp-step2-title" class="form-control" placeholder="Título do passo 2" style="margin-bottom:6px;font-size:12px;padding:8px 10px">
+        <input type="text" id="acmp-step2-desc" class="form-control" placeholder="Descrição do passo 2" style="font-size:12px;padding:8px 10px">
+      </div>
+      <div style="margin-bottom:10px;padding:10px;background:var(--bg-elevated);border-radius:8px;border:1px solid var(--border)">
+        <div style="font-size:11px;font-weight:700;color:var(--accent-blue);margin-bottom:6px">Passo 3</div>
+        <input type="text" id="acmp-step3-title" class="form-control" placeholder="Título do passo 3" style="margin-bottom:6px;font-size:12px;padding:8px 10px">
+        <input type="text" id="acmp-step3-desc" class="form-control" placeholder="Descrição do passo 3" style="font-size:12px;padding:8px 10px">
+      </div>
+      <div style="margin-bottom:10px;padding:10px;background:var(--bg-elevated);border-radius:8px;border:1px solid var(--border)">
+        <div style="font-size:11px;font-weight:700;color:var(--accent-blue);margin-bottom:6px">Passo 4</div>
+        <input type="text" id="acmp-step4-title" class="form-control" placeholder="Título do passo 4" style="margin-bottom:6px;font-size:12px;padding:8px 10px">
+        <input type="text" id="acmp-step4-desc" class="form-control" placeholder="Descrição do passo 4" style="font-size:12px;padding:8px 10px">
+      </div>
+    </div>
+
+    <!-- BANNERS -->
+    <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px;padding-top:14px;border-top:1px solid var(--border)">Banners</p>
+    <div class="form-group" style="margin-bottom:10px">
+      <label class="form-label">Banner Lateral (ao lado do login)</label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div id="acmp-side-preview" style="width:60px;height:36px;border-radius:6px;background:var(--bg-elevated);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text-muted);flex-shrink:0;overflow:hidden">Banner</div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button class="btn btn-ghost" onclick="document.getElementById('acmp-side-file').click()" style="font-size:12px;padding:7px 12px">📤 Upload</button>
+          <input type="file" id="acmp-side-file" accept="image/*" style="display:none" onchange="handleAcmpSideUpload(this)">
+          <button class="btn btn-danger" onclick="removeAcmpSide()" style="font-size:11px;padding:6px 10px;display:none" id="acmp-side-remove-btn">🗑</button>
+        </div>
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:10px">
+      <label class="form-label">Banner Grande / Prêmio (abaixo do painel)</label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div id="acmp-premio-preview" style="width:60px;height:36px;border-radius:6px;background:var(--bg-elevated);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text-muted);flex-shrink:0;overflow:hidden">Banner</div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button class="btn btn-ghost" onclick="document.getElementById('acmp-premio-file').click()" style="font-size:12px;padding:7px 12px">📤 Upload</button>
+          <input type="file" id="acmp-premio-file" accept="image/*" style="display:none" onchange="handleAcmpPremioUpload(this)">
+          <button class="btn btn-danger" onclick="removeAcmpPremio()" style="font-size:11px;padding:6px 10px;display:none" id="acmp-premio-remove-btn">🗑</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAQ -->
+    <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px;padding-top:14px;border-top:1px solid var(--border)">Perguntas Frequentes</p>
+    <div id="acmp-faq-list"></div>
+    <div style="display:flex;gap:6px;margin-top:8px">
+      <input type="text" id="acmp-faq-q" class="form-control" placeholder="Pergunta" style="flex:1;font-size:12px;padding:7px 10px">
+      <input type="text" id="acmp-faq-a" class="form-control" placeholder="Resposta" style="flex:2;font-size:12px;padding:7px 10px">
+      <button class="btn btn-primary" onclick="addAcmpFaq()" style="font-size:11px;padding:7px 12px">＋</button>
+    </div>
+
+    <!-- RODAPÉ -->
+    <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px;padding-top:14px;border-top:1px solid var(--border)">Rodapé</p>
+    <div class="form-group" style="margin-bottom:8px">
+      <label class="form-label">Nome da Campanha</label>
+      <input type="text" id="acmp-footer-name" class="form-control" placeholder="Campanha de Indicação Mundonet">
+    </div>
+    <div class="form-group" style="margin-bottom:8px">
+      <label class="form-label">Telefone / WhatsApp</label>
+      <input type="text" id="acmp-footer-phone" class="form-control" placeholder="(11) 99999-9999">
+    </div>
+    <div class="form-group" style="margin-bottom:8px">
+      <label class="form-label">E-mail</label>
+      <input type="text" id="acmp-footer-email" class="form-control" placeholder="contato@mundonet.com">
+    </div>
+    <div class="form-group" style="margin-bottom:8px">
+      <label class="form-label">Link Instagram</label>
+      <input type="text" id="acmp-footer-instagram" class="form-control" placeholder="https://instagram.com/mundonet">
+    </div>
+    <div class="form-group" style="margin-bottom:8px">
+      <label class="form-label">Link WhatsApp (botão redes)</label>
+      <input type="text" id="acmp-footer-whatsapp" class="form-control" placeholder="https://wa.me/5511999999999">
+    </div>
+    <div class="form-group" style="margin-bottom:8px">
+      <label class="form-label">Link Facebook</label>
+      <input type="text" id="acmp-footer-facebook" class="form-control" placeholder="https://facebook.com/mundonet">
+    </div>
+    <div class="form-group" style="margin-bottom:8px">
+      <label class="form-label">Texto do Copyright</label>
+      <input type="text" id="acmp-footer-copy" class="form-control" placeholder="© 2026 Mundonet — Todos os direitos reservados">
+    </div>
+
+    <!-- CORES -->
+    <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px;padding-top:14px;border-top:1px solid var(--border)">Cores da Landing Page</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+      <div class="form-group">
+        <label class="form-label">Cor principal</label>
+        <div style="display:flex;gap:6px;align-items:center">
+          <input type="color" id="acmp-primary-color" value="#1d4ed8" style="width:36px;height:32px;border:none;border-radius:6px;cursor:pointer;background:transparent">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Cor de fundo</label>
+        <div style="display:flex;gap:6px;align-items:center">
+          <input type="color" id="acmp-bg-color" value="#ffffff" style="width:36px;height:32px;border:none;border-radius:6px;cursor:pointer;background:transparent">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Cor do texto</label>
+        <div style="display:flex;gap:6px;align-items:center">
+          <input type="color" id="acmp-text-color2" value="#1e293b" style="width:36px;height:32px;border:none;border-radius:6px;cursor:pointer;background:transparent">
+        </div>
+      </div>
+    </div>
+
+    <!-- VISIBILIDADE -->
+    <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px;padding-top:14px;border-top:1px solid var(--border)">Visibilidade das Seções</p>
+    <div id="acmp-visibility-list">
+      <div class="toggle-row" style="margin-bottom:6px"><div><div class="toggle-label" style="font-size:12px">Banner Hero</div></div><div style="display:flex;gap:6px"><div class="toggle-switch on" id="vis-hero-pc" onclick="this.classList.toggle('on')" title="PC"></div><div class="toggle-switch on" id="vis-hero-mobile" onclick="this.classList.toggle('on')" title="Mobile"></div></div></div>
+      <div class="toggle-row" style="margin-bottom:6px"><div><div class="toggle-label" style="font-size:12px">Como Concorrer</div></div><div style="display:flex;gap:6px"><div class="toggle-switch on" id="vis-steps-pc" onclick="this.classList.toggle('on')" title="PC"></div><div class="toggle-switch on" id="vis-steps-mobile" onclick="this.classList.toggle('on')" title="Mobile"></div></div></div>
+      <div class="toggle-row" style="margin-bottom:6px"><div><div class="toggle-label" style="font-size:12px">Painel Participante</div></div><div style="display:flex;gap:6px"><div class="toggle-switch on" id="vis-participant-pc" onclick="this.classList.toggle('on')" title="PC"></div><div class="toggle-switch on" id="vis-participant-mobile" onclick="this.classList.toggle('on')" title="Mobile"></div></div></div>
+      <div class="toggle-row" style="margin-bottom:6px"><div><div class="toggle-label" style="font-size:12px">Banner Prêmio</div></div><div style="display:flex;gap:6px"><div class="toggle-switch on" id="vis-bannerPremio-pc" onclick="this.classList.toggle('on')" title="PC"></div><div class="toggle-switch on" id="vis-bannerPremio-mobile" onclick="this.classList.toggle('on')" title="Mobile"></div></div></div>
+      <div class="toggle-row" style="margin-bottom:6px"><div><div class="toggle-label" style="font-size:12px">FAQ</div></div><div style="display:flex;gap:6px"><div class="toggle-switch on" id="vis-faq-pc" onclick="this.classList.toggle('on')" title="PC"></div><div class="toggle-switch on" id="vis-faq-mobile" onclick="this.classList.toggle('on')" title="Mobile"></div></div></div>
+      <div class="toggle-row" style="margin-bottom:6px"><div><div class="toggle-label" style="font-size:12px">Rodapé</div></div><div style="display:flex;gap:6px"><div class="toggle-switch on" id="vis-footer-pc" onclick="this.classList.toggle('on')" title="PC"></div><div class="toggle-switch on" id="vis-footer-mobile" onclick="this.classList.toggle('on')" title="Mobile"></div></div></div>
+    </div>
+    <div style="font-size:10px;color:var(--text-muted);margin-top:6px">Toggle esquerdo = PC | Toggle direito = Celular</div>
+
+    <!-- LINKS -->
+    <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px;padding-top:14px;border-top:1px solid var(--border)">Links da Campanha</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <a href="/campanha.html" target="_blank" class="btn btn-ghost" style="font-size:11px;padding:6px 12px;text-decoration:none">🔗 Ver Landing Page</a>
+      <a href="/indique.html" target="_blank" class="btn btn-ghost" style="font-size:11px;padding:6px 12px;text-decoration:none">🔗 Ver Página de Indicação</a>
+    </div>
+
   </div>
   <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;flex-shrink:0">
     <button class="btn btn-ghost" onclick="closePanelAdminCampanha()">Cancelar</button>
@@ -4423,14 +4594,11 @@ function handleAcmpIconUpload(input){
   const file=input.files[0]; if(!file) return;
   const reader=new FileReader();
   reader.onload=e=>{
-    state.prefs=state.prefs||{};
-    state.prefs.adminCampanhaIcon=e.target.result;
-    const preview=document.getElementById('acmp-icon-preview');
-    preview.innerHTML='<img src="'+e.target.result+'" style="width:100%;height:100%;object-fit:cover">';
+    state.prefs=state.prefs||{}; state.prefs.adminCampanhaIcon=e.target.result;
+    document.getElementById('acmp-icon-preview').innerHTML='<img src="'+e.target.result+'" style="width:100%;height:100%;object-fit:cover">';
     document.getElementById('acmp-icon-remove-btn').style.display='inline-block';
     applyAdminCampanhaBtn();
-  };
-  reader.readAsDataURL(file);
+  }; reader.readAsDataURL(file);
 }
 function removeAcmpIcon(){
   state.prefs=state.prefs||{}; delete state.prefs.adminCampanhaIcon;
@@ -4438,18 +4606,149 @@ function removeAcmpIcon(){
   document.getElementById('acmp-icon-remove-btn').style.display='none';
   applyAdminCampanhaBtn();
 }
+function handleAcmpLogoUpload(input){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    state.prefs=state.prefs||{}; state.prefs.campanha=state.prefs.campanha||{};
+    state.prefs.campanha.logoImage=e.target.result;
+    document.getElementById('acmp-logo-preview').innerHTML='<img src="'+e.target.result+'" style="width:100%;height:100%;object-fit:cover">';
+    document.getElementById('acmp-logo-remove-btn').style.display='inline-block';
+  }; reader.readAsDataURL(file);
+}
+function removeAcmpLogo(){
+  state.prefs=state.prefs||{}; state.prefs.campanha=state.prefs.campanha||{};
+  delete state.prefs.campanha.logoImage;
+  document.getElementById('acmp-logo-preview').textContent='M';
+  document.getElementById('acmp-logo-remove-btn').style.display='none';
+}
+function handleAcmpHeroUpload(input){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    state.prefs=state.prefs||{}; state.prefs.campanha=state.prefs.campanha||{};
+    state.prefs.campanha.heroImage=e.target.result;
+    document.getElementById('acmp-hero-preview').innerHTML='<img src="'+e.target.result+'" style="width:100%;height:100%;object-fit:cover">';
+    document.getElementById('acmp-hero-remove-btn').style.display='inline-block';
+  }; reader.readAsDataURL(file);
+}
+function removeAcmpHero(){
+  state.prefs=state.prefs||{}; state.prefs.campanha=state.prefs.campanha||{};
+  delete state.prefs.campanha.heroImage;
+  document.getElementById('acmp-hero-preview').textContent='Banner';
+  document.getElementById('acmp-hero-remove-btn').style.display='none';
+}
+function handleAcmpSideUpload(input){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    state.prefs=state.prefs||{}; state.prefs.campanha=state.prefs.campanha||{};
+    state.prefs.campanha.sideBannerImage=e.target.result;
+    document.getElementById('acmp-side-preview').innerHTML='<img src="'+e.target.result+'" style="width:100%;height:100%;object-fit:cover">';
+    document.getElementById('acmp-side-remove-btn').style.display='inline-block';
+  }; reader.readAsDataURL(file);
+}
+function removeAcmpSide(){
+  state.prefs=state.prefs||{}; state.prefs.campanha=state.prefs.campanha||{};
+  delete state.prefs.campanha.sideBannerImage;
+  document.getElementById('acmp-side-preview').textContent='Banner';
+  document.getElementById('acmp-side-remove-btn').style.display='none';
+}
+function handleAcmpPremioUpload(input){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    state.prefs=state.prefs||{}; state.prefs.campanha=state.prefs.campanha||{};
+    state.prefs.campanha.bannerPremioImage=e.target.result;
+    document.getElementById('acmp-premio-preview').innerHTML='<img src="'+e.target.result+'" style="width:100%;height:100%;object-fit:cover">';
+    document.getElementById('acmp-premio-remove-btn').style.display='inline-block';
+  }; reader.readAsDataURL(file);
+}
+function removeAcmpPremio(){
+  state.prefs=state.prefs||{}; state.prefs.campanha=state.prefs.campanha||{};
+  delete state.prefs.campanha.bannerPremioImage;
+  document.getElementById('acmp-premio-preview').textContent='Banner';
+  document.getElementById('acmp-premio-remove-btn').style.display='none';
+}
+function renderAcmpFaqList(faqs){
+  const el=document.getElementById('acmp-faq-list'); el.innerHTML='';
+  (faqs||[]).forEach((f,i)=>{
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;gap:6px;align-items:center;margin-bottom:6px';
+    row.innerHTML='<div style="flex:1;min-width:0"><div style="font-size:11px;font-weight:600;color:var(--text-primary);margin-bottom:2px">'+escHtml(f.q)+'</div><div style="font-size:10px;color:var(--text-muted)">'+escHtml(f.a)+'</div></div><button class="btn btn-danger" onclick="removeAcmpFaq('+i+')" style="font-size:10px;padding:4px 8px">🗑</button>';
+    el.appendChild(row);
+  });
+}
+function addAcmpFaq(){
+  const q=document.getElementById('acmp-faq-q').value.trim();
+  const a=document.getElementById('acmp-faq-a').value.trim();
+  if(!q||!a) return;
+  state.prefs=state.prefs||{}; state.prefs.campanha=state.prefs.campanha||{};
+  if(!state.prefs.campanha.faq) state.prefs.campanha.faq=[];
+  state.prefs.campanha.faq.push({q,a});
+  document.getElementById('acmp-faq-q').value='';
+  document.getElementById('acmp-faq-a').value='';
+  renderAcmpFaqList(state.prefs.campanha.faq);
+}
+function removeAcmpFaq(i){
+  state.prefs=state.prefs||{}; state.prefs.campanha=state.prefs.campanha||{};
+  if(state.prefs.campanha.faq) state.prefs.campanha.faq.splice(i,1);
+  renderAcmpFaqList(state.prefs.campanha.faq);
+}
 function openPanelAdminCampanha(){
-  const prefs=state.prefs||{};
-  document.getElementById('acmp-link').value=prefs.adminCampanhaLink||prefs.admin_campanha_link||'';
-  document.getElementById('acmp-btn-color').value=prefs.adminCampanhaBtnColor||prefs.admin_campanha_btn_color||'#f59e0b';
-  document.getElementById('acmp-btn-color-hex').textContent=prefs.adminCampanhaBtnColor||prefs.admin_campanha_btn_color||'#f59e0b';
-  document.getElementById('acmp-text-color').value=prefs.adminCampanhaTextColor||prefs.admin_campanha_text_color||'#fbbf24';
-  document.getElementById('acmp-text-color-hex').textContent=prefs.adminCampanhaTextColor||prefs.admin_campanha_text_color||'#fbbf24';
-  const acIcon=prefs.adminCampanhaIcon||'';
+  const p=state.prefs||{};
+  const cp=p.campanha||{};
+  document.getElementById('acmp-link').value=p.adminCampanhaLink||p.admin_campanha_link||'';
+  document.getElementById('acmp-btn-color').value=p.adminCampanhaBtnColor||p.admin_campanha_btn_color||'#f59e0b';
+  document.getElementById('acmp-btn-color-hex').textContent=p.adminCampanhaBtnColor||p.admin_campanha_btn_color||'#f59e0b';
+  document.getElementById('acmp-text-color').value=p.adminCampanhaTextColor||p.admin_campanha_text_color||'#fbbf24';
+  document.getElementById('acmp-text-color-hex').textContent=p.adminCampanhaTextColor||p.admin_campanha_text_color||'#fbbf24';
+  const acIcon=p.adminCampanhaIcon||'';
   const acIconPrev=document.getElementById('acmp-icon-preview');
   const acIconRm=document.getElementById('acmp-icon-remove-btn');
   if(acIcon){ acIconPrev.innerHTML='<img src="'+acIcon+'" style="width:100%;height:100%;object-fit:cover">'; acIconRm.style.display='inline-block'; }
   else { acIconPrev.textContent='🚀'; acIconRm.style.display='none'; }
+  // Campaign page fields
+  const logo=cp.logoImage||'';
+  if(logo){ document.getElementById('acmp-logo-preview').innerHTML='<img src="'+logo+'" style="width:100%;height:100%;object-fit:cover">'; document.getElementById('acmp-logo-remove-btn').style.display='inline-block'; }
+  else { document.getElementById('acmp-logo-preview').textContent='M'; document.getElementById('acmp-logo-remove-btn').style.display='none'; }
+  document.getElementById('acmp-hero-title').value=cp.heroTitle||'Indique e Ganhe';
+  document.getElementById('acmp-hero-subtitle').value=cp.heroSubtitle||'Indique seus amigos e concorra a prêmios!';
+  const hero=cp.heroImage||'';
+  if(hero){ document.getElementById('acmp-hero-preview').innerHTML='<img src="'+hero+'" style="width:100%;height:100%;object-fit:cover">'; document.getElementById('acmp-hero-remove-btn').style.display='inline-block'; }
+  else { document.getElementById('acmp-hero-preview').textContent='Banner'; document.getElementById('acmp-hero-remove-btn').style.display='none'; }
+  document.getElementById('acmp-steps-title').value=cp.stepsTitle||'Como Concorrer?';
+  const steps=cp.steps||[];
+  for(let i=1;i<=4;i++){
+    const s=steps[i-1]||{};
+    document.getElementById('acmp-step'+i+'-title').value=s.title||'';
+    document.getElementById('acmp-step'+i+'-desc').value=s.desc||'';
+  }
+  const side=cp.sideBannerImage||'';
+  if(side){ document.getElementById('acmp-side-preview').innerHTML='<img src="'+side+'" style="width:100%;height:100%;object-fit:cover">'; document.getElementById('acmp-side-remove-btn').style.display='inline-block'; }
+  else { document.getElementById('acmp-side-preview').textContent='Banner'; document.getElementById('acmp-side-remove-btn').style.display='none'; }
+  const premio=cp.bannerPremioImage||'';
+  if(premio){ document.getElementById('acmp-premio-preview').innerHTML='<img src="'+premio+'" style="width:100%;height:100%;object-fit:cover">'; document.getElementById('acmp-premio-remove-btn').style.display='inline-block'; }
+  else { document.getElementById('acmp-premio-preview').textContent='Banner'; document.getElementById('acmp-premio-remove-btn').style.display='none'; }
+  state.prefs.campaignFaq=cp.faq||[];
+  renderAcmpFaqList(cp.faq||[]);
+  document.getElementById('acmp-footer-name').value=cp.footerCampanhaName||'';
+  document.getElementById('acmp-footer-phone').value=cp.footerPhone||'';
+  document.getElementById('acmp-footer-email').value=cp.footerEmail||'';
+  document.getElementById('acmp-footer-instagram').value=cp.footerInstagram||'';
+  document.getElementById('acmp-footer-whatsapp').value=cp.footerWhatsapp||'';
+  document.getElementById('acmp-footer-facebook').value=cp.footerFacebook||'';
+  document.getElementById('acmp-footer-copy').value=cp.footerCopy||'';
+  document.getElementById('acmp-primary-color').value=cp.primaryColor||'#1d4ed8';
+  document.getElementById('acmp-bg-color').value=cp.bgColor||'#ffffff';
+  document.getElementById('acmp-text-color2').value=cp.textColor||'#1e293b';
+  const vis=cp.visibility||{hero:{pc:1,m:1},steps:{pc:1,m:1},participant:{pc:1,m:1},bannerPremio:{pc:1,m:1},faq:{pc:1,m:1},footer:{pc:1,m:1}};
+  ['hero','steps','participant','bannerPremio','faq','footer'].forEach(k=>{
+    if(vis[k]&&vis[k].pc===0) document.getElementById('vis-'+k+'-pc').classList.remove('on');
+    else document.getElementById('vis-'+k+'-pc').classList.add('on');
+    if(vis[k]&&vis[k].m===0) document.getElementById('vis-'+k+'-mobile').classList.remove('on');
+    else document.getElementById('vis-'+k+'-mobile').classList.add('on');
+  });
   updateAdminCampanhaPreview();
   document.getElementById('panel-admin-campanha').classList.add('open');
 }
@@ -4459,6 +4758,41 @@ async function saveAdminCampanha(){
   state.prefs.adminCampanhaLink=document.getElementById('acmp-link').value.trim();
   state.prefs.adminCampanhaBtnColor=document.getElementById('acmp-btn-color').value;
   state.prefs.adminCampanhaTextColor=document.getElementById('acmp-text-color').value;
+  state.prefs.campanha=state.prefs.campanha||{};
+  const cp=state.prefs.campanha;
+  cp.logoImage=state.prefs.campanha.logoImage||'';
+  cp.heroImage=state.prefs.campaignHeroBanner||'';
+  cp.heroTitle=document.getElementById('acmp-hero-title').value.trim();
+  cp.heroSubtitle=document.getElementById('acmp-hero-subtitle').value.trim();
+  cp.stepsTitle=document.getElementById('acmp-steps-title').value.trim();
+  cp.steps=[];
+  for(let i=1;i<=4;i++){
+    cp.steps.push({
+      title:document.getElementById('acmp-step'+i+'-title').value.trim(),
+      desc:document.getElementById('acmp-step'+i+'-desc').value.trim()
+    });
+  }
+  cp.sideBannerImage=state.prefs.campaignSideBanner||'';
+  cp.bannerPremioImage=state.prefs.campaignPremioBanner||'';
+  cp.faq=state.prefs.campanha.faq||[];
+  cp.footerCampanhaName=document.getElementById('acmp-footer-name').value.trim();
+  cp.footerPhone=document.getElementById('acmp-footer-phone').value.trim();
+  cp.footerEmail=document.getElementById('acmp-footer-email').value.trim();
+  cp.footerInstagram=document.getElementById('acmp-footer-instagram').value.trim();
+  cp.footerWhatsapp=document.getElementById('acmp-footer-whatsapp').value.trim();
+  cp.footerFacebook=document.getElementById('acmp-footer-facebook').value.trim();
+  cp.footerCopy=document.getElementById('acmp-footer-copy').value.trim();
+  cp.primaryColor=document.getElementById('acmp-primary-color').value;
+  cp.bgColor=document.getElementById('acmp-bg-color').value;
+  cp.textColor=document.getElementById('acmp-text-color2').value;
+  cp.visibility={
+    hero:{pc:document.getElementById('vis-hero-pc').classList.contains('on')?1:0,m:document.getElementById('vis-hero-mobile').classList.contains('on')?1:0},
+    steps:{pc:document.getElementById('vis-steps-pc').classList.contains('on')?1:0,m:document.getElementById('vis-steps-mobile').classList.contains('on')?1:0},
+    participant:{pc:document.getElementById('vis-participant-pc').classList.contains('on')?1:0,m:document.getElementById('vis-participant-mobile').classList.contains('on')?1:0},
+    bannerPremio:{pc:document.getElementById('vis-bannerPremio-pc').classList.contains('on')?1:0,m:document.getElementById('vis-bannerPremio-mobile').classList.contains('on')?1:0},
+    faq:{pc:document.getElementById('vis-faq-pc').classList.contains('on')?1:0,m:document.getElementById('vis-faq-mobile').classList.contains('on')?1:0},
+    footer:{pc:document.getElementById('vis-footer-pc').classList.contains('on')?1:0,m:document.getElementById('vis-footer-mobile').classList.contains('on')?1:0}
+  };
   try { await api('PUT','/api/prefs',state.prefs); } catch(ex) { toast('Erro: '+ex.message,'error'); }
   applyAdminCampanhaBtn();
   closePanelAdminCampanha();

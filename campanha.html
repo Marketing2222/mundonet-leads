@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Campanha de Indicação — Mundonet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --primary: #1d4ed8;
+      --primary-light: #3b82f6;
+      --accent: #f59e0b;
+      --bg: #ffffff;
+      --bg-alt: #f8fafc;
+      --text: #1e293b;
+      --text-secondary: #64748b;
+      --border: #e2e8f0;
+      --card-bg: #ffffff;
+      --card-shadow: 0 4px 24px rgba(0,0,0,0.06);
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ===== HEADER ===== */
+    .cam-header {
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .cam-header-logo {
+      height: 36px;
+      object-fit: contain;
+    }
+    .cam-header-logo-fallback {
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--primary);
+    }
+    .cam-header-btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      background: var(--primary);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .cam-header-btn:hover { filter: brightness(1.1); }
+
+    /* ===== HERO BANNER ===== */
+    .cam-hero {
+      width: 100%;
+      max-height: 500px;
+      overflow: hidden;
+      background: linear-gradient(135deg, #1e3a8a, #1d4ed8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .cam-hero img {
+      width: 100%;
+      height: auto;
+      max-height: 500px;
+      object-fit: cover;
+      display: block;
+    }
+    .cam-hero-placeholder {
+      text-align: center;
+      padding: 60px 20px;
+      color: #fff;
+    }
+    .cam-hero-placeholder h1 {
+      font-size: 32px;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+    .cam-hero-placeholder p {
+      font-size: 16px;
+      opacity: 0.85;
+    }
+
+    /* ===== SECTIONS ===== */
+    .cam-section {
+      padding: 60px 20px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .cam-section-title {
+      text-align: center;
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .cam-section-subtitle {
+      text-align: center;
+      font-size: 15px;
+      color: var(--text-secondary);
+      margin-bottom: 40px;
+    }
+    .cam-section-bg {
+      background: var(--bg-alt);
+    }
+
+    /* ===== STEPS ===== */
+    .cam-steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+    }
+    .cam-step {
+      text-align: center;
+      padding: 28px 16px;
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--card-shadow);
+      border: 1px solid var(--border);
+    }
+    .cam-step-num {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      font-size: 22px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+    }
+    .cam-step-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .cam-step-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    /* ===== PARTICIPANT PANEL ===== */
+    .cam-participant {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      align-items: start;
+    }
+    .cam-participant-banner {
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--bg-alt);
+      border: 1px solid var(--border);
+      min-height: 300px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .cam-participant-banner img {
+      width: 100%;
+      height: auto;
+      object-fit: cover;
+      display: block;
+    }
+    .cam-participant-banner-placeholder {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    .cam-login-card, .cam-dashboard-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 32px;
+      box-shadow: var(--card-shadow);
+      border: 1px solid var(--border);
+    }
+    .cam-login-title {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+    .cam-login-sub {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 20px;
+    }
+    .cam-form-group {
+      margin-bottom: 14px;
+    }
+    .cam-form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .cam-form-control {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg-alt);
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .cam-form-control:focus {
+      border-color: var(--primary);
+    }
+    .cam-btn {
+      width: 100%;
+      padding: 13px;
+      border-radius: 8px;
+      border: none;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .cam-btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+    .cam-btn-primary:hover { filter: brightness(1.1); }
+    .cam-btn-link {
+      background: none;
+      border: none;
+      color: var(--primary);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 8px 0;
+      text-decoration: underline;
+    }
+    .cam-error {
+      display: none;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #dc2626;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 14px;
+    }
+
+    /* Dashboard */
+    .cam-dash-name {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+    .cam-dash-sub {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 20px;
+    }
+    .cam-dash-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .cam-stat {
+      background: var(--bg-alt);
+      border-radius: 10px;
+      padding: 14px;
+      text-align: center;
+      border: 1px solid var(--border);
+    }
+    .cam-stat-num {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+    .cam-stat-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .cam-chances {
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+      border: 1px solid #f59e0b;
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .cam-chances-num {
+      font-size: 36px;
+      font-weight: 900;
+      color: #b45309;
+    }
+    .cam-chances-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #92400e;
+    }
+    .cam-dash-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 16px 0;
+    }
+    .cam-dash-list-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 10px;
+    }
+    .cam-ind-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background: var(--bg-alt);
+      border-radius: 8px;
+      margin-bottom: 6px;
+      border: 1px solid var(--border);
+    }
+    .cam-ind-name {
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .cam-ind-status {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 20px;
+      text-transform: uppercase;
+    }
+    .cam-status-atendimento { background: #dbeafe; color: #1d4ed8; }
+    .cam-status-agendado { background: #fef3c7; color: #b45309; }
+    .cam-status-instalado { background: #d1fae5; color: #065f46; }
+    .cam-status-nao { background: #fee2e2; color: #991b1b; }
+    .cam-dash-logout {
+      margin-top: 12px;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      font-family: inherit;
+    }
+
+    /* ===== BANNER FULL ===== */
+    .cam-banner-full {
+      width: 100%;
+      max-height: 400px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #1e3a8a, #1d4ed8);
+    }
+    .cam-banner-full img {
+      width: 100%;
+      height: auto;
+      max-height: 400px;
+      object-fit: cover;
+      display: block;
+    }
+    .cam-banner-full-placeholder {
+      text-align: center;
+      padding: 60px 20px;
+      color: #fff;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    /* ===== FAQ ===== */
+    .cam-faq-list {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    .cam-faq-item {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+    .cam-faq-q {
+      width: 100%;
+      padding: 16px 18px;
+      background: var(--card-bg);
+      border: none;
+      text-align: left;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: inherit;
+    }
+    .cam-faq-q::after {
+      content: '▶';
+      font-size: 11px;
+      color: var(--text-secondary);
+      transition: transform 0.2s;
+    }
+    .cam-faq-item.open .cam-faq-q::after {
+      transform: rotate(90deg);
+    }
+    .cam-faq-a {
+      display: none;
+      padding: 0 18px 16px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+    .cam-faq-item.open .cam-faq-a {
+      display: block;
+    }
+
+    /* ===== FOOTER ===== */
+    .cam-footer {
+      background: #1e293b;
+      color: #cbd5e1;
+      padding: 40px 20px 24px;
+    }
+    .cam-footer-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 32px;
+    }
+    .cam-footer-brand {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .cam-footer-logo {
+      height: 32px;
+      object-fit: contain;
+      align-self: flex-start;
+    }
+    .cam-footer-name {
+      font-size: 15px;
+      font-weight: 800;
+      color: #f8fafc;
+    }
+    .cam-footer-contact a {
+      color: #94a3b8;
+      text-decoration: none;
+      font-size: 13px;
+      display: block;
+      margin-bottom: 4px;
+    }
+    .cam-footer-contact a:hover { color: #f8fafc; }
+    .cam-footer-social {
+      display: flex;
+      gap: 10px;
+      margin-top: 6px;
+    }
+    .cam-footer-social a {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #94a3b8;
+      text-decoration: none;
+      font-size: 16px;
+      transition: all 0.2s;
+    }
+    .cam-footer-social a:hover { background: rgba(255,255,255,0.15); color: #f8fafc; }
+    .cam-footer-copy {
+      text-align: center;
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+      .cam-steps { grid-template-columns: 1fr 1fr; }
+      .cam-participant { grid-template-columns: 1fr; }
+      .cam-footer-inner { grid-template-columns: 1fr; gap: 24px; }
+      .cam-section-title { font-size: 22px; }
+      .cam-hero { max-height: 300px; }
+      .cam-hero img { max-height: 300px; }
+      .cam-banner-full { max-height: 250px; }
+      .cam-banner-full img { max-height: 250px; }
+    }
+    @media (max-width: 480px) {
+      .cam-steps { grid-template-columns: 1fr; gap: 14px; }
+      .cam-step { padding: 20px 14px; }
+      .cam-section { padding: 40px 16px; }
+      .cam-dash-stats { grid-template-columns: 1fr; }
+    }
+
+    /* ===== HIDDEN HELPER ===== */
+    .hidden { display: none !important; }
+
+    /* ===== TOAST ===== */
+    .cam-toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #1e293b;
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      z-index: 999;
+      transition: transform 0.3s ease;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    }
+    .cam-toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ===== REGISTER FORM ===== */
+    .cam-register { display: none; }
+    .cam-register.visible { display: block; }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="cam-header" id="cam-header">
+    <div id="cam-header-logo">
+      <span class="cam-header-logo-fallback" id="cam-logo-text">M</span>
+    </div>
+    <button class="cam-header-btn" id="cam-header-btn" onclick="scrollToLogin()">Minhas Indicações</button>
+  </header>
+
+  <!-- HERO BANNER -->
+  <section class="cam-hero" id="sec-hero">
+    <div class="cam-hero-placeholder" id="hero-placeholder">
+      <h1 id="hero-title">Indique e Ganhe</h1>
+      <p id="hero-subtitle">Indique seus amigos e concorra a prêmios incríveis!</p>
+    </div>
+  </section>
+
+  <!-- COMO CONCORRER -->
+  <section class="cam-section cam-section-bg" id="sec-steps">
+    <h2 class="cam-section-title" id="steps-title">Como Concorrer?</h2>
+    <p class="cam-section-subtitle" id="steps-subtitle">É simples participar. Siga os passos:</p>
+    <div class="cam-steps" id="steps-grid">
+      <div class="cam-step">
+        <div class="cam-step-num">1</div>
+        <div class="cam-step-title" id="step1-title">Faça seu cadastro</div>
+        <div class="cam-step-desc" id="step1-desc">Acesse a página de indicação e cadastre-se como cliente.</div>
+      </div>
+      <div class="cam-step">
+        <div class="cam-step-num">2</div>
+        <div class="cam-step-title" id="step2-title">Indique um amigo</div>
+        <div class="cam-step-desc" id="step2-desc">Indique pessoas que precisam de internet. Cada indicação vale 1 chance.</div>
+      </div>
+      <div class="cam-step">
+        <div class="cam-step-num">3</div>
+        <div class="cam-step-title" id="step3-title">Aguarde a instalação</div>
+        <div class="cam-step-desc" id="step3-desc">Quando seu indicado for instalado, você ganha 1 chance no sorteio.</div>
+      </div>
+      <div class="cam-step">
+        <div class="cam-step-num">4</div>
+        <div class="cam-step-title" id="step4-title">Concorra ao prêmio</div>
+        <div class="cam-step-desc" id="step4-desc">Aguarde o sorteio e confira se você foi o ganhador!</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAINEL DO PARTICIPANTE -->
+  <section class="cam-section" id="sec-participant">
+    <div class="cam-participant">
+      <!-- Banner lateral -->
+      <div class="cam-participant-banner" id="cam-side-banner">
+        <div class="cam-participant-banner-placeholder" id="side-banner-placeholder">
+          BANNER DA CAMPANHA
+        </div>
+      </div>
+
+      <!-- Login / Dashboard -->
+      <div>
+        <!-- LOGIN -->
+        <div class="cam-login-card" id="cam-login-card">
+          <div class="cam-login-title">Acesse seu painel</div>
+          <div class="cam-login-sub">Entre com seu CPF ou celular para acompanhar suas indicações.</div>
+          <div class="cam-error" id="cam-login-error"></div>
+          <div class="cam-form-group">
+            <label>CPF ou Celular</label>
+            <input type="text" class="cam-form-control" id="cam-cpf-input" placeholder="000.000.000-00 ou (00) 00000-0000">
+          </div>
+          <button class="cam-btn cam-btn-primary" id="cam-login-btn" onclick="doCampanhaLogin()">Entrar</button>
+          <div style="text-align:center;margin-top:12px">
+            <button class="cam-btn-link" onclick="showRegister()">Não sou cadastrado — Cadastrar</button>
+          </div>
+        </div>
+
+        <!-- REGISTER -->
+        <div class="cam-login-card cam-register" id="cam-register-card">
+          <div class="cam-login-title">Cadastre-se</div>
+          <div class="cam-login-sub">Preencha seus dados para participar da campanha.</div>
+          <div class="cam-error" id="cam-register-error"></div>
+          <div class="cam-form-group">
+            <label>Nome completo</label>
+            <input type="text" class="cam-form-control" id="cam-reg-name" placeholder="Seu nome">
+          </div>
+          <div class="cam-form-group">
+            <label>CPF</label>
+            <input type="text" class="cam-form-control" id="cam-reg-cpf" placeholder="000.000.000-00">
+          </div>
+          <div class="cam-form-group">
+            <label>WhatsApp</label>
+            <input type="text" class="cam-form-control" id="cam-reg-whatsapp" placeholder="(00) 00000-0000">
+          </div>
+          <button class="cam-btn cam-btn-primary" onclick="doCampanhaRegister()">Cadastrar</button>
+          <div style="text-align:center;margin-top:12px">
+            <button class="cam-btn-link" onclick="hideRegister()">Já tenho conta — Entrar</button>
+          </div>
+        </div>
+
+        <!-- DASHBOARD -->
+        <div class="cam-dashboard-card hidden" id="cam-dashboard">
+          <div class="cam-dash-name" id="dash-name">Olá!</div>
+          <div class="cam-dash-sub" id="dash-cpf">CPF: ---</div>
+          <div class="cam-chances" id="dash-chances-box">
+            <div class="cam-chances-num" id="dash-chances">0</div>
+            <div class="cam-chances-label">CHANCES NO SORTEIO</div>
+          </div>
+          <div class="cam-dash-stats">
+            <div class="cam-stat">
+              <div class="cam-stat-num" id="dash-total">0</div>
+              <div class="cam-stat-label">Indicados</div>
+            </div>
+            <div class="cam-stat">
+              <div class="cam-stat-num" style="color:#059669" id="dash-instalado">0</div>
+              <div class="cam-stat-label">Instalados</div>
+            </div>
+            <div class="cam-stat">
+              <div class="cam-stat-num" style="color:#d97706" id="dash-agendado">0</div>
+              <div class="cam-stat-label">Agendados</div>
+            </div>
+            <div class="cam-stat">
+              <div class="cam-stat-num" style="color:#2563eb" id="dash-atendimento">0</div>
+              <div class="cam-stat-label">Em atendimento</div>
+            </div>
+          </div>
+          <div class="cam-dash-divider"></div>
+          <div class="cam-dash-list-title">Suas indicações</div>
+          <div id="cam-indicacoes-list"></div>
+          <button class="cam-dash-logout" onclick="doCampanhaLogout()">Sair</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BANNER GRANDE (PREMIO) -->
+  <section class="cam-banner-full" id="sec-banner-premio">
+    <div class="cam-banner-full-placeholder" id="banner-premio-placeholder">
+      🎮 PS5 + GTA VI — Ganhe participando!
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="cam-section" id="sec-faq">
+    <h2 class="cam-section-title">Perguntas Frequentes</h2>
+    <p class="cam-section-subtitle">Tire suas dúvidas sobre a campanha</p>
+    <div class="cam-faq-list" id="cam-faq-list">
+      <div class="cam-faq-item">
+        <button class="cam-faq-q" onclick="toggleFaq(this)">Como funciona a campanha?</button>
+        <div class="cam-faq-a">A campanha funciona por indicações. Ao indicar um amigo que se torne cliente Mundonet e tenha a internet instalada, você acumula chances no sorteio.</div>
+      </div>
+      <div class="cam-faq-item">
+        <button class="cam-faq-q" onclick="toggleFaq(this)">Como ganhar mais chances?</button>
+        <div class="cam-faq-a">Cada indicação que for instalada = 1 chance no sorteio. Quanto mais amigos indicar, mais chances terá!</div>
+      </div>
+      <div class="cam-faq-item">
+        <button class="cam-faq-q" onclick="toggleFaq(this)">Quando é o sorteio?</button>
+        <div class="cam-faq-a">O sorteio será realizado na data divulgada oficialmente pela Mundonet. Fique de olho nas nossas redes sociais.</div>
+      </div>
+      <div class="cam-faq-item">
+        <button class="cam-faq-q" onclick="toggleFaq(this)">Preciso ser cliente para participar?</button>
+        <div class="cam-faq-a">Sim, para participar da campanha é necessário ser cliente ativo da Mundonet.</div>
+      </div>
+      <div class="cam-faq-item">
+        <button class="cam-faq-q" onclick="toggleFaq(this)">Como acompanho minhas indicações?</button>
+        <div class="cam-faq-a">Basta acessar esta página, fazer login com seu CPF e verificar o painel do participante.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="cam-footer" id="cam-footer">
+    <div class="cam-footer-inner">
+      <div class="cam-footer-brand">
+        <div id="cam-footer-logo-wrap">
+          <span style="font-size:20px;font-weight:900;color:#3b82f6">M</span>
+        </div>
+        <div class="cam-footer-name" id="cam-footer-campanha-name">Campanha de Indicação</div>
+        <div class="cam-footer-contact">
+          <a id="cam-footer-phone" href="#">📞 (11) 99999-9999</a>
+          <a id="cam-footer-email" href="#">contato@mundonet.com</a>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:14px;font-weight:700;color:#f8fafc;margin-bottom:10px">Links</div>
+        <a href="#" style="color:#94a3b8;text-decoration:none;font-size:13px;display:block;margin-bottom:6px">Regulamento</a>
+        <a href="#" style="color:#94a3b8;text-decoration:none;font-size:13px;display:block;margin-bottom:6px">Política de Privacidade</a>
+        <a href="/indique.html" style="color:#94a3b8;text-decoration:none;font-size:13px;display:block;margin-bottom:6px">Indique agora</a>
+      </div>
+      <div>
+        <div style="font-size:14px;font-weight:700;color:#f8fafc;margin-bottom:10px">Redes Sociais</div>
+        <div class="cam-footer-social">
+          <a href="#" id="cam-footer-instagram" title="Instagram">📸</a>
+          <a href="#" id="cam-footer-whatsapp" title="WhatsApp">💬</a>
+          <a href="#" id="cam-footer-facebook" title="Facebook">📘</a>
+        </div>
+      </div>
+    </div>
+    <div class="cam-footer-copy" id="cam-footer-copy">© 2026 Mundonet — Todos os direitos reservados</div>
+  </footer>
+
+  <!-- TOAST -->
+  <div class="cam-toast" id="cam-toast"></div>
+
+  <script>
+    // ===== UTILS =====
+    function camToast(msg) {
+      const t = document.getElementById('cam-toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+    function toggleFaq(btn) {
+      btn.closest('.cam-faq-item').classList.toggle('open');
+    }
+    function scrollToLogin() {
+      document.getElementById('sec-participant').scrollIntoView({ behavior: 'smooth' });
+    }
+    function showRegister() {
+      document.getElementById('cam-login-card').style.display = 'none';
+      document.getElementById('cam-register-card').classList.add('visible');
+    }
+    function hideRegister() {
+      document.getElementById('cam-register-card').classList.remove('visible');
+      document.getElementById('cam-login-card').style.display = '';
+    }
+
+    // ===== FORMAT CPF =====
+    function formatCPF(v) {
+      v = v.replace(/\D/g, '').substring(0, 11);
+      if (v.length > 9) return v.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4');
+      if (v.length > 6) return v.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
+      if (v.length > 3) return v.replace(/(\d{3})(\d{1,3})/, '$1.$2');
+      return v;
+    }
+    function cleanCPF(v) { return v.replace(/\D/g, ''); }
+
+    // ===== LOGIN =====
+    async function doCampanhaLogin() {
+      const input = document.getElementById('cam-cpf-input').value.trim();
+      const errEl = document.getElementById('cam-login-error');
+      errEl.style.display = 'none';
+      if (!input) { errEl.textContent = 'Preencha o CPF ou celular'; errEl.style.display = 'block'; return; }
+      const clean = cleanCPF(input);
+      try {
+        const resp = await fetch('/api/campanha/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cpf: clean })
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || 'Não encontrado');
+        showDashboard(data);
+      } catch(e) {
+        errEl.textContent = e.message || 'Participante não encontrado. Cadastre-se abaixo.';
+        errEl.style.display = 'block';
+      }
+    }
+
+    // ===== REGISTER =====
+    async function doCampanhaRegister() {
+      const name = document.getElementById('cam-reg-name').value.trim();
+      const cpf = cleanCPF(document.getElementById('cam-reg-cpf').value.trim());
+      const whatsapp = document.getElementById('cam-reg-whatsapp').value.trim();
+      const errEl = document.getElementById('cam-register-error');
+      errEl.style.display = 'none';
+      if (!name || !cpf || !whatsapp) { errEl.textContent = 'Preencha todos os campos'; errEl.style.display = 'block'; return; }
+      try {
+        const resp = await fetch('/api/campanha/cadastro', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nome: name, cpf, whatsapp })
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || 'Erro ao cadastrar');
+        camToast('Cadastro realizado com sucesso!');
+        showDashboard(data);
+      } catch(e) {
+        errEl.textContent = e.message;
+        errEl.style.display = 'block';
+      }
+    }
+
+    // ===== DASHBOARD =====
+    function showDashboard(data) {
+      document.getElementById('cam-login-card').style.display = 'none';
+      document.getElementById('cam-register-card').classList.remove('visible');
+      const dash = document.getElementById('cam-dashboard');
+      dash.classList.remove('hidden');
+      document.getElementById('dash-name').textContent = 'Olá, ' + (data.nome || 'Participante') + '!';
+      document.getElementById('dash-cpf').textContent = 'CPF: ' + (data.cpf || '---');
+      const inds = data.indicacoes || [];
+      let instalado = 0, agendado = 0, atendimento = 0;
+      inds.forEach(i => {
+        const s = (i.status || '').toLowerCase();
+        if (s.includes('instalado') || s.includes('ganho')) instalado++;
+        else if (s.includes('agendado')) agendado++;
+        else if (s.includes('atendimento') || s.includes('pendente')) atendimento++;
+      });
+      document.getElementById('dash-total').textContent = inds.length;
+      document.getElementById('dash-instalado').textContent = instalado;
+      document.getElementById('dash-agendado').textContent = agendado;
+      document.getElementById('dash-atendimento').textContent = atendimento;
+      document.getElementById('dash-chances').textContent = instalado;
+      const list = document.getElementById('cam-indicacoes-list');
+      if (inds.length === 0) {
+        list.innerHTML = '<div style="text-align:center;padding:20px;color:#94a3b8;font-size:13px">Nenhuma indicação encontrada ainda.</div>';
+      } else {
+        list.innerHTML = inds.map(i => {
+          const s = (i.status || 'Em atendimento');
+          let cls = 'cam-status-atendimento';
+          if (s.toLowerCase().includes('instalado') || s.toLowerCase().includes('ganho')) cls = 'cam-status-instalado';
+          else if (s.toLowerCase().includes('agendado')) cls = 'cam-status-agendado';
+          else if (s.toLowerCase().includes('não') || s.toLowerCase().includes('nao')) cls = 'cam-status-nao';
+          return '<div class="cam-ind-item"><span class="cam-ind-name">' + (i.nome || i.whatsapp || 'Indicado') + '</span><span class="cam-ind-status ' + cls + '">' + s + '</span></div>';
+        }).join('');
+      }
+    }
+
+    function doCampanhaLogout() {
+      document.getElementById('cam-dashboard').classList.add('hidden');
+      document.getElementById('cam-login-card').style.display = '';
+      document.getElementById('cam-cpf-input').value = '';
+    }
+
+    // ===== LOAD PREFERENCES =====
+    async function loadCampanhaPrefs() {
+      try {
+        const resp = await fetch('/api/prefs');
+        if (!resp.ok) return;
+        const p = await resp.json();
+        const cp = p.campanha || {};
+
+        // Hero
+        if (cp.heroImage) {
+          const heroEl = document.getElementById('sec-hero');
+          heroEl.style.backgroundImage = 'url(' + cp.heroImage + ')';
+          heroEl.style.backgroundSize = 'cover';
+          heroEl.style.backgroundPosition = 'center';
+          const ph = document.getElementById('hero-placeholder');
+          if (ph) ph.style.display = 'none';
+        }
+        if (cp.heroTitle) document.getElementById('hero-title').textContent = cp.heroTitle;
+        if (cp.heroSubtitle) document.getElementById('hero-subtitle').textContent = cp.heroSubtitle;
+
+        // Steps
+        if (cp.stepsTitle) document.getElementById('steps-title').textContent = cp.stepsTitle;
+        if (cp.stepsSubtitle) document.getElementById('steps-subtitle').textContent = cp.stepsSubtitle;
+        const stepsArr = cp.steps || [];
+        for (let i = 0; i < stepsArr.length && i < 4; i++) {
+          if (stepsArr[i].title) document.getElementById('step' + (i+1) + '-title').textContent = stepsArr[i].title;
+          if (stepsArr[i].desc) document.getElementById('step' + (i+1) + '-desc').textContent = stepsArr[i].desc;
+        }
+
+        // Side banner
+        if (cp.sideBannerImage) {
+          const sideEl = document.getElementById('cam-side-banner');
+          sideEl.innerHTML = '<img src="' + cp.sideBannerImage + '" alt="Banner" style="width:100%;height:100%;object-fit:cover">';
+        }
+
+        // Banner premio
+        if (cp.bannerPremioImage) {
+          document.getElementById('sec-banner-premio').innerHTML = '<img src="' + cp.bannerPremioImage + '" alt="Prêmio" style="width:100%;height:auto;max-height:400px;object-fit:cover">';
+        }
+
+        // FAQ
+        if (cp.faq && cp.faq.length > 0) {
+          document.getElementById('cam-faq-list').innerHTML = cp.faq.map(f =>
+            '<div class="cam-faq-item"><button class="cam-faq-q" onclick="toggleFaq(this)">' + (f.q||'') + '</button><div class="cam-faq-a">' + (f.a||'') + '</div></div>'
+          ).join('');
+        }
+
+        // Footer
+        if (cp.footerPhone) document.getElementById('cam-footer-phone').textContent = '📞 ' + cp.footerPhone;
+        if (cp.footerEmail) document.getElementById('cam-footer-email').textContent = cp.footerEmail;
+        if (cp.footerCampanhaName) document.getElementById('cam-footer-campanha-name').textContent = cp.footerCampanhaName;
+        if (cp.footerCopy) document.getElementById('cam-footer-copy').textContent = cp.footerCopy;
+        if (cp.footerInstagram) document.getElementById('cam-footer-instagram').href = cp.footerInstagram;
+        if (cp.footerWhatsapp) document.getElementById('cam-footer-whatsapp').href = cp.footerWhatsapp;
+        if (cp.footerFacebook) document.getElementById('cam-footer-facebook').href = cp.footerFacebook;
+
+        // Logo
+        if (cp.logoImage) {
+          document.getElementById('cam-header-logo').innerHTML = '<img src="' + cp.logoImage + '" alt="Logo" class="cam-header-logo">';
+        }
+
+        // Section visibility (per PC/mobile)
+        const vis = cp.visibility || {};
+        const isMobile = window.innerWidth <= 768;
+        const sections = [
+          ['hero', 'sec-hero'],
+          ['steps', 'sec-steps'],
+          ['participant', 'sec-participant'],
+          ['bannerPremio', 'sec-banner-premio'],
+          ['faq', 'sec-faq'],
+          ['footer', 'cam-footer']
+        ];
+        sections.forEach(([key, id]) => {
+          const v = vis[key];
+          if (!v) return;
+          const hidden = isMobile ? (v.m === 0) : (v.pc === 0);
+          if (hidden) document.getElementById(id).classList.add('hidden');
+        });
+
+        // Colors
+        if (cp.primaryColor) document.documentElement.style.setProperty('--primary', cp.primaryColor);
+        if (cp.bgColor) document.documentElement.style.setProperty('--bg', cp.bgColor);
+        if (cp.textColor) document.documentElement.style.setProperty('--text', cp.textColor);
+
+      } catch(e) {
+        console.warn('Falha ao carregar prefs da campanha:', e);
+      }
+    }
+
+    // ===== INIT =====
+    loadCampanhaPrefs();
+
+    // Format CPF input
+    document.getElementById('cam-cpf-input').addEventListener('input', function() {
+      this.value = formatCPF(this.value);
+    });
+  </script>
+</body>
+</html>

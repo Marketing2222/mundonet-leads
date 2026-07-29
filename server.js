@@ -791,6 +791,69 @@ app.post('/api/restore', (req, res) => {
   res.json({ ok: true });
 });
 
+// ---------- CAMPANHA ----------
+app.get('/campanha', (req, res) => { res.sendFile(path.join(__dirname, 'campanha.html')); });
+app.get('/campanha/', (req, res) => { res.sendFile(path.join(__dirname, 'campanha.html')); });
+app.get('/campanha.html', (req, res) => { res.sendFile(path.join(__dirname, 'campanha.html')); });
+
+// Public campanha APIs (no auth required)
+app.post('/api/campanha/login', (req, res) => {
+  const { cpf } = req.body || {};
+  if (!cpf) return res.status(400).json({ error: 'CPF obrigatório' });
+  const cleanCpf = String(cpf).replace(/\D/g, '');
+  const clients = readStore('clients');
+  const client = clients.find(c => {
+    const cCpf = String(c.cpf || '').replace(/\D/g, '');
+    return cCpf === cleanCpf;
+  });
+  if (!client) return res.status(404).json({ error: 'Participante não encontrado. Cadastre-se abaixo.' });
+  const leads = readStore('leads');
+  const indicacoes = leads.filter(l => {
+    const lCpf = String(l.cliente_cpf || '').replace(/\D/g, '');
+    const lNum = String(l.cliente_numero || '').replace(/\D/g, '');
+    return lCpf === cleanCpf || lNum === cleanCpf;
+  }).map(l => ({
+    nome: l.lead_nome || l.leadNome || 'Indicado',
+    whatsapp: l.lead_whatsapp || l.whatsapp || '',
+    status: l.status || l.etapa || 'Pendente',
+    criado_em: l.criado_em || l.data_convite || ''
+  }));
+  res.json({
+    id: client.id,
+    nome: client.nome || client.razao_social || 'Participante',
+    cpf: cleanCpf,
+    whatsapp: client.whatsapp || client.telefone || '',
+    indicacoes
+  });
+});
+
+app.post('/api/campanha/cadastro', (req, res) => {
+  const { nome, cpf, whatsapp } = req.body || {};
+  if (!nome || !cpf || !whatsapp) return res.status(400).json({ error: 'Nome, CPF e WhatsApp obrigatórios' });
+  const cleanCpf = String(cpf).replace(/\D/g, '');
+  const clients = readStore('clients');
+  const existing = clients.find(c => String(c.cpf || '').replace(/\D/g, '') === cleanCpf);
+  if (existing) return res.status(400).json({ error: 'CPF já cadastrado. Faça login.' });
+  const newClient = {
+    id: uuid(),
+    nome: nome.toUpperCase(),
+    cpf: cleanCpf,
+    whatsapp: whatsapp,
+    telefone: whatsapp,
+    criado_em: new Date().toISOString(),
+    fonte: 'campanha'
+  };
+  clients.push(newClient);
+  writeStore('clients', clients);
+  res.json({
+    id: newClient.id,
+    nome: newClient.nome,
+    cpf: newClient.cpf,
+    whatsapp: newClient.whatsapp,
+    indicacoes: []
+  });
+});
+
 // ---------- SPA fallback (public -> indique.html) ----------
 app.get('*', (req, res) => { res.sendFile(path.join(__dirname, 'indique.html')); });
 
