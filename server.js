@@ -71,7 +71,7 @@ app.get('/', (req, res) => {
 // ---------- STATIC FILES (public: indique.html, assets) ----------
 app.use((req, res, next) => {
   // Allow indique.html and its assets freely
-  if (req.path === '/indique.html' || req.path === '/indique' || req.path === '/indique-e-ganhe') return next();
+  if (req.path === '/indique.html' || req.path === '/indique' || req.path === '/indique/' || req.path === '/indique-e-ganhe') return next();
   // Allow static assets (css, js, images, fonts)
   if (req.path.match(/\.(css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|map)$/)) return next();
   // Allow favicon
@@ -796,6 +796,7 @@ app.post('/api/restore', (req, res) => {
 
 // ---------- PUBLIC PAGES ----------
 app.get('/indique', (req, res) => { res.sendFile(path.join(__dirname, 'indique.html')); });
+app.get('/indique/', (req, res) => { res.sendFile(path.join(__dirname, 'indique.html')); });
 app.get('/indique-e-ganhe', (req, res) => { res.sendFile(path.join(__dirname, 'indique.html')); });
 
 // ---------- SPA fallback (public -> indique.html) ----------
