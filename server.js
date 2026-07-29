@@ -74,6 +74,11 @@ app.get('/indique-e-ganhe', (req, res) => { res.sendFile(path.join(__dirname, 'i
 app.get('/index.html', (req, res) => { res.sendFile(path.join(__dirname, 'index.html')); });
 app.get('/', (req, res) => { res.sendFile(path.join(__dirname, 'index.html')); });
 
+// ---------- CAMPANHA (public, before static) ----------
+app.get('/campanha', (req, res) => { res.sendFile(path.join(__dirname, 'campanha.html')); });
+app.get('/campanha/', (req, res) => { res.sendFile(path.join(__dirname, 'campanha.html')); });
+app.get('/campanha.html', (req, res) => { res.sendFile(path.join(__dirname, 'campanha.html')); });
+
 // ---------- STATIC FILES (no index auto-serve) ----------
 app.use(express.static(__dirname, { index: false }));
 
@@ -792,10 +797,6 @@ app.post('/api/restore', (req, res) => {
 });
 
 // ---------- CAMPANHA ----------
-app.get('/campanha', (req, res) => { res.sendFile(path.join(__dirname, 'campanha.html')); });
-app.get('/campanha/', (req, res) => { res.sendFile(path.join(__dirname, 'campanha.html')); });
-app.get('/campanha.html', (req, res) => { res.sendFile(path.join(__dirname, 'campanha.html')); });
-
 // Public campanha APIs (no auth required)
 app.post('/api/campanha/login', (req, res) => {
   const { cpf } = req.body || {};
