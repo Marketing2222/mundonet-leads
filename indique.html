@@ -857,50 +857,60 @@
         if (!resp.ok) return;
         const prefs = await resp.json();
 
-        if (prefs.page_indique_title) {
-          document.getElementById('page-title').textContent = prefs.page_indique_title;
-          document.title = prefs.page_indique_title + ' — Mundonet';
+        const title = prefs.pageIndiqueTitle || prefs.page_indique_title;
+        if (title) {
+          document.getElementById('page-title').textContent = title;
+          document.title = title + ' — Mundonet';
         }
-        if (prefs.page_indique_subtitle) {
-          document.getElementById('page-subtitle').textContent = prefs.page_indique_subtitle;
+        const subtitle = prefs.pageIndiqueSubtitle || prefs.page_indique_subtitle;
+        if (subtitle) {
+          document.getElementById('page-subtitle').textContent = subtitle;
         }
-        if (prefs.page_indique_success_message) {
-          document.getElementById('success-msg-text').textContent = prefs.page_indique_success_message;
+        const successMsg = prefs.pageIndiqueSuccessMessage || prefs.page_indique_success_message;
+        if (successMsg) {
+          document.getElementById('success-msg-text').textContent = successMsg;
         }
-        if (prefs.page_indique_success_title) {
-          document.getElementById('success-title-text').textContent = prefs.page_indique_success_title;
+        const successTitle = prefs.pageIndiqueSuccessTitle || prefs.page_indique_success_title;
+        if (successTitle) {
+          document.getElementById('success-title-text').textContent = successTitle;
         }
-        if (prefs.page_indique_whatsapp) {
-          document.getElementById('btn-whatsapp').href = prefs.page_indique_whatsapp;
+        const whatsapp = prefs.pageIndiqueWhatsapp || prefs.page_indique_whatsapp;
+        if (whatsapp) {
+          document.getElementById('btn-whatsapp').href = whatsapp;
         }
-        if (prefs.page_indique_instagram) {
-          document.getElementById('btn-instagram').href = prefs.page_indique_instagram;
+        const instagram = prefs.pageIndiqueInstagram || prefs.page_indique_instagram;
+        if (instagram) {
+          document.getElementById('btn-instagram').href = instagram;
         }
-        if (prefs.page_indique_bg_color) {
-          document.body.style.setProperty('--bg-gradient', prefs.page_indique_bg_color);
+        const bgColor = prefs.pageIndiqueBgColor || prefs.page_indique_bg_color;
+        if (bgColor) {
+          document.body.style.setProperty('--bg-gradient', bgColor);
         }
-        if (prefs.page_indique_btn_color) {
-          document.body.style.setProperty('--accent-color', prefs.page_indique_btn_color);
+        const btnColor = prefs.pageIndiqueBtnColor || prefs.page_indique_btn_color;
+        if (btnColor) {
+          document.body.style.setProperty('--accent-color', btnColor);
         }
-        if (prefs.page_indique_text_color) {
-          document.body.style.setProperty('--text-primary', prefs.page_indique_text_color);
+        const textColor = prefs.pageIndiqueTextColor || prefs.page_indique_text_color;
+        if (textColor) {
+          document.body.style.setProperty('--text-primary', textColor);
         }
 
         const logoWrapper = document.getElementById('logo-wrapper');
-        const logoUrl = prefs.page_indique_logo || prefs.logo;
+        const logoUrl = prefs.pageIndiqueLogo || prefs.page_indique_logo;
         if (logoUrl) {
           logoWrapper.innerHTML = `<img src="${logoUrl}" alt="Logo">`;
         } else if (prefs.nome) {
           document.getElementById('logo-fallback-text').textContent = prefs.nome.charAt(0);
         }
 
-        const bgImgUrl = prefs.page_indique_bg_image;
+        const bgImgUrl = prefs.pageIndiqueBgImage || prefs.page_indique_bg_image;
         if (bgImgUrl) {
           document.getElementById('page-bg-image').style.backgroundImage = `url(${bgImgUrl})`;
         }
 
-        if (prefs.page_indique_footer) {
-          document.getElementById('page-footer').textContent = prefs.page_indique_footer;
+        const footer = prefs.pageIndiqueFooter || prefs.page_indique_footer;
+        if (footer) {
+          document.getElementById('page-footer').textContent = footer;
         }
       } catch (err) {
         console.warn('Falha ao carregar personalizações, usando padrão:', err);
