@@ -2181,15 +2181,8 @@
 
     <!-- VISIBILIDADE -->
     <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px;padding-top:14px;border-top:1px solid var(--border)">Visibilidade das Seções</p>
-    <div id="acmp-visibility-list">
-      <div class="toggle-row" style="margin-bottom:6px"><div><div class="toggle-label" style="font-size:12px">Banner Hero</div></div><div style="display:flex;gap:6px"><div class="toggle-switch on" id="vis-hero-pc" onclick="this.classList.toggle('on')" title="PC"></div><div class="toggle-switch on" id="vis-hero-mobile" onclick="this.classList.toggle('on')" title="Mobile"></div></div></div>
-      <div class="toggle-row" style="margin-bottom:6px"><div><div class="toggle-label" style="font-size:12px">Como Concorrer</div></div><div style="display:flex;gap:6px"><div class="toggle-switch on" id="vis-steps-pc" onclick="this.classList.toggle('on')" title="PC"></div><div class="toggle-switch on" id="vis-steps-mobile" onclick="this.classList.toggle('on')" title="Mobile"></div></div></div>
-      <div class="toggle-row" style="margin-bottom:6px"><div><div class="toggle-label" style="font-size:12px">Painel Participante</div></div><div style="display:flex;gap:6px"><div class="toggle-switch on" id="vis-participant-pc" onclick="this.classList.toggle('on')" title="PC"></div><div class="toggle-switch on" id="vis-participant-mobile" onclick="this.classList.toggle('on')" title="Mobile"></div></div></div>
-      <div class="toggle-row" style="margin-bottom:6px"><div><div class="toggle-label" style="font-size:12px">Banner Prêmio</div></div><div style="display:flex;gap:6px"><div class="toggle-switch on" id="vis-bannerPremio-pc" onclick="this.classList.toggle('on')" title="PC"></div><div class="toggle-switch on" id="vis-bannerPremio-mobile" onclick="this.classList.toggle('on')" title="Mobile"></div></div></div>
-      <div class="toggle-row" style="margin-bottom:6px"><div><div class="toggle-label" style="font-size:12px">FAQ</div></div><div style="display:flex;gap:6px"><div class="toggle-switch on" id="vis-faq-pc" onclick="this.classList.toggle('on')" title="PC"></div><div class="toggle-switch on" id="vis-faq-mobile" onclick="this.classList.toggle('on')" title="Mobile"></div></div></div>
-      <div class="toggle-row" style="margin-bottom:6px"><div><div class="toggle-label" style="font-size:12px">Rodapé</div></div><div style="display:flex;gap:6px"><div class="toggle-switch on" id="vis-footer-pc" onclick="this.classList.toggle('on')" title="PC"></div><div class="toggle-switch on" id="vis-footer-mobile" onclick="this.classList.toggle('on')" title="Mobile"></div></div></div>
-    </div>
-    <div style="font-size:10px;color:var(--text-muted);margin-top:6px">Toggle esquerdo = PC | Toggle direito = Celular</div>
+    <div id="acmp-visibility-list"></div>
+    <div style="font-size:10px;color:var(--text-muted);margin-top:6px">Toggle esquerdo = PC | Toggle direito = Celular | ▲▼ = ordem na página</div>
 
     <!-- LINKS -->
     <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px;padding-top:14px;border-top:1px solid var(--border)">Links da Campanha</p>
@@ -4670,6 +4663,40 @@ function removeAcmpPremio(){
   document.getElementById('acmp-premio-preview').textContent='Banner';
   document.getElementById('acmp-premio-remove-btn').style.display='none';
 }
+const ACMP_SECTIONS=[
+  {key:'hero',label:'Banner Hero'},
+  {key:'steps',label:'Como Concorrer'},
+  {key:'participant',label:'Painel Participante'},
+  {key:'bannerPremio',label:'Banner Prêmio'},
+  {key:'faq',label:'FAQ'},
+  {key:'footer',label:'Rodapé'}
+];
+let acmpSectionOrder=['hero','steps','participant','bannerPremio','faq','footer'];
+function renderAcmpVisibility(){
+  const el=document.getElementById('acmp-visibility-list');
+  const p=state.prefs||{};
+  const cp=p.campanha||{};
+  const vis=cp.visibility||{};
+  const order=acmpSectionOrder.slice();
+  el.innerHTML='';
+  order.forEach((key,i)=>{
+    const sec=ACMP_SECTIONS.find(s=>s.key===key);
+    if(!sec) return;
+    const v=vis[key]||{pc:1,m:1};
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:6px;margin-bottom:6px;padding:8px 10px;background:var(--bg-elevated);border-radius:8px;border:1px solid var(--border)';
+    row.innerHTML='<div style="display:flex;flex-direction:column;gap:2px"><button onclick="moveAcmpSection('+i+',-1)" title="Mover pra cima" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:12px;padding:0 2px;line-height:1">▲</button><button onclick="moveAcmpSection('+i+',1)" title="Mover pra baixo" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:12px;padding:0 2px;line-height:1">▼</button></div><div style="flex:1;font-size:12px">'+sec.label+'</div><div style="display:flex;gap:6px"><div class="toggle-switch '+(v.pc===1||v.pc===undefined?'on':'')+'" data-vis-pc="'+key+'" onclick="this.classList.toggle('on')" title="PC"></div><div class="toggle-switch '+(v.m===1||v.m===undefined?'on':'')+'" data-vis-m="'+key+'" onclick="this.classList.toggle('on')" title="Mobile"></div></div>';
+    el.appendChild(row);
+  });
+}
+function moveAcmpSection(idx,dir){
+  const newIdx=idx+dir;
+  if(newIdx<0||newIdx>=acmpSectionOrder.length) return;
+  const temp=acmpSectionOrder[idx];
+  acmpSectionOrder[idx]=acmpSectionOrder[newIdx];
+  acmpSectionOrder[newIdx]=temp;
+  renderAcmpVisibility();
+}
 function renderAcmpFaqList(faqs){
   const el=document.getElementById('acmp-faq-list'); el.innerHTML='';
   (faqs||[]).forEach((f,i)=>{
@@ -4742,13 +4769,9 @@ function openPanelAdminCampanha(){
   document.getElementById('acmp-primary-color').value=cp.primaryColor||'#1d4ed8';
   document.getElementById('acmp-bg-color').value=cp.bgColor||'#ffffff';
   document.getElementById('acmp-text-color2').value=cp.textColor||'#1e293b';
-  const vis=cp.visibility||{hero:{pc:1,m:1},steps:{pc:1,m:1},participant:{pc:1,m:1},bannerPremio:{pc:1,m:1},faq:{pc:1,m:1},footer:{pc:1,m:1}};
-  ['hero','steps','participant','bannerPremio','faq','footer'].forEach(k=>{
-    if(vis[k]&&vis[k].pc===0) document.getElementById('vis-'+k+'-pc').classList.remove('on');
-    else document.getElementById('vis-'+k+'-pc').classList.add('on');
-    if(vis[k]&&vis[k].m===0) document.getElementById('vis-'+k+'-mobile').classList.remove('on');
-    else document.getElementById('vis-'+k+'-mobile').classList.add('on');
-  });
+  if(cp.sectionOrder) acmpSectionOrder=cp.sectionOrder.slice();
+  else acmpSectionOrder=['hero','steps','participant','bannerPremio','faq','footer'];
+  renderAcmpVisibility();
   updateAdminCampanhaPreview();
   document.getElementById('panel-admin-campanha').classList.add('open');
 }
@@ -4785,14 +4808,16 @@ async function saveAdminCampanha(){
   cp.primaryColor=document.getElementById('acmp-primary-color').value;
   cp.bgColor=document.getElementById('acmp-bg-color').value;
   cp.textColor=document.getElementById('acmp-text-color2').value;
-  cp.visibility={
-    hero:{pc:document.getElementById('vis-hero-pc').classList.contains('on')?1:0,m:document.getElementById('vis-hero-mobile').classList.contains('on')?1:0},
-    steps:{pc:document.getElementById('vis-steps-pc').classList.contains('on')?1:0,m:document.getElementById('vis-steps-mobile').classList.contains('on')?1:0},
-    participant:{pc:document.getElementById('vis-participant-pc').classList.contains('on')?1:0,m:document.getElementById('vis-participant-mobile').classList.contains('on')?1:0},
-    bannerPremio:{pc:document.getElementById('vis-bannerPremio-pc').classList.contains('on')?1:0,m:document.getElementById('vis-bannerPremio-mobile').classList.contains('on')?1:0},
-    faq:{pc:document.getElementById('vis-faq-pc').classList.contains('on')?1:0,m:document.getElementById('vis-faq-mobile').classList.contains('on')?1:0},
-    footer:{pc:document.getElementById('vis-footer-pc').classList.contains('on')?1:0,m:document.getElementById('vis-footer-mobile').classList.contains('on')?1:0}
-  };
+  cp.visibility={};
+  acmpSectionOrder.forEach(key=>{
+    const pcEl=document.querySelector('[data-vis-pc="'+key+'"]');
+    const mEl=document.querySelector('[data-vis-m="'+key+'"]');
+    cp.visibility[key]={
+      pc:pcEl&&pcEl.classList.contains('on')?1:0,
+      m:mEl&&mEl.classList.contains('on')?1:0
+    };
+  });
+  cp.sectionOrder=acmpSectionOrder.slice();
   try { await api('PUT','/api/prefs',state.prefs); } catch(ex) { toast('Erro: '+ex.message,'error'); }
   applyAdminCampanhaBtn();
   closePanelAdminCampanha();

@@ -678,6 +678,7 @@ app.get('/api/clients/fetch-ixc', async (req, res) => {
           allClients.push({
             id: c.id || ('ixc_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6)),
             nome: c.nome || c.name || c.razao_social || '',
+            cpf: c.cpf || c.documento || c.cnpj_cpf || '',
             whatsapp: c.whatsapp || c.telefone || c.celular || c.phone || '',
             link_indicacao: '',
             editado: false

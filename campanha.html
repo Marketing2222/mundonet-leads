@@ -566,6 +566,8 @@
     <button class="cam-header-btn" id="cam-header-btn" onclick="scrollToLogin()">Minhas Indicações</button>
   </header>
 
+  <!-- SECTIONS CONTAINER (reorderable) -->
+  <div id="cam-sections">
   <!-- HERO BANNER -->
   <section class="cam-hero" id="sec-hero">
     <div class="cam-hero-placeholder" id="hero-placeholder">
@@ -721,6 +723,7 @@
       </div>
     </div>
   </section>
+  </div><!-- /cam-sections -->
 
   <!-- FOOTER -->
   <footer class="cam-footer" id="cam-footer">
@@ -941,20 +944,32 @@
         // Section visibility (per PC/mobile)
         const vis = cp.visibility || {};
         const isMobile = window.innerWidth <= 768;
-        const sections = [
-          ['hero', 'sec-hero'],
-          ['steps', 'sec-steps'],
-          ['participant', 'sec-participant'],
-          ['bannerPremio', 'sec-banner-premio'],
-          ['faq', 'sec-faq'],
-          ['footer', 'cam-footer']
-        ];
-        sections.forEach(([key, id]) => {
+        const sectionMap = {
+          'hero': 'sec-hero',
+          'steps': 'sec-steps',
+          'participant': 'sec-participant',
+          'bannerPremio': 'sec-banner-premio',
+          'faq': 'sec-faq',
+          'footer': 'cam-footer'
+        };
+        Object.entries(sectionMap).forEach(([key, id]) => {
           const v = vis[key];
           if (!v) return;
           const hidden = isMobile ? (v.m === 0) : (v.pc === 0);
           if (hidden) document.getElementById(id).classList.add('hidden');
         });
+
+        // Section order
+        const order = cp.sectionOrder || ['hero','steps','participant','bannerPremio','faq','footer'];
+        const container = document.getElementById('cam-sections');
+        if (container) {
+          order.forEach(key => {
+            const id = sectionMap[key];
+            if (!id) return;
+            const el = document.getElementById(id);
+            if (el) container.appendChild(el);
+          });
+        }
 
         // Colors
         if (cp.primaryColor) document.documentElement.style.setProperty('--primary', cp.primaryColor);
