@@ -321,8 +321,16 @@ app.put('/api/leads/:id', (req, res) => {
   list[idx] = { ...list[idx], ...l, id: req.params.id };
   list[idx].columnId = newColumn;
   list[idx].etapa = newColumn;
-  if (newColumn === 'ganho' && oldColumn !== 'ganho' && !list[idx].numero_sorte) {
+  const columns = readStore('columns');
+  const ganhoCol = columns.find(c => c.id === 'ganho' || (c.name || '').toLowerCase().includes('ganho'));
+  const ganhoId = ganhoCol ? ganhoCol.id : 'ganho';
+  const isGanho = newColumn === ganhoId;
+  const wasGanho = oldColumn === ganhoId;
+  if (isGanho && !wasGanho) {
+    delete list[idx].numero_sorte;
     list[idx].numero_sorte = generateUniqueNumeroSorte(list);
+  } else if (!isGanho && wasGanho) {
+    delete list[idx].numero_sorte;
   }
   writeStore('leads', list);
   res.json({ ok: true, lead: list[idx] });
