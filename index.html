@@ -1991,43 +1991,11 @@
     <button class="clients-close" onclick="closePanelAdminCampanha()">✕</button>
   </div>
   <div style="flex:1;overflow-y:auto;padding:16px">
-    <!-- BOTÃO NO TOOLBAR -->
-    <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Botão no Toolbar</p>
-    <div class="form-group" style="margin-bottom:12px">
-      <label class="form-label">Link / URL do botão</label>
-      <input type="text" id="acmp-link" class="form-control" placeholder="https://exemplo.com/campanha">
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-      <div class="form-group">
-        <label class="form-label">Cor de Fundo</label>
-        <div style="display:flex;gap:6px;align-items:center">
-          <input type="color" id="acmp-btn-color" value="#f59e0b" style="width:36px;height:32px;border:none;border-radius:6px;cursor:pointer;background:transparent" oninput="document.getElementById('acmp-btn-color-hex').textContent=this.value">
-          <span style="font-size:11px;color:var(--text-muted)" id="acmp-btn-color-hex">#f59e0b</span>
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Cor do Texto</label>
-        <div style="display:flex;gap:6px;align-items:center">
-          <input type="color" id="acmp-text-color" value="#fbbf24" style="width:36px;height:32px;border:none;border-radius:6px;cursor:pointer;background:transparent" oninput="document.getElementById('acmp-text-color-hex').textContent=this.value">
-          <span style="font-size:11px;color:var(--text-muted)" id="acmp-text-color-hex">#fbbf24</span>
-        </div>
-      </div>
-    </div>
-    <div class="form-group" style="margin-bottom:14px">
-      <label class="form-label">Ícone do Botão</label>
-      <div style="display:flex;gap:8px;align-items:center">
-        <div id="acmp-icon-preview" style="width:36px;height:36px;border-radius:8px;background:var(--bg-elevated);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;overflow:hidden">🚀</div>
-        <div style="display:flex;gap:6px;align-items:center">
-          <button class="btn btn-ghost" onclick="document.getElementById('acmp-icon-file').click()" style="font-size:12px;padding:7px 12px">📤 Upload</button>
-          <input type="file" id="acmp-icon-file" accept="image/*" style="display:none" onchange="handleAcmpIconUpload(this)">
-          <button class="btn btn-danger" onclick="removeAcmpIcon()" style="font-size:11px;padding:6px 10px;display:none" id="acmp-icon-remove-btn">🗑</button>
-        </div>
-      </div>
-    </div>
-    <div style="padding:10px;border-radius:var(--radius-sm);background:var(--bg-elevated);border:1px solid var(--border);text-align:center;margin-bottom:18px">
-      <span style="font-size:10px;color:var(--text-muted);display:block;margin-bottom:4px">Preview</span>
-      <button id="acmp-preview" class="toolbar-btn" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);color:#fbbf24;pointer-events:none"><span id="acmp-preview-icon">🚀</span> Admin Campanha</button>
-    </div>
+    <!-- SORTEIO -->
+    <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Participantes do Sorteio</p>
+    <button class="btn btn-ghost" onclick="openSorteioPanel()" style="width:100%;padding:12px;font-size:13px;font-weight:700;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);color:#f59e0b;border-radius:var(--radius);display:flex;align-items:center;justify-content:center;gap:8px">
+      <span style="font-size:18px">🏆</span> Ver Participantes do Sorteio
+    </button>
 
     <!-- LANDING PAGE -->
     <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px;padding-top:14px;border-top:1px solid var(--border)">Landing Page da Campanha</p>
@@ -2242,6 +2210,20 @@
   <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;flex-shrink:0">
     <button class="btn btn-ghost" onclick="closePanelAdminCampanha()">Cancelar</button>
     <button class="btn btn-primary" onclick="saveAdminCampanha()">💾 Salvar</button>
+  </div>
+</div>
+
+<!-- SORTEIO PANEL -->
+<div id="panel-sorteio" class="side-panel-left" style="z-index:10001">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid var(--border)">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:18px">🏆</span>
+      <span style="font-size:15px;font-weight:800;color:var(--text-primary)">Participantes do Sorteio</span>
+    </div>
+    <button class="clients-close" onclick="closeSorteioPanel()">✕</button>
+  </div>
+  <div id="sorteio-content" style="flex:1;overflow-y:auto;padding:16px">
+    <div style="text-align:center;padding:40px;color:var(--text-muted)">Carregando...</div>
   </div>
 </div>
 
@@ -4627,22 +4609,6 @@ function applyIndiqueBtnIcon(){
 }
 
 // ===== ADMIN CAMPANHA (painel lateral) =====
-function handleAcmpIconUpload(input){
-  const file=input.files[0]; if(!file) return;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    state.prefs=state.prefs||{}; state.prefs.adminCampanhaIcon=e.target.result;
-    document.getElementById('acmp-icon-preview').innerHTML='<img src="'+e.target.result+'" style="width:100%;height:100%;object-fit:cover">';
-    document.getElementById('acmp-icon-remove-btn').style.display='inline-block';
-    applyAdminCampanhaBtn();
-  }; reader.readAsDataURL(file);
-}
-function removeAcmpIcon(){
-  state.prefs=state.prefs||{}; delete state.prefs.adminCampanhaIcon;
-  document.getElementById('acmp-icon-preview').textContent='🚀';
-  document.getElementById('acmp-icon-remove-btn').style.display='none';
-  applyAdminCampanhaBtn();
-}
 function handleAcmpLogoUpload(input){
   const file=input.files[0]; if(!file) return;
   const reader=new FileReader();
@@ -4809,16 +4775,6 @@ function removeAcmpFaq(i){
 function openPanelAdminCampanha(){
   const p=state.prefs||{};
   const cp=p.campanha||{};
-  document.getElementById('acmp-link').value=p.adminCampanhaLink||p.admin_campanha_link||'';
-  document.getElementById('acmp-btn-color').value=p.adminCampanhaBtnColor||p.admin_campanha_btn_color||'#f59e0b';
-  document.getElementById('acmp-btn-color-hex').textContent=p.adminCampanhaBtnColor||p.admin_campanha_btn_color||'#f59e0b';
-  document.getElementById('acmp-text-color').value=p.adminCampanhaTextColor||p.admin_campanha_text_color||'#fbbf24';
-  document.getElementById('acmp-text-color-hex').textContent=p.adminCampanhaTextColor||p.admin_campanha_text_color||'#fbbf24';
-  const acIcon=p.adminCampanhaIcon||'';
-  const acIconPrev=document.getElementById('acmp-icon-preview');
-  const acIconRm=document.getElementById('acmp-icon-remove-btn');
-  if(acIcon){ acIconPrev.innerHTML='<img src="'+acIcon+'" style="width:100%;height:100%;object-fit:cover">'; acIconRm.style.display='inline-block'; }
-  else { acIconPrev.textContent='🚀'; acIconRm.style.display='none'; }
   // Campaign page fields
   const logo=cp.logoImage||'';
   if(logo){ document.getElementById('acmp-logo-preview').innerHTML='<img src="'+logo+'" style="width:100%;height:100%;object-fit:cover">'; document.getElementById('acmp-logo-remove-btn').style.display='inline-block'; }
@@ -4869,11 +4825,69 @@ function openPanelAdminCampanha(){
   document.getElementById('panel-admin-campanha').classList.add('open');
 }
 function closePanelAdminCampanha(){ document.getElementById('panel-admin-campanha').classList.remove('open'); }
+
+async function openSorteioPanel(){
+  document.getElementById('panel-sorteio').classList.add('open');
+  const el = document.getElementById('sorteio-content');
+  el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted)">Carregando...</div>';
+  try {
+    const participants = await api('GET', '/api/campanha/participants');
+    if (!participants || participants.length === 0) {
+      el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted)">Nenhum participante com indicações ainda.</div>';
+      return;
+    }
+    let html = '';
+    const totalPart = participants.length;
+    const totalLeads = participants.reduce((s,p) => s + p.total, 0);
+    const totalNumeros = participants.reduce((s,p) => s + p.numeros_sorte.length, 0);
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:18px">';
+    html += '<div style="text-align:center;padding:12px;border-radius:var(--radius);background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.15)"><div style="font-size:22px;font-weight:800;color:#3b82f6">'+totalPart+'</div><div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em">Participantes</div></div>';
+    html += '<div style="text-align:center;padding:12px;border-radius:var(--radius);background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.15)"><div style="font-size:22px;font-weight:800;color:#10b981">'+totalLeads+'</div><div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em">Indicações</div></div>';
+    html += '<div style="text-align:center;padding:12px;border-radius:var(--radius);background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.15)"><div style="font-size:22px;font-weight:800;color:#f59e0b">'+totalNumeros+'</div><div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em">Números</div></div>';
+    html += '</div>';
+    participants.forEach(p => {
+      const initials = p.nome.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+      html += '<div style="border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden">';
+      html += '<div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--bg-elevated)">';
+      html += '<div style="width:42px;height:42px;border-radius:50%;background:var(--accent-blue);color:white;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0">'+escHtml(initials)+'</div>';
+      html += '<div style="flex:1;min-width:0">';
+      html += '<div style="font-size:14px;font-weight:700;color:var(--text-primary)">'+escHtml(p.nome)+'</div>';
+      html += '<div style="font-size:11px;color:var(--text-muted)">CPF: '+escHtml(p.cpf||'---')+' · '+p.total+' indicação'+(p.total!==1?'ões':'')+'</div>';
+      html += '</div>';
+      if(p.numeros_sorte.length>0){
+        html += '<div style="display:flex;flex-wrap:wrap;gap:4px">';
+        p.numeros_sorte.forEach(n => {
+          html += '<span style="display:inline-block;padding:3px 8px;border-radius:20px;background:linear-gradient(135deg,#7c3aed,#c026d3);color:white;font-size:11px;font-weight:700">#'+n+'</span>';
+        });
+        html += '</div>';
+      }
+      html += '</div>';
+      if(p.leads.length>0){
+        html += '<div style="padding:0">';
+        const statusColors = {'Instalou':'#10b981','Em atendimento':'#f59e0b','Agendados':'#3b82f6','Não instalou':'#ef4444','Indicados':'#6b7280'};
+        p.leads.forEach(l => {
+          const c = statusColors[l.status]||'#6b7280';
+          html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid var(--border)">';
+          html += '<div style="display:flex;align-items:center;gap:8px;min-width:0;flex:1">';
+          html += '<div style="width:8px;height:8px;border-radius:50%;background:'+c+';flex-shrink:0"></div>';
+          html += '<span style="font-size:13px;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escHtml(l.nome||'Indicado')+'</span>';
+          html += '</div>';
+          html += '<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:'+c+'20;color:'+c+';font-weight:600;white-space:nowrap">'+escHtml(l.status)+'</span>';
+          if(l.numero_sorte) html += '<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:linear-gradient(135deg,#7c3aed,#c026d3);color:white;font-weight:700;margin-left:6px">#'+l.numero_sorte+'</span>';
+          html += '</div>';
+        });
+        html += '</div>';
+      }
+      html += '</div>';
+    });
+    el.innerHTML = html;
+  } catch(e) {
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--accent-red)">Erro ao carregar: '+escHtml(e.message)+'</div>';
+  }
+}
+function closeSorteioPanel(){ document.getElementById('panel-sorteio').classList.remove('open'); }
 async function saveAdminCampanha(){
   state.prefs=state.prefs||{};
-  state.prefs.adminCampanhaLink=document.getElementById('acmp-link').value.trim();
-  state.prefs.adminCampanhaBtnColor=document.getElementById('acmp-btn-color').value;
-  state.prefs.adminCampanhaTextColor=document.getElementById('acmp-text-color').value;
   state.prefs.campanha=state.prefs.campanha||{};
   const cp=state.prefs.campanha;
   cp.logoImage=state.prefs.campanha.logoImage||'';
@@ -4922,42 +4936,12 @@ async function saveAdminCampanha(){
   applyAdminCampanhaBtn();
   toast('Admin Campanha salva!','success');
 }
-function updateAdminCampanhaPreview(){
-  const btnColor=document.getElementById('acmp-btn-color').value;
-  const txtColor=document.getElementById('acmp-text-color').value;
-  const btn=document.getElementById('acmp-preview');
-  btn.style.background=hexToRgba(btnColor,0.12);
-  btn.style.borderColor=hexToRgba(btnColor,0.3);
-  btn.style.color=txtColor;
-  const iconSpan=document.getElementById('acmp-preview-icon');
-  if(iconSpan){
-    const icon=(state.prefs||{}).adminCampanhaIcon||'';
-    if(icon) iconSpan.innerHTML='<img src="'+icon+'" style="width:14px;height:14px;object-fit:contain;vertical-align:middle">';
-    else iconSpan.textContent='🚀';
-  }
-}
+function updateAdminCampanhaPreview(){}
 function hexToRgba(hex,a){
   const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
   return `rgba(${r},${g},${b},${a})`;
 }
-function applyAdminCampanhaBtn(){
-  const prefs=state.prefs||{};
-  const btn=document.getElementById('btn-admin-campanha');
-  if(!btn) return;
-  const bc=prefs.adminCampanhaBtnColor||prefs.admin_campanha_btn_color||'#f59e0b';
-  const tc=prefs.adminCampanhaTextColor||prefs.admin_campanha_text_color||'#fbbf24';
-  btn.style.background=hexToRgba(bc,0.12);
-  btn.style.borderColor=hexToRgba(bc,0.3);
-  btn.style.color=tc;
-  const iconSpan=document.getElementById('icon-admin-campanha-btn');
-  if(iconSpan){
-    const icon=prefs.adminCampanhaIcon||'';
-    if(icon) iconSpan.innerHTML='<img src="'+icon+'" style="width:14px;height:14px;object-fit:contain;vertical-align:middle">';
-    else iconSpan.textContent='🚀';
-  }
-}
-document.getElementById('acmp-btn-color').addEventListener('input',updateAdminCampanhaPreview);
-document.getElementById('acmp-text-color').addEventListener('input',updateAdminCampanhaPreview);
+function applyAdminCampanhaBtn(){}
 
 // ===== INIT =====
 async function init(){

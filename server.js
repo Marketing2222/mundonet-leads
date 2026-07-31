@@ -896,6 +896,53 @@ app.post('/api/campanha/login', (req, res) => {
   });
 });
 
+app.get('/api/campanha/participants', requireAuth, (req, res) => {
+  const clients = readStore('clients');
+  const leads = readStore('leads');
+  const columns = readStore('columns');
+  const colMap = {};
+  columns.forEach(c => { colMap[c.id] = c.name; });
+  function mapStatus(colId) {
+    const name = (colMap[colId] || colId || '').toLowerCase();
+    if (name.includes('ganho')) return 'Instalou';
+    if (name.includes('perdido') || name.includes('não instalou') || name.includes('nao instalou')) return 'Não instalou';
+    if (name.includes('agendado')) return 'Agendados';
+    if (name.includes('atendimento') && !name.includes('comiss')) return 'Em atendimento';
+    return 'Indicados';
+  }
+  const ganhoCol = columns.find(c => c.id === 'ganho' || (c.name || '').toLowerCase().includes('ganho'));
+  const ganhoId = ganhoCol ? ganhoCol.id : 'ganho';
+  const result = clients.map(cli => {
+    const cliLeads = leads.filter(l => {
+      const lCpf = String(l.cliente_cpf || '').replace(/\D/g, '');
+      const lNome = String(l.cliente_nome || l.clienteNome || '').trim().toUpperCase();
+      return lCpf === String(cli.cpf || '').replace(/\D/g, '') || lNome === String(cli.nome || '').trim().toUpperCase();
+    });
+    const numerosSorte = cliLeads.filter(l => l.numero_sorte).map(l => l.numero_sorte);
+    const statusCounts = {};
+    cliLeads.forEach(l => {
+      const col = l.column_id || l.columnId || l.etapa || 'pendentes';
+      const display = mapStatus(col);
+      statusCounts[display] = (statusCounts[display] || 0) + 1;
+    });
+    return {
+      id: cli.id,
+      nome: cli.nome || '',
+      cpf: cli.cpf || '',
+      total: cliLeads.length,
+      numeros_sorte: numerosSorte,
+      status_counts: statusCounts,
+      leads: cliLeads.map(l => ({
+        nome: l.lead_nome || l.leadNome || '',
+        whatsapp: l.lead_whatsapp || l.whatsapp || '',
+        status: mapStatus(l.column_id || l.columnId || l.etapa || 'pendentes'),
+        numero_sorte: l.numero_sorte || null
+      }))
+    };
+  }).filter(p => p.total > 0).sort((a, b) => b.numeros_sorte.length - a.numeros_sorte.length || b.total - a.total);
+  res.json(result);
+});
+
 app.post('/api/campanha/auto-login', (req, res) => {
   const { cpf } = req.body || {};
   if (!cpf) return res.status(400).json({ error: 'CPF obrigatório' });
