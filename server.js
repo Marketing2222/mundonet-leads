@@ -162,6 +162,24 @@ if (columns.length === 0) {
   writeStore('columns', defaults);
 }
 
+// Backfill cliente_cpf on existing leads
+function backfillLeadCpf() {
+  const clients = readStore('clients');
+  const leads = readStore('leads');
+  let fixed = 0;
+  for (const l of leads) {
+    if (l.cliente_cpf) continue;
+    const cli = clients.find(c => (c.nome || '').trim().toUpperCase() === (l.cliente_nome || l.clienteNome || '').trim().toUpperCase());
+    if (cli && cli.cpf) {
+      l.cliente_cpf = String(cli.cpf).replace(/\D/g, '');
+      fixed++;
+    }
+  }
+  if (fixed > 0) writeStore('leads', leads);
+  console.log('backfillLeadCpf: ' + fixed + ' leads atualizados');
+}
+backfillLeadCpf();
+
 // ---------- AUTH ----------
 app.post('/api/login', (req, res) => {
   const { username, password } = req.body || {};
@@ -288,7 +306,7 @@ app.get('/api/leads', (req, res) => { res.json(readStore('leads').sort((a, b) =>
 app.post('/api/leads', (req, res) => {
   const l = req.body;
   const now = new Date().toISOString();
-  const lead = { id: l.id || uuid(), column_id: l.column_id, etapa: l.etapa, cliente_nome: l.cliente_nome||'', cliente_pix: l.cliente_pix||'', lead_nome: l.lead_nome, lead_whatsapp: l.lead_whatsapp||'', comentarios: l.comentarios||'', data_convite: l.data_convite||'', mes_referencia: l.mes_referencia || now.substring(0,7), historico: l.historico || [], criado_em: l.criado_em || now };
+  const lead = { id: l.id || uuid(), column_id: l.column_id || l.columnId, etapa: l.etapa, cliente_nome: l.cliente_nome||'', cliente_cpf: l.cliente_cpf||'', cliente_pix: l.cliente_pix||'', lead_nome: l.lead_nome, lead_whatsapp: l.lead_whatsapp||'', comentarios: l.comentarios||'', data_convite: l.data_convite||'', mes_referencia: l.mes_referencia || now.substring(0,7), historico: l.historico || [], criado_em: l.criado_em || now };
   const list = readStore('leads');
   list.push(lead); writeStore('leads', list);
   res.json({ id: lead.id });
@@ -608,6 +626,7 @@ app.post('/api/public-indicacao', (req, res) => {
     column_id: firstColId,
     etapa: firstColId,
     cliente_nome: String(clientName).trim().toUpperCase(),
+    cliente_cpf: String(clientCPF || '').replace(/\D/g, ''),
     cliente_pix: isClient ? '' : cleanPix,
     pix_tipo: isClient ? '' : (pixType || 'celular'),
     lead_nome: String(leadName).trim().toUpperCase(),
@@ -835,8 +854,10 @@ app.post('/api/campanha/login', (req, res) => {
   columns.forEach(c => { colMap[c.id] = c.name; });
   const indicacoes = leads.filter(l => {
     const lCpf = String(l.cliente_cpf || '').replace(/\D/g, '');
-    const lNum = String(l.cliente_numero || '').replace(/\D/g, '');
-    return lCpf === cleanCpf || lNum === cleanCpf;
+    const lNum = String(l.cliente_numero || l.clienteNumero || '').replace(/\D/g, '');
+    const lNome = String(l.cliente_nome || l.clienteNome || '').trim().toUpperCase();
+    const cliNome = String(client.nome || '').trim().toUpperCase();
+    return lCpf === cleanCpf || lNum === cleanCpf || lNome === cliNome;
   });
   function mapStatus(colId) {
     const name = (colMap[colId] || colId || '').toLowerCase();
