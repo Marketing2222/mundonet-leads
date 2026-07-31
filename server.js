@@ -769,7 +769,12 @@ app.get('/api/debug-ixc', async (req, res) => {
 });
 
 // ---------- PREFS ----------
-app.get('/api/prefs', (req, res) => { res.json(readObj('prefs')); });
+app.get('/api/prefs', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.json(readObj('prefs'));
+});
 app.put('/api/prefs', (req, res) => { writeObj('prefs', req.body); res.json({ ok: true }); });
 
 // ---------- BACKUP / RESTORE ----------

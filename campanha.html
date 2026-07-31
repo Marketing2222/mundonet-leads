@@ -623,12 +623,9 @@
           <div class="cam-error" id="cam-login-error"></div>
           <div class="cam-form-group">
             <label>CPF ou Celular</label>
-            <input type="text" class="cam-form-control" id="cam-cpf-input" placeholder="000.000.000-00 ou (00) 00000-0000">
+            <input type="text" class="cam-form-control" id="cam-cpf-input" placeholder="DIGITE AQUI">
           </div>
           <button class="cam-btn cam-btn-primary" id="cam-login-btn" onclick="doCampanhaLogin()">Entrar</button>
-          <div style="text-align:center;margin-top:12px">
-            <button class="cam-btn-link" onclick="showRegister()">Não sou cadastrado — Cadastrar</button>
-          </div>
         </div>
 
         <!-- REGISTER -->
@@ -883,7 +880,7 @@
     // ===== LOAD PREFERENCES =====
     async function loadCampanhaPrefs() {
       try {
-        const resp = await fetch('/api/prefs');
+        const resp = await fetch('/api/prefs', { cache: 'no-store' });
         if (!resp.ok) return;
         const p = await resp.json();
         const cp = p.campanha || {};
@@ -894,6 +891,7 @@
           heroEl.style.backgroundImage = 'url(' + cp.heroImage + ')';
           heroEl.style.backgroundSize = 'cover';
           heroEl.style.backgroundPosition = 'center';
+          heroEl.style.minHeight = '300px';
           const ph = document.getElementById('hero-placeholder');
           if (ph) ph.style.display = 'none';
         }
