@@ -228,6 +228,7 @@ app.use('/api', (req, res, next) => {
   if (req.path === '/login') return next();
   if (req.path.startsWith('/public-indicacao')) return next(); // public form
   if (req.path === '/prefs' && req.method === 'GET') return next(); // public prefs for indique.html
+  if (req.path.startsWith('/campanha')) return next(); // public campaign pages
   requireAuth(req, res, next);
 });
 
