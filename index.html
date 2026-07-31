@@ -4805,7 +4805,7 @@ async function saveAdminCampanha(){
   state.prefs.campanha=state.prefs.campanha||{};
   const cp=state.prefs.campanha;
   cp.logoImage=state.prefs.campanha.logoImage||'';
-  cp.heroImage=state.prefs.campaignHeroBanner||'';
+  cp.heroImage=state.prefs.campanha.heroImage||'';
   cp.heroTitle=document.getElementById('acmp-hero-title').value.trim();
   cp.heroSubtitle=document.getElementById('acmp-hero-subtitle').value.trim();
   cp.stepsTitle=document.getElementById('acmp-steps-title').value.trim();
@@ -4816,8 +4816,8 @@ async function saveAdminCampanha(){
       desc:document.getElementById('acmp-step'+i+'-desc').value.trim()
     });
   }
-  cp.sideBannerImage=state.prefs.campaignSideBanner||'';
-  cp.bannerPremioImage=state.prefs.campaignPremioBanner||'';
+  cp.sideBannerImage=state.prefs.campanha.sideBannerImage||'';
+  cp.bannerPremioImage=state.prefs.campanha.bannerPremioImage||'';
   cp.faq=state.prefs.campanha.faq||[];
   cp.footerCampanhaName=document.getElementById('acmp-footer-name').value.trim();
   cp.footerPhone=document.getElementById('acmp-footer-phone').value.trim();
