@@ -2043,14 +2043,6 @@
       </div>
     </div>
     <div class="form-group" style="margin-bottom:10px">
-      <label class="form-label">Título Hero</label>
-      <input type="text" id="acmp-hero-title" class="form-control" placeholder="Indique e Ganhe">
-    </div>
-    <div class="form-group" style="margin-bottom:10px">
-      <label class="form-label">Subtítulo Hero</label>
-      <input type="text" id="acmp-hero-subtitle" class="form-control" placeholder="Indique seus amigos e concorra a prêmios!">
-    </div>
-    <div class="form-group" style="margin-bottom:10px">
       <label class="form-label">Banner Hero (Imagem)</label>
       <div style="display:flex;gap:8px;align-items:center">
         <div id="acmp-hero-preview" style="width:60px;height:36px;border-radius:6px;background:var(--bg-elevated);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text-muted);flex-shrink:0;overflow:hidden">Banner</div>
@@ -4760,8 +4752,6 @@ function openPanelAdminCampanha(){
   const logo=cp.logoImage||'';
   if(logo){ document.getElementById('acmp-logo-preview').innerHTML='<img src="'+logo+'" style="width:100%;height:100%;object-fit:cover">'; document.getElementById('acmp-logo-remove-btn').style.display='inline-block'; }
   else { document.getElementById('acmp-logo-preview').textContent='M'; document.getElementById('acmp-logo-remove-btn').style.display='none'; }
-  document.getElementById('acmp-hero-title').value=cp.heroTitle||'Indique e Ganhe';
-  document.getElementById('acmp-hero-subtitle').value=cp.heroSubtitle||'Indique seus amigos e concorra a prêmios!';
   const hero=cp.heroImage||'';
   if(hero){ document.getElementById('acmp-hero-preview').innerHTML='<img src="'+hero+'" style="width:100%;height:100%;object-fit:cover">'; document.getElementById('acmp-hero-remove-btn').style.display='inline-block'; }
   else { document.getElementById('acmp-hero-preview').textContent='Banner'; document.getElementById('acmp-hero-remove-btn').style.display='none'; }
@@ -4806,8 +4796,6 @@ async function saveAdminCampanha(){
   const cp=state.prefs.campanha;
   cp.logoImage=state.prefs.campanha.logoImage||'';
   cp.heroImage=state.prefs.campanha.heroImage||'';
-  cp.heroTitle=document.getElementById('acmp-hero-title').value.trim();
-  cp.heroSubtitle=document.getElementById('acmp-hero-subtitle').value.trim();
   cp.stepsTitle=document.getElementById('acmp-steps-title').value.trim();
   cp.steps=[];
   for(let i=1;i<=4;i++){
@@ -4841,7 +4829,6 @@ async function saveAdminCampanha(){
   cp.sectionOrder=acmpSectionOrder.slice();
   try { await api('PUT','/api/prefs',state.prefs); } catch(ex) { toast('Erro: '+ex.message,'error'); }
   applyAdminCampanhaBtn();
-  closePanelAdminCampanha();
   toast('Admin Campanha salva!','success');
 }
 function updateAdminCampanhaPreview(){

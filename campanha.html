@@ -936,9 +936,10 @@
         if (cp.footerWhatsapp) document.getElementById('cam-footer-whatsapp').href = cp.footerWhatsapp;
         if (cp.footerFacebook) document.getElementById('cam-footer-facebook').href = cp.footerFacebook;
 
-        // Logo
+        // Logo (header + footer)
         if (cp.logoImage) {
           document.getElementById('cam-header-logo').innerHTML = '<img src="' + cp.logoImage + '" alt="Logo" class="cam-header-logo">';
+          document.getElementById('cam-footer-logo-wrap').innerHTML = '<img src="' + cp.logoImage + '" alt="Logo" style="height:36px;object-fit:contain">';
         }
 
         // Section visibility (per PC/mobile)
