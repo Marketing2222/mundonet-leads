@@ -830,12 +830,22 @@ app.post('/api/campanha/login', (req, res) => {
   });
   if (!client) return res.status(404).json({ error: 'Participante não encontrado. Cadastre-se abaixo.' });
   const leads = readStore('leads');
+  const columns = readStore('columns');
+  const colMap = {};
+  columns.forEach(c => { colMap[c.id] = c.name; });
   const indicacoes = leads.filter(l => {
     const lCpf = String(l.cliente_cpf || '').replace(/\D/g, '');
     const lNum = String(l.cliente_numero || '').replace(/\D/g, '');
     return lCpf === cleanCpf || lNum === cleanCpf;
   });
-  const statusMap = { 'pendentes':'Indicados', 'em-atend':'Em atendimento', agendado:'Agendados', 'lead-perdido':'Não instalou', 'perdido':'Não instalou', ganho:'Instalou' };
+  function mapStatus(colId) {
+    const name = (colMap[colId] || colId || '').toLowerCase();
+    if (name.includes('ganho')) return 'Instalou';
+    if (name.includes('perdido') || name.includes('não instalou') || name.includes('nao instalou')) return 'Não instalou';
+    if (name.includes('agendado')) return 'Agendados';
+    if (name.includes('atendimento') && !name.includes('comiss')) return 'Em atendimento';
+    return 'Indicados';
+  }
   const numerosSorte = indicacoes.filter(l => l.numero_sorte).map(l => l.numero_sorte);
   res.json({
     id: client.id,
@@ -844,12 +854,13 @@ app.post('/api/campanha/login', (req, res) => {
     whatsapp: client.whatsapp || client.telefone || '',
     numeros_sorte: numerosSorte,
     indicacoes: indicacoes.map(l => {
-      const col = l.columnId || l.etapa || l.column_id || l.status || 'pendentes';
+      const col = l.column_id || l.columnId || l.etapa || 'pendentes';
+      const display = mapStatus(col);
       return {
         nome: l.lead_nome || l.leadNome || 'Indicado',
         whatsapp: l.lead_whatsapp || l.whatsapp || '',
         status: col,
-        status_display: statusMap[col] || 'Indicados',
+        status_display: display,
         criado_em: l.criado_em || l.data_convite || ''
       };
     })
