@@ -13,6 +13,14 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    body.loading * { visibility: hidden !important; }
+    body.loading::after {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--bg, #f5f5f5);
+      z-index: 99999;
+    }
     :root {
       --primary: #1d4ed8;
       --primary-light: #3b82f6;
@@ -629,7 +637,7 @@
     .cam-register.visible { display: block; }
   </style>
 </head>
-<body>
+<body class="loading">
 
   <!-- HEADER -->
   <header class="cam-header" id="cam-header">
@@ -1101,6 +1109,7 @@
       } catch(e) {
         console.warn('Falha ao carregar prefs da campanha:', e);
       }
+      document.body.classList.remove('loading');
     }
 
     // ===== INIT =====
