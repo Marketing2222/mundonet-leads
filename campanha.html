@@ -896,17 +896,19 @@
 
       // Status mapping admin -> campanha
       const statusMap = {
-        'pendente': 'Indicados',
+        'pendentes': 'Indicados',
         'em-atend': 'Em atendimento',
         'agendado': 'Agendados',
         'lead-perdido': 'Não instalou',
+        'perdido': 'Não instalou',
         'ganho': 'Instalou'
       };
       const statusCss = {
-        'pendente': 'cam-status-indicados',
+        'pendentes': 'cam-status-indicados',
         'em-atend': 'cam-status-atendimento',
         'agendado': 'cam-status-agendados',
         'lead-perdido': 'cam-status-nao',
+        'perdido': 'cam-status-nao',
         'ganho': 'cam-status-instalou'
       };
 
@@ -915,7 +917,7 @@
       inds.forEach(i => {
         const s = (i.status || '').toLowerCase();
         if (s === 'ganho') cInstalou++;
-        else if (s === 'lead-perdido') cNao++;
+        else if (s === 'lead-perdido' || s === 'perdido') cNao++;
         else if (s === 'agendado') cAgendados++;
         else if (s === 'em-atend') cAtendimento++;
         else cIndicados++;

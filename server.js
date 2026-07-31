@@ -833,7 +833,7 @@ app.post('/api/campanha/login', (req, res) => {
     const lNum = String(l.cliente_numero || '').replace(/\D/g, '');
     return lCpf === cleanCpf || lNum === cleanCpf;
   });
-  const statusMap = { pendente:'Indicados', 'em-atend':'Em atendimento', agendado:'Agendados', 'lead-perdido':'Não instalou', ganho:'Instalou' };
+  const statusMap = { 'pendentes':'Indicados', 'em-atend':'Em atendimento', agendado:'Agendados', 'lead-perdido':'Não instalou', 'perdido':'Não instalou', ganho:'Instalou' };
   const numerosSorte = indicacoes.filter(l => l.numero_sorte).map(l => l.numero_sorte);
   res.json({
     id: client.id,
@@ -841,13 +841,16 @@ app.post('/api/campanha/login', (req, res) => {
     cpf: cleanCpf,
     whatsapp: client.whatsapp || client.telefone || '',
     numeros_sorte: numerosSorte,
-    indicacoes: indicacoes.map(l => ({
-      nome: l.lead_nome || l.leadNome || 'Indicado',
-      whatsapp: l.lead_whatsapp || l.whatsapp || '',
-      status: l.status || l.etapa || 'pendente',
-      status_display: statusMap[l.status || l.etapa] || 'Indicados',
-      criado_em: l.criado_em || l.data_convite || ''
-    }))
+    indicacoes: indicacoes.map(l => {
+      const col = l.columnId || l.etapa || l.status || 'pendentes';
+      return {
+        nome: l.lead_nome || l.leadNome || 'Indicado',
+        whatsapp: l.lead_whatsapp || l.whatsapp || '',
+        status: col,
+        status_display: statusMap[col] || 'Indicados',
+        criado_em: l.criado_em || l.data_convite || ''
+      };
+    })
   });
 });
 
