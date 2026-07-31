@@ -316,9 +316,11 @@ app.put('/api/leads/:id', (req, res) => {
   const list = readStore('leads');
   const idx = list.findIndex(x => x.id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Não encontrado' });
-  const oldColumn = list[idx].columnId || list[idx].column_id || list[idx].etapa || '';
-  const newColumn = l.columnId || l.column_id || l.etapa || l.status || oldColumn;
-  list[idx] = { ...list[idx], ...l, id: req.params.id };
+  const old = list[idx];
+  const oldColumn = old.column_id || old.columnId || old.etapa || old.status || '';
+  const newColumn = l.column_id || l.columnId || l.etapa || l.status || oldColumn;
+  list[idx] = { ...old, ...l, id: req.params.id };
+  list[idx].column_id = newColumn;
   list[idx].columnId = newColumn;
   list[idx].etapa = newColumn;
   const columns = readStore('columns');
