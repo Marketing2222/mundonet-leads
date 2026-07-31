@@ -599,7 +599,8 @@
       .cam-steps { grid-template-columns: 1fr; gap: 14px; }
       .cam-step { padding: 20px 14px; }
       .cam-section { padding: 40px 16px; }
-      .cam-dash-stats { grid-template-columns: 1fr; }
+      .cam-dash-stats { grid-template-columns: 1fr 1fr; }
+      .cam-stat:last-child { grid-column: 1 / -1; }
     }
 
     /* ===== HIDDEN HELPER ===== */
@@ -695,7 +696,7 @@
           <div class="cam-error" id="cam-login-error"></div>
           <div class="cam-form-group">
             <label>CPF ou Celular</label>
-            <input type="text" class="cam-form-control" id="cam-cpf-input" placeholder="DIGITE AQUI">
+            <input type="tel" inputmode="numeric" pattern="[0-9]*" class="cam-form-control" id="cam-cpf-input" placeholder="DIGITE AQUI">
           </div>
           <button class="cam-btn cam-btn-primary" id="cam-login-btn" onclick="doCampanhaLogin()">Entrar</button>
         </div>
