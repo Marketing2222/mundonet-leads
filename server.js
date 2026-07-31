@@ -102,6 +102,14 @@ function writeObj(name, data) {
 
 function uuid() { return crypto.randomUUID(); }
 function hashPass(p) { return crypto.createHash('sha256').update(p).digest('hex'); }
+function generateUniqueNumeroSorte(leads) {
+  const used = new Set(leads.filter(l => l.numero_sorte).map(l => l.numero_sorte));
+  for (let i = 0; i < 100; i++) {
+    const num = Math.floor(Math.random() * 10000) + 10000;
+    if (!used.has(num)) return num;
+  }
+  return null;
+}
 
 // Ensure admin user exists
 function ensureAdminUser() {
@@ -290,9 +298,14 @@ app.put('/api/leads/:id', (req, res) => {
   const list = readStore('leads');
   const idx = list.findIndex(x => x.id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Não encontrado' });
+  const oldStatus = list[idx].status || list[idx].etapa || '';
+  const newStatus = l.status || l.etapa || oldStatus;
   list[idx] = { ...list[idx], ...l, id: req.params.id };
+  if (newStatus === 'ganho' && oldStatus !== 'ganho' && !list[idx].numero_sorte) {
+    list[idx].numero_sorte = generateUniqueNumeroSorte(list);
+  }
   writeStore('leads', list);
-  res.json({ ok: true });
+  res.json({ ok: true, lead: list[idx] });
 });
 app.delete('/api/leads/:id', (req, res) => {
   let list = readStore('leads');
@@ -819,18 +832,39 @@ app.post('/api/campanha/login', (req, res) => {
     const lCpf = String(l.cliente_cpf || '').replace(/\D/g, '');
     const lNum = String(l.cliente_numero || '').replace(/\D/g, '');
     return lCpf === cleanCpf || lNum === cleanCpf;
-  }).map(l => ({
-    nome: l.lead_nome || l.leadNome || 'Indicado',
-    whatsapp: l.lead_whatsapp || l.whatsapp || '',
-    status: l.status || l.etapa || 'Pendente',
-    criado_em: l.criado_em || l.data_convite || ''
-  }));
+  });
+  const statusMap = { pendente:'Indicados', 'em-atend':'Em atendimento', agendado:'Agendados', 'lead-perdido':'Não instalou', ganho:'Instalou' };
+  const numerosSorte = indicacoes.filter(l => l.numero_sorte).map(l => l.numero_sorte);
   res.json({
     id: client.id,
     nome: client.nome || client.razao_social || 'Participante',
     cpf: cleanCpf,
     whatsapp: client.whatsapp || client.telefone || '',
-    indicacoes
+    numeros_sorte: numerosSorte,
+    indicacoes: indicacoes.map(l => ({
+      nome: l.lead_nome || l.leadNome || 'Indicado',
+      whatsapp: l.lead_whatsapp || l.whatsapp || '',
+      status: l.status || l.etapa || 'pendente',
+      status_display: statusMap[l.status || l.etapa] || 'Indicados',
+      criado_em: l.criado_em || l.data_convite || ''
+    }))
+  });
+});
+
+app.post('/api/campanha/auto-login', (req, res) => {
+  const { cpf } = req.body || {};
+  if (!cpf) return res.status(400).json({ error: 'CPF obrigatório' });
+  const cleanCpf = String(cpf).replace(/\D/g, '');
+  const clients = readStore('clients');
+  const client = clients.find(c => {
+    const cCpf = String(c.cpf || '').replace(/\D/g, '');
+    return cCpf === cleanCpf;
+  });
+  if (!client) return res.status(404).json({ error: 'Sessão expirada' });
+  res.json({
+    id: client.id,
+    nome: client.nome || client.razao_social || 'Participante',
+    cpf: cleanCpf
   });
 });
 
