@@ -842,7 +842,7 @@ app.post('/api/campanha/login', (req, res) => {
     whatsapp: client.whatsapp || client.telefone || '',
     numeros_sorte: numerosSorte,
     indicacoes: indicacoes.map(l => {
-      const col = l.columnId || l.etapa || l.status || 'pendentes';
+      const col = l.column_id || l.columnId || l.etapa || l.status || 'pendentes';
       return {
         nome: l.lead_nome || l.leadNome || 'Indicado',
         whatsapp: l.lead_whatsapp || l.whatsapp || '',
