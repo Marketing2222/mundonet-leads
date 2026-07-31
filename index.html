@@ -2176,6 +2176,33 @@
       <input type="text" id="acmp-sorte-text" class="form-control" value="Seus números da sorte:">
     </div>
 
+    <!-- CORES DOS CARDS DO DASHBOARD -->
+    <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px;padding-top:14px;border-top:1px solid var(--border)">Cores dos Cards do Dashboard</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+      <div class="form-group">
+        <label class="form-label">Indicados</label>
+        <input type="color" id="acmp-card-indicados" value="#f59e0b" style="width:100%;height:32px;border:none;border-radius:6px;cursor:pointer;background:transparent">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Em Atendimento</label>
+        <input type="color" id="acmp-card-atendimento" value="#ea580c" style="width:100%;height:32px;border:none;border-radius:6px;cursor:pointer;background:transparent">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Agendados</label>
+        <input type="color" id="acmp-card-agendados" value="#2563eb" style="width:100%;height:32px;border:none;border-radius:6px;cursor:pointer;background:transparent">
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+      <div class="form-group">
+        <label class="form-label">Não Instalou</label>
+        <input type="color" id="acmp-card-nao" value="#dc2626" style="width:100%;height:32px;border:none;border-radius:6px;cursor:pointer;background:transparent">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Instalou</label>
+        <input type="color" id="acmp-card-instalou" value="#059669" style="width:100%;height:32px;border:none;border-radius:6px;cursor:pointer;background:transparent">
+      </div>
+    </div>
+
     <!-- CORES -->
     <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px;padding-top:14px;border-top:1px solid var(--border)">Cores da Landing Page</p>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
@@ -4818,6 +4845,11 @@ function openPanelAdminCampanha(){
   document.getElementById('acmp-sorte-color1').value=cp.sorteColor1||'#7c3aed';
   document.getElementById('acmp-sorte-color2').value=cp.sorteColor2||'#c026d3';
   document.getElementById('acmp-sorte-text').value=cp.sorteText||'Seus números da sorte:';
+  document.getElementById('acmp-card-indicados').value=cp.cardIndicados||'#f59e0b';
+  document.getElementById('acmp-card-atendimento').value=cp.cardAtendimento||'#ea580c';
+  document.getElementById('acmp-card-agendados').value=cp.cardAgendados||'#2563eb';
+  document.getElementById('acmp-card-nao').value=cp.cardNao||'#dc2626';
+  document.getElementById('acmp-card-instalou').value=cp.cardInstalou||'#059669';
   state.prefs.campanha.faq=cp.faq||[];
   renderAcmpFaqList(cp.faq||[]);
   document.getElementById('acmp-footer-name').value=cp.footerCampanhaName||'';
@@ -4861,6 +4893,11 @@ async function saveAdminCampanha(){
   cp.sorteColor1=document.getElementById('acmp-sorte-color1').value;
   cp.sorteColor2=document.getElementById('acmp-sorte-color2').value;
   cp.sorteText=document.getElementById('acmp-sorte-text').value.trim()||'Seus números da sorte:';
+  cp.cardIndicados=document.getElementById('acmp-card-indicados').value;
+  cp.cardAtendimento=document.getElementById('acmp-card-atendimento').value;
+  cp.cardAgendados=document.getElementById('acmp-card-agendados').value;
+  cp.cardNao=document.getElementById('acmp-card-nao').value;
+  cp.cardInstalou=document.getElementById('acmp-card-instalou').value;
   cp.footerCampanhaName=document.getElementById('acmp-footer-name').value.trim();
   cp.footerPhone=document.getElementById('acmp-footer-phone').value.trim();
   cp.footerEmail=document.getElementById('acmp-footer-email').value.trim();
