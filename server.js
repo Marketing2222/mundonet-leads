@@ -75,9 +75,9 @@ app.get('/index.html', (req, res) => { res.sendFile(path.join(__dirname, 'index.
 app.get('/', (req, res) => { res.sendFile(path.join(__dirname, 'index.html')); });
 
 // ---------- CAMPANHA (public, before static) ----------
-app.get('/campanha', (req, res) => { res.setHeader('Cache-Control','no-cache, no-store, must-revalidate'); res.setHeader('Pragma','no-cache'); res.setHeader('Expires','0'); res.sendFile(path.join(__dirname, 'campanha.html')); });
-app.get('/campanha/', (req, res) => { res.setHeader('Cache-Control','no-cache, no-store, must-revalidate'); res.setHeader('Pragma','no-cache'); res.setHeader('Expires','0'); res.sendFile(path.join(__dirname, 'campanha.html')); });
-app.get('/campanha.html', (req, res) => { res.setHeader('Cache-Control','no-cache, no-store, must-revalidate'); res.setHeader('Pragma','no-cache'); res.setHeader('Expires','0'); res.sendFile(path.join(__dirname, 'campanha.html')); });
+app.get('/campanha', (req, res) => { res.setHeader('Cache-Control','no-cache, no-store, must-revalidate'); res.setHeader('Pragma','no-cache'); res.setHeader('Expires','0'); res.setHeader('Vary','*'); res.sendFile(path.join(__dirname, 'campanha.html')); });
+app.get('/campanha/', (req, res) => { res.setHeader('Cache-Control','no-cache, no-store, must-revalidate'); res.setHeader('Pragma','no-cache'); res.setHeader('Expires','0'); res.setHeader('Vary','*'); res.sendFile(path.join(__dirname, 'campanha.html')); });
+app.get('/campanha.html', (req, res) => { res.setHeader('Cache-Control','no-cache, no-store, must-revalidate'); res.setHeader('Pragma','no-cache'); res.setHeader('Expires','0'); res.setHeader('Vary','*'); res.sendFile(path.join(__dirname, 'campanha.html')); });
 
 // ---------- STATIC FILES (no index auto-serve) ----------
 app.use(express.static(__dirname, { index: false }));
@@ -954,7 +954,7 @@ app.post('/api/campanha/auto-login', (req, res) => {
     const cCpf = String(c.cpf || '').replace(/\D/g, '');
     return cCpf === cleanCpf;
   });
-  if (!client) return res.status(404).json({ error: 'Sessão expirada' });
+  if (!client) return res.status(404).json({ error: 'Participante não encontrado. Cadastre-se abaixo.' });
   res.json({
     id: client.id,
     nome: client.nome || client.razao_social || 'Participante',
