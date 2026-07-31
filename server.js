@@ -63,10 +63,10 @@ app.use((req, res, next) => {
 });
 
 // ---------- PUBLIC PAGES (before static) ----------
-app.get('/indique', (req, res) => { res.sendFile(path.join(__dirname, 'indique.html')); });
-app.get('/indique/', (req, res) => { res.sendFile(path.join(__dirname, 'indique.html')); });
-app.get('/indique.html', (req, res) => { res.sendFile(path.join(__dirname, 'indique.html')); });
-app.get('/indique-e-ganhe', (req, res) => { res.sendFile(path.join(__dirname, 'indique.html')); });
+app.get('/indique', (req, res) => { res.setHeader('Cache-Control','no-cache, no-store, must-revalidate'); res.sendFile(path.join(__dirname, 'indique.html')); });
+app.get('/indique/', (req, res) => { res.setHeader('Cache-Control','no-cache, no-store, must-revalidate'); res.sendFile(path.join(__dirname, 'indique.html')); });
+app.get('/indique.html', (req, res) => { res.setHeader('Cache-Control','no-cache, no-store, must-revalidate'); res.sendFile(path.join(__dirname, 'indique.html')); });
+app.get('/indique-e-ganhe', (req, res) => { res.setHeader('Cache-Control','no-cache, no-store, must-revalidate'); res.sendFile(path.join(__dirname, 'indique.html')); });
 
 // ---------- PROTECT ADMIN (before static) ----------
 // Always serve index.html — login screen is built into it.
@@ -75,9 +75,9 @@ app.get('/index.html', (req, res) => { res.sendFile(path.join(__dirname, 'index.
 app.get('/', (req, res) => { res.sendFile(path.join(__dirname, 'index.html')); });
 
 // ---------- CAMPANHA (public, before static) ----------
-app.get('/campanha', (req, res) => { res.sendFile(path.join(__dirname, 'campanha.html')); });
-app.get('/campanha/', (req, res) => { res.sendFile(path.join(__dirname, 'campanha.html')); });
-app.get('/campanha.html', (req, res) => { res.sendFile(path.join(__dirname, 'campanha.html')); });
+app.get('/campanha', (req, res) => { res.setHeader('Cache-Control','no-cache, no-store, must-revalidate'); res.setHeader('Pragma','no-cache'); res.setHeader('Expires','0'); res.sendFile(path.join(__dirname, 'campanha.html')); });
+app.get('/campanha/', (req, res) => { res.setHeader('Cache-Control','no-cache, no-store, must-revalidate'); res.setHeader('Pragma','no-cache'); res.setHeader('Expires','0'); res.sendFile(path.join(__dirname, 'campanha.html')); });
+app.get('/campanha.html', (req, res) => { res.setHeader('Cache-Control','no-cache, no-store, must-revalidate'); res.setHeader('Pragma','no-cache'); res.setHeader('Expires','0'); res.sendFile(path.join(__dirname, 'campanha.html')); });
 
 // ---------- STATIC FILES (no index auto-serve) ----------
 app.use(express.static(__dirname, { index: false }));
