@@ -298,10 +298,12 @@ app.put('/api/leads/:id', (req, res) => {
   const list = readStore('leads');
   const idx = list.findIndex(x => x.id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Não encontrado' });
-  const oldStatus = list[idx].status || list[idx].etapa || '';
-  const newStatus = l.status || l.etapa || oldStatus;
+  const oldColumn = list[idx].columnId || list[idx].column_id || list[idx].etapa || '';
+  const newColumn = l.columnId || l.column_id || l.etapa || l.status || oldColumn;
   list[idx] = { ...list[idx], ...l, id: req.params.id };
-  if (newStatus === 'ganho' && oldStatus !== 'ganho' && !list[idx].numero_sorte) {
+  list[idx].columnId = newColumn;
+  list[idx].etapa = newColumn;
+  if (newColumn === 'ganho' && oldColumn !== 'ganho' && !list[idx].numero_sorte) {
     list[idx].numero_sorte = generateUniqueNumeroSorte(list);
   }
   writeStore('leads', list);
@@ -842,7 +844,7 @@ app.post('/api/campanha/login', (req, res) => {
     whatsapp: client.whatsapp || client.telefone || '',
     numeros_sorte: numerosSorte,
     indicacoes: indicacoes.map(l => {
-      const col = l.column_id || l.columnId || l.etapa || l.status || 'pendentes';
+      const col = l.columnId || l.etapa || l.column_id || l.status || 'pendentes';
       return {
         nome: l.lead_nome || l.leadNome || 'Indicado',
         whatsapp: l.lead_whatsapp || l.whatsapp || '',
