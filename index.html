@@ -4870,31 +4870,31 @@ document.getElementById('acmp-text-color').addEventListener('input',updateAdminC
 
 // ===== INIT =====
 async function init(){
-  try {
-    const [leads,cols,usr,clnts,cfg,prfs]=await Promise.all([
-      api('GET','/api/leads'),
-      api('GET','/api/columns'),
-      api('GET','/api/users'),
-      api('GET','/api/clients'),
-      api('GET','/api/config'),
-      api('GET','/api/prefs')
-    ]);
-    state.leads=toCamel(leads);
-    state.columns=cols;
-    users=usr;
-    clients=clnts;
-      apiConfig={ixc:{url:cfg.ixc_url||'',token:cfg.ixc_token||''},zapisp:{url:cfg.zapisp_url||'',token:cfg.zapisp_token||''},ixc_auto_sync:cfg.ixc_auto_sync||false,ixc_auto_sync_interval:cfg.ixc_auto_sync_interval||30};
-    state.prefs=toCamel(prfs);
-    if(!state.prefs.templates) state.prefs.templates=DEFAULT_TEMPLATES;
-  } catch(e) {
-    console.error('Erro ao carregar dados:',e);
-    toast('Erro ao carregar dados do servidor!','error');
-  }
   applyPrefs();
   applyLoginPagePrefs();
-  initFilterBar();
   const loggedIn = await checkSession();
   if(loggedIn){
+    try {
+      const [leads,cols,usr,clnts,cfg,prfs]=await Promise.all([
+        api('GET','/api/leads'),
+        api('GET','/api/columns'),
+        api('GET','/api/users'),
+        api('GET','/api/clients'),
+        api('GET','/api/config'),
+        api('GET','/api/prefs')
+      ]);
+      state.leads=toCamel(leads);
+      state.columns=cols;
+      users=usr;
+      clients=clnts;
+        apiConfig={ixc:{url:cfg.ixc_url||'',token:cfg.ixc_token||''},zapisp:{url:cfg.zapisp_url||'',token:cfg.zapisp_token||''},ixc_auto_sync:cfg.ixc_auto_sync||false,ixc_auto_sync_interval:cfg.ixc_auto_sync_interval||30};
+      state.prefs=toCamel(prfs);
+      if(!state.prefs.templates) state.prefs.templates=DEFAULT_TEMPLATES;
+    } catch(e) {
+      console.error('Erro ao carregar dados:',e);
+      toast('Erro ao carregar dados do servidor!','error');
+    }
+    initFilterBar();
     document.body.classList.add('ready');
     document.getElementById('login-screen').classList.add('hidden');
     enableAdmin();
