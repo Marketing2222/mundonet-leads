@@ -1049,8 +1049,8 @@
         if (ctaBtn) {
           ctaBtn.textContent = cp.ctaText || 'INDIQUE AQUI';
           ctaBtn.href = cp.ctaLink || '/indique.html';
-          if (cp.ctaColor) document.documentElement.style.setProperty('--cta-color', cp.ctaColor);
-          if (cp.ctaTextColor) document.documentElement.style.setProperty('--cta-text-color', cp.ctaTextColor);
+          if (cp.ctaColor) { ctaBtn.style.background = cp.ctaColor; document.documentElement.style.setProperty('--cta-color', cp.ctaColor); }
+          if (cp.ctaTextColor) { ctaBtn.style.color = cp.ctaTextColor; document.documentElement.style.setProperty('--cta-text-color', cp.ctaTextColor); }
         }
 
         // Footer
@@ -1127,15 +1127,6 @@
         if (cp.cardAgendados) setCardVar('agendados', cp.cardAgendados);
         if (cp.cardNao) setCardVar('nao', cp.cardNao);
         if (cp.cardInstalou) setCardVar('instalou', cp.cardInstalou);
-
-        // CTA button
-        const ctaBtn = document.getElementById('cam-cta-btn');
-        if (ctaBtn) {
-          if (cp.ctaText) ctaBtn.textContent = cp.ctaText;
-          if (cp.ctaLink) ctaBtn.href = cp.ctaLink;
-          if (cp.ctaColor) ctaBtn.style.background = cp.ctaColor;
-          if (cp.ctaTextColor) ctaBtn.style.color = cp.ctaTextColor;
-        }
 
       } catch(e) {
         console.warn('Falha ao carregar prefs da campanha:', e);
