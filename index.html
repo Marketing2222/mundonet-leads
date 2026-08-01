@@ -4869,8 +4869,12 @@ function openPanelAdminCampanha(){
   document.getElementById('acmp-primary-color').value=cp.primaryColor||'#1d4ed8';
   document.getElementById('acmp-bg-color').value=cp.bgColor||'#ffffff';
   document.getElementById('acmp-text-color2').value=cp.textColor||'#1e293b';
-  if(cp.sectionOrder) acmpSectionOrder=cp.sectionOrder.slice();
-  else acmpSectionOrder=['hero','steps','participant','bannerPremio','faq','cta','footer'];
+  if(cp.sectionOrder){
+    acmpSectionOrder=cp.sectionOrder.slice();
+    if(!acmpSectionOrder.includes('cta')) acmpSectionOrder.splice(acmpSectionOrder.indexOf('faq')+1,0,'cta');
+  } else {
+    acmpSectionOrder=['hero','steps','participant','bannerPremio','faq','cta','footer'];
+  }
   renderAcmpVisibility();
   updateAdminCampanhaPreview();
   document.getElementById('panel-admin-campanha').classList.add('open');
