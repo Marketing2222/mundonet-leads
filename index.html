@@ -2085,6 +2085,27 @@
       <button class="btn btn-primary" onclick="addAcmpFaq()" style="font-size:11px;padding:7px 12px">＋</button>
     </div>
 
+    <!-- BOTÃO INDIQUE AQUI -->
+    <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px;padding-top:14px;border-top:1px solid var(--border)">Botão Indique Aqui</p>
+    <div class="form-group" style="margin-bottom:8px">
+      <label class="form-label">Texto do Botão</label>
+      <input type="text" id="acmp-cta-text" class="form-control" placeholder="INDIQUE AQUI">
+    </div>
+    <div class="form-group" style="margin-bottom:8px">
+      <label class="form-label">Link do Botão</label>
+      <input type="text" id="acmp-cta-link" class="form-control" placeholder="/indique.html">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <div class="form-group">
+        <label class="form-label">Cor de Fundo</label>
+        <input type="color" id="acmp-cta-color" value="#f59e0b" style="width:100%;height:32px;border:none;border-radius:6px;cursor:pointer;background:transparent">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Cor do Texto</label>
+        <input type="color" id="acmp-cta-textcolor" value="#ffffff" style="width:100%;height:32px;border:none;border-radius:6px;cursor:pointer;background:transparent">
+      </div>
+    </div>
+
     <!-- RODAPÉ -->
     <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px;padding-top:14px;border-top:1px solid var(--border)">Rodapé</p>
     <div class="form-group" style="margin-bottom:8px">
@@ -2142,6 +2163,27 @@
     <div class="form-group" style="margin-bottom:10px">
       <label class="form-label">Texto do banner</label>
       <input type="text" id="acmp-sorte-text" class="form-control" value="Seus números da sorte:">
+    </div>
+
+    <!-- BOTÃO CTA INDIQUE AQUI -->
+    <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px;padding-top:14px;border-top:1px solid var(--border)">Botão "Indique Aqui"</p>
+    <div class="form-group" style="margin-bottom:10px">
+      <label class="form-label">Texto do botão</label>
+      <input type="text" id="acmp-cta-text" class="form-control" value="Indique Aqui" placeholder="Indique Aqui">
+    </div>
+    <div class="form-group" style="margin-bottom:10px">
+      <label class="form-label">Link / URL</label>
+      <input type="text" id="acmp-cta-link" class="form-control" placeholder="https://exemplo.com/indique">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+      <div class="form-group">
+        <label class="form-label">Cor do botão</label>
+        <input type="color" id="acmp-cta-color" value="#f59e0b" style="width:100%;height:32px;border:none;border-radius:6px;cursor:pointer;background:transparent">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Cor do texto</label>
+        <input type="color" id="acmp-cta-text-color" value="#ffffff" style="width:100%;height:32px;border:none;border-radius:6px;cursor:pointer;background:transparent">
+      </div>
     </div>
 
     <!-- CORES DOS CARDS DO DASHBOARD -->
@@ -4695,9 +4737,10 @@ const ACMP_SECTIONS=[
   {key:'participant',label:'Painel Participante'},
   {key:'bannerPremio',label:'Banner Prêmio'},
   {key:'faq',label:'FAQ'},
+  {key:'cta',label:'Botão Indique Aqui'},
   {key:'footer',label:'Rodapé'}
 ];
-let acmpSectionOrder=['hero','steps','participant','bannerPremio','faq','footer'];
+let acmpSectionOrder=['hero','steps','participant','bannerPremio','faq','cta','footer'];
 function renderAcmpVisibility(){
   const el=document.getElementById('acmp-visibility-list');
   const p=state.prefs||{};
@@ -4806,8 +4849,16 @@ function openPanelAdminCampanha(){
   document.getElementById('acmp-card-agendados').value=cp.cardAgendados||'#2563eb';
   document.getElementById('acmp-card-nao').value=cp.cardNao||'#dc2626';
   document.getElementById('acmp-card-instalou').value=cp.cardInstalou||'#059669';
+  document.getElementById('acmp-cta-text').value=cp.ctaText||'Indique Aqui';
+  document.getElementById('acmp-cta-link').value=cp.ctaLink||'';
+  document.getElementById('acmp-cta-color').value=cp.ctaColor||'#f59e0b';
+  document.getElementById('acmp-cta-text-color').value=cp.ctaTextColor||'#ffffff';
   state.prefs.campanha.faq=cp.faq||[];
   renderAcmpFaqList(cp.faq||[]);
+  document.getElementById('acmp-cta-text').value=cp.ctaText||'INDIQUE AQUI';
+  document.getElementById('acmp-cta-link').value=cp.ctaLink||'/indique.html';
+  document.getElementById('acmp-cta-color').value=cp.ctaColor||'#f59e0b';
+  document.getElementById('acmp-cta-textcolor').value=cp.ctaTextColor||'#ffffff';
   document.getElementById('acmp-footer-name').value=cp.footerCampanhaName||'';
   document.getElementById('acmp-footer-phone').value=cp.footerPhone||'';
   document.getElementById('acmp-footer-email').value=cp.footerEmail||'';
@@ -4819,7 +4870,7 @@ function openPanelAdminCampanha(){
   document.getElementById('acmp-bg-color').value=cp.bgColor||'#ffffff';
   document.getElementById('acmp-text-color2').value=cp.textColor||'#1e293b';
   if(cp.sectionOrder) acmpSectionOrder=cp.sectionOrder.slice();
-  else acmpSectionOrder=['hero','steps','participant','bannerPremio','faq','footer'];
+  else acmpSectionOrder=['hero','steps','participant','bannerPremio','faq','cta','footer'];
   renderAcmpVisibility();
   updateAdminCampanhaPreview();
   document.getElementById('panel-admin-campanha').classList.add('open');
@@ -4903,6 +4954,10 @@ async function saveAdminCampanha(){
   cp.sideBannerImage=state.prefs.campanha.sideBannerImage||'';
   cp.bannerPremioImage=state.prefs.campanha.bannerPremioImage||'';
   cp.faq=state.prefs.campanha.faq||[];
+  cp.ctaText=document.getElementById('acmp-cta-text').value.trim()||'INDIQUE AQUI';
+  cp.ctaLink=document.getElementById('acmp-cta-link').value.trim()||'/indique.html';
+  cp.ctaColor=document.getElementById('acmp-cta-color').value;
+  cp.ctaTextColor=document.getElementById('acmp-cta-textcolor').value;
   cp.medalImage=state.prefs.campanha.medalImage||'';
   cp.sorteColor1=document.getElementById('acmp-sorte-color1').value;
   cp.sorteColor2=document.getElementById('acmp-sorte-color2').value;
@@ -4912,6 +4967,10 @@ async function saveAdminCampanha(){
   cp.cardAgendados=document.getElementById('acmp-card-agendados').value;
   cp.cardNao=document.getElementById('acmp-card-nao').value;
   cp.cardInstalou=document.getElementById('acmp-card-instalou').value;
+  cp.ctaText=document.getElementById('acmp-cta-text').value.trim()||'Indique Aqui';
+  cp.ctaLink=document.getElementById('acmp-cta-link').value.trim();
+  cp.ctaColor=document.getElementById('acmp-cta-color').value;
+  cp.ctaTextColor=document.getElementById('acmp-cta-text-color').value;
   cp.footerCampanhaName=document.getElementById('acmp-footer-name').value.trim();
   cp.footerPhone=document.getElementById('acmp-footer-phone').value.trim();
   cp.footerEmail=document.getElementById('acmp-footer-email').value.trim();

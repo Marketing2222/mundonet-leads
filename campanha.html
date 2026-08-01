@@ -793,6 +793,12 @@
       </div>
     </div>
   </section>
+
+  <!-- CTA INDIQUE AQUI -->
+  <section class="cam-section" id="sec-cta" style="text-align:center;padding:20px 16px 10px">
+    <a id="cam-cta-btn" href="#" target="_blank" style="display:inline-block;padding:16px 40px;border-radius:50px;background:var(--cta-color,#f59e0b);color:var(--cta-text-color,#fff);font-size:18px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;text-decoration:none;box-shadow:0 4px 20px rgba(0,0,0,0.15);transition:transform .2s,box-shadow .2s" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 24px rgba(0,0,0,0.2)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 20px rgba(0,0,0,0.15)'">Indique Aqui</a>
+  </section>
+
   </div><!-- /cam-sections -->
 
   <!-- FOOTER -->
@@ -1038,6 +1044,15 @@
           ).join('');
         }
 
+        // CTA
+        const ctaBtn = document.getElementById('cam-cta-btn');
+        if (ctaBtn) {
+          ctaBtn.textContent = cp.ctaText || 'INDIQUE AQUI';
+          ctaBtn.href = cp.ctaLink || '/indique.html';
+          if (cp.ctaColor) document.documentElement.style.setProperty('--cta-color', cp.ctaColor);
+          if (cp.ctaTextColor) document.documentElement.style.setProperty('--cta-text-color', cp.ctaTextColor);
+        }
+
         // Footer
         if (cp.footerPhone) document.getElementById('cam-footer-phone').textContent = '📞 ' + cp.footerPhone;
         if (cp.footerEmail) document.getElementById('cam-footer-email').textContent = cp.footerEmail;
@@ -1062,6 +1077,7 @@
           'participant': 'sec-participant',
           'bannerPremio': 'sec-banner-premio',
           'faq': 'sec-faq',
+          'cta': 'sec-cta',
           'footer': 'cam-footer'
         };
         Object.entries(sectionMap).forEach(([key, id]) => {
@@ -1072,7 +1088,7 @@
         });
 
         // Section order
-        const order = cp.sectionOrder || ['hero','steps','participant','bannerPremio','faq','footer'];
+        const order = cp.sectionOrder || ['hero','steps','participant','bannerPremio','faq','cta','footer'];
         const container = document.getElementById('cam-sections');
         if (container) {
           order.forEach(key => {
@@ -1111,6 +1127,15 @@
         if (cp.cardAgendados) setCardVar('agendados', cp.cardAgendados);
         if (cp.cardNao) setCardVar('nao', cp.cardNao);
         if (cp.cardInstalou) setCardVar('instalou', cp.cardInstalou);
+
+        // CTA button
+        const ctaBtn = document.getElementById('cam-cta-btn');
+        if (ctaBtn) {
+          if (cp.ctaText) ctaBtn.textContent = cp.ctaText;
+          if (cp.ctaLink) ctaBtn.href = cp.ctaLink;
+          if (cp.ctaColor) ctaBtn.style.background = cp.ctaColor;
+          if (cp.ctaTextColor) ctaBtn.style.color = cp.ctaTextColor;
+        }
 
       } catch(e) {
         console.warn('Falha ao carregar prefs da campanha:', e);
