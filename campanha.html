@@ -183,19 +183,15 @@
       align-items: start;
     }
     .cam-participant-banner {
-      border-radius: var(--radius);
-      overflow: hidden;
-      background: var(--bg-alt);
-      border: 1px solid var(--border);
       min-height: 300px;
       display: flex;
       align-items: center;
       justify-content: center;
+      line-height: 0;
     }
     .cam-participant-banner img {
       width: 100%;
       height: auto;
-      object-fit: cover;
       display: block;
     }
     .cam-participant-banner-placeholder {
@@ -463,18 +459,11 @@
     /* ===== BANNER FULL ===== */
     .cam-banner-full {
       width: 100%;
-      max-height: 400px;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, #1e3a8a, #1d4ed8);
+      line-height: 0;
     }
     .cam-banner-full img {
       width: 100%;
       height: auto;
-      max-height: 400px;
-      object-fit: cover;
       display: block;
     }
     .cam-banner-full-placeholder {
@@ -603,8 +592,6 @@
       .cam-section-title { font-size: 22px; }
       .cam-hero { max-height: 300px; }
       .cam-hero img { max-height: 300px; }
-      .cam-banner-full { max-height: 250px; }
-      .cam-banner-full img { max-height: 250px; }
     }
     @media (max-width: 480px) {
       .cam-steps { grid-template-columns: 1fr; gap: 14px; }
@@ -1034,7 +1021,7 @@
 
         // Banner premio
         if (cp.bannerPremioImage) {
-          document.getElementById('sec-banner-premio').innerHTML = '<img src="' + cp.bannerPremioImage + '" alt="Prêmio" style="width:100%;height:auto;max-height:400px;object-fit:cover">';
+          document.getElementById('sec-banner-premio').innerHTML = '<img src="' + cp.bannerPremioImage + '" alt="Prêmio" style="width:100%;display:block">';
         }
 
         // FAQ
