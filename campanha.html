@@ -693,7 +693,7 @@
           <div class="cam-login-sub">Entre com seu CPF ou celular para acompanhar suas indicações.</div>
           <div class="cam-error" id="cam-login-error"></div>
           <div class="cam-form-group">
-            <label>CPF ou Celular</label>
+            <label>CPF, CNPJ ou Celular</label>
             <input type="tel" inputmode="numeric" pattern="[0-9]*" class="cam-form-control" id="cam-cpf-input" placeholder="DIGITE AQUI">
           </div>
           <button class="cam-btn cam-btn-primary" id="cam-login-btn" onclick="doCampanhaLogin()">Entrar</button>
@@ -850,10 +850,18 @@
 
     // ===== FORMAT CPF =====
     function formatCPF(v) {
-      v = v.replace(/\D/g, '').substring(0, 11);
-      if (v.length > 9) return v.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4');
-      if (v.length > 6) return v.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
-      if (v.length > 3) return v.replace(/(\d{3})(\d{1,3})/, '$1.$2');
+      v = v.replace(/\D/g, '').substring(0, 14);
+      const len = v.length;
+      if (len <= 11) {
+        if (len > 9) return v.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4');
+        if (len > 6) return v.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
+        if (len > 3) return v.replace(/(\d{3})(\d{1,3})/, '$1.$2');
+        return v;
+      }
+      if (len > 12) return v.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{0,2})/, '$1.$2.$3/$4-$5');
+      if (len > 8) return v.replace(/(\d{2})(\d{3})(\d{3})(\d{1,4})/, '$1.$2.$3/$4');
+      if (len > 5) return v.replace(/(\d{2})(\d{3})(\d{1,3})/, '$1.$2.$3');
+      if (len > 2) return v.replace(/(\d{2})(\d{1,3})/, '$1.$2');
       return v;
     }
     function cleanCPF(v) { return v.replace(/\D/g, ''); }
@@ -874,7 +882,7 @@
       const input = document.getElementById('cam-cpf-input').value.trim();
       const errEl = document.getElementById('cam-login-error');
       errEl.style.display = 'none';
-      if (!input) { errEl.textContent = 'Preencha o CPF ou celular'; errEl.style.display = 'block'; return; }
+      if (!input) { errEl.textContent = 'Preencha o CPF, CNPJ ou celular'; errEl.style.display = 'block'; return; }
       const clean = cleanCPF(input);
       try {
         const resp = await fetch('/api/campanha/login', {

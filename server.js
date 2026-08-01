@@ -856,7 +856,10 @@ app.post('/api/campanha/login', (req, res) => {
   const clients = readStore('clients');
   const client = clients.find(c => {
     const cCpf = String(c.cpf || '').replace(/\D/g, '');
-    return cCpf === cleanCpf;
+    if (cCpf === cleanCpf) return true;
+    const cWpp = String(c.whatsapp || '').replace(/\D/g, '');
+    if (cWpp && cWpp === cleanCpf) return true;
+    return false;
   });
   if (!client) return res.status(404).json({ error: 'Participante não encontrado. Cadastre-se abaixo.' });
   const leads = readStore('leads');
