@@ -146,7 +146,7 @@
     .cam-step {
       text-align: center;
       padding: 28px 16px;
-      background: var(--card-bg);
+      background: var(--step-card-bg, var(--card-bg));
       border-radius: var(--radius);
       box-shadow: var(--card-shadow);
       border: 1px solid var(--border);
@@ -522,7 +522,7 @@
 
     /* ===== FOOTER ===== */
     .cam-footer {
-      background: #1e293b;
+      background: var(--footer-bg, #1e293b);
       color: #cbd5e1;
       padding: 40px 20px 24px;
     }
@@ -648,7 +648,7 @@
   </section>
 
   <!-- COMO CONCORRER -->
-  <section class="cam-section cam-section-bg" id="sec-steps">
+  <section class="cam-section" id="sec-steps">
     <h2 class="cam-section-title" id="steps-title">Como Concorrer?</h2>
     <p class="cam-section-subtitle" id="steps-subtitle">É simples participar. Siga os passos:</p>
     <div class="cam-steps" id="steps-grid">
@@ -784,6 +784,7 @@
   <!-- CTA INDIQUE AQUI -->
   <section class="cam-section" id="sec-cta" style="text-align:center;padding:20px 16px 10px">
     <a id="cam-cta-btn" href="#" target="_blank" style="display:inline-block;padding:16px 40px;border-radius:50px;background:var(--cta-color,#f59e0b);color:var(--cta-text-color,#fff);font-size:18px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;text-decoration:none;box-shadow:0 4px 20px rgba(0,0,0,0.15);transition:transform .2s,box-shadow .2s" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 24px rgba(0,0,0,0.2)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 20px rgba(0,0,0,0.15)'">Indique Aqui</a>
+    <a id="cam-reg-btn" href="#" target="_blank" style="display:inline-block;padding:16px 40px;border-radius:50px;background:var(--reg-color,#6366f1);color:var(--reg-text-color,#fff);font-size:18px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;text-decoration:none;box-shadow:0 4px 20px rgba(0,0,0,0.15);transition:transform .2s,box-shadow .2s;margin-left:12px" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 24px rgba(0,0,0,0.2)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 20px rgba(0,0,0,0.15)'">Regulamento</a>
   </section>
 
   </div><!-- /cam-sections -->
@@ -803,16 +804,21 @@
       </div>
       <div>
         <div style="font-size:14px;font-weight:700;color:#f8fafc;margin-bottom:10px">Links</div>
-        <a href="#" style="color:#94a3b8;text-decoration:none;font-size:13px;display:block;margin-bottom:6px">Regulamento</a>
-        <a href="#" style="color:#94a3b8;text-decoration:none;font-size:13px;display:block;margin-bottom:6px">Política de Privacidade</a>
-        <a href="/indique.html" style="color:#94a3b8;text-decoration:none;font-size:13px;display:block;margin-bottom:6px">Indique agora</a>
+        <div id="cam-footer-links">
+          <a href="#" style="color:#94a3b8;text-decoration:none;font-size:13px;display:block;margin-bottom:6px">Regulamento</a>
+          <a href="#" style="color:#94a3b8;text-decoration:none;font-size:13px;display:block;margin-bottom:6px">Política de Privacidade</a>
+          <a href="/indique.html" style="color:#94a3b8;text-decoration:none;font-size:13px;display:block;margin-bottom:6px">Indique agora</a>
+        </div>
       </div>
       <div>
         <div style="font-size:14px;font-weight:700;color:#f8fafc;margin-bottom:10px">Redes Sociais</div>
-        <div class="cam-footer-social">
-          <a href="#" id="cam-footer-instagram" title="Instagram">📸</a>
-          <a href="#" id="cam-footer-whatsapp" title="WhatsApp">💬</a>
-          <a href="#" id="cam-footer-facebook" title="Facebook">📘</a>
+        <div class="cam-footer-social" id="cam-footer-social">
+          <a href="#" id="cam-footer-instagram" title="Instagram">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+          </a>
+          <a href="#" id="cam-footer-whatsapp" title="WhatsApp">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          </a>
         </div>
       </div>
     </div>
@@ -1013,6 +1019,16 @@
           if (stepsArr[i].desc) document.getElementById('step' + (i+1) + '-desc').textContent = stepsArr[i].desc;
         }
 
+        // Dynamic steps
+        if (cp.steps && cp.steps.length > 0) {
+          const grid = document.getElementById('steps-grid');
+          if (grid) {
+            grid.innerHTML = cp.steps.map((s, i) => 
+              '<div class="cam-step"><div class="cam-step-num">' + (i+1) + '</div><div class="cam-step-title">' + escHtml(s.title || '') + '</div><div class="cam-step-desc">' + escHtml(s.desc || '') + '</div></div>'
+            ).join('');
+          }
+        }
+
         // Side banner
         if (cp.sideBannerImage) {
           const sideEl = document.getElementById('cam-side-banner');
@@ -1040,20 +1056,46 @@
           if (cp.ctaTextColor) { ctaBtn.style.color = cp.ctaTextColor; document.documentElement.style.setProperty('--cta-text-color', cp.ctaTextColor); }
         }
 
+        // Regulamento button
+        const regBtn = document.getElementById('cam-reg-btn');
+        if (regBtn) {
+          regBtn.textContent = cp.regText || 'Regulamento';
+          regBtn.href = cp.regLink || '#';
+          if (cp.regColor) { regBtn.style.background = cp.regColor; document.documentElement.style.setProperty('--reg-color', cp.regColor); }
+          if (cp.regTextColor) { regBtn.style.color = cp.regTextColor; document.documentElement.style.setProperty('--reg-text-color', cp.regTextColor); }
+        }
+
         // Footer
-        if (cp.footerPhone) document.getElementById('cam-footer-phone').textContent = '📞 ' + cp.footerPhone;
+        if (cp.footerPhone) {
+          let ph = cp.footerPhone.replace(/\D/g, '');
+          if (ph.length === 11) ph = '(' + ph.slice(0,2) + ') ' + ph.slice(2,7) + '-' + ph.slice(7);
+          document.getElementById('cam-footer-phone').textContent = '📞 ' + ph;
+        }
         if (cp.footerEmail) document.getElementById('cam-footer-email').textContent = cp.footerEmail;
         if (cp.footerCampanhaName) document.getElementById('cam-footer-campanha-name').textContent = cp.footerCampanhaName;
         if (cp.footerCopy) document.getElementById('cam-footer-copy').textContent = cp.footerCopy;
+
+        // Dynamic footer links
+        if (cp.footerLinks && cp.footerLinks.length > 0) {
+          const linksEl = document.getElementById('cam-footer-links');
+          if (linksEl) {
+            linksEl.innerHTML = cp.footerLinks.map(l => 
+              '<a href="' + escHtml(l.url || '#') + '" target="_blank" style="color:#94a3b8;text-decoration:none;font-size:13px;display:block;margin-bottom:6px">' + escHtml(l.text || '') + '</a>'
+            ).join('');
+          }
+        }
+
         if (cp.footerInstagram) document.getElementById('cam-footer-instagram').href = cp.footerInstagram;
         if (cp.footerWhatsapp) document.getElementById('cam-footer-whatsapp').href = cp.footerWhatsapp;
-        if (cp.footerFacebook) document.getElementById('cam-footer-facebook').href = cp.footerFacebook;
 
         // Logo (header + footer)
         if (cp.logoImage) {
           document.getElementById('cam-header-logo').innerHTML = '<img src="' + cp.logoImage + '" alt="Logo" class="cam-header-logo">';
           document.getElementById('cam-footer-logo-wrap').innerHTML = '<img src="' + cp.logoImage + '" alt="Logo" style="height:36px;object-fit:contain">';
         }
+
+        // Footer background
+        if (cp.footerBg) document.documentElement.style.setProperty('--footer-bg', cp.footerBg);
 
         // Section visibility (per PC/mobile)
         const vis = cp.visibility || {};
@@ -1115,6 +1157,9 @@
         if (cp.cardNao) setCardVar('nao', cp.cardNao);
         if (cp.cardInstalou) setCardVar('instalou', cp.cardInstalou);
 
+        // Step card color
+        if (cp.stepCardBg) document.documentElement.style.setProperty('--step-card-bg', cp.stepCardBg);
+
       } catch(e) {
         console.warn('Falha ao carregar prefs da campanha:', e);
       } finally {
@@ -1142,6 +1187,7 @@
       document.documentElement.style.setProperty('--card-'+prefix+'-num', darken(hex, 0.65));
       document.documentElement.style.setProperty('--card-'+prefix+'-label', darken(hex, 0.5));
     }
+    function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
     loadCampanhaPrefs().then(() => {
       const savedCpf = getSession();
       if (savedCpf) {

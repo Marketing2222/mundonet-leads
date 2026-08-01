@@ -2023,33 +2023,21 @@
     </div>
 
     <!-- COMO CONCORRER -->
-    <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px;padding-top:14px;border-top:1px solid var(--border)">Como Concorrar (4 passos)</p>
+    <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px;padding-top:14px;border-top:1px solid var(--border)">Como Concorrer</p>
     <div class="form-group" style="margin-bottom:8px">
       <label class="form-label">Título da seção</label>
       <input type="text" id="acmp-steps-title" class="form-control" placeholder="Como Concorrer?">
     </div>
-    <div id="acmp-steps-list">
-      <div style="margin-bottom:10px;padding:10px;background:var(--bg-elevated);border-radius:8px;border:1px solid var(--border)">
-        <div style="font-size:11px;font-weight:700;color:var(--accent-blue);margin-bottom:6px">Passo 1</div>
-        <input type="text" id="acmp-step1-title" class="form-control" placeholder="Título do passo 1" style="margin-bottom:6px;font-size:12px;padding:8px 10px">
-        <input type="text" id="acmp-step1-desc" class="form-control" placeholder="Descrição do passo 1" style="font-size:12px;padding:8px 10px">
-      </div>
-      <div style="margin-bottom:10px;padding:10px;background:var(--bg-elevated);border-radius:8px;border:1px solid var(--border)">
-        <div style="font-size:11px;font-weight:700;color:var(--accent-blue);margin-bottom:6px">Passo 2</div>
-        <input type="text" id="acmp-step2-title" class="form-control" placeholder="Título do passo 2" style="margin-bottom:6px;font-size:12px;padding:8px 10px">
-        <input type="text" id="acmp-step2-desc" class="form-control" placeholder="Descrição do passo 2" style="font-size:12px;padding:8px 10px">
-      </div>
-      <div style="margin-bottom:10px;padding:10px;background:var(--bg-elevated);border-radius:8px;border:1px solid var(--border)">
-        <div style="font-size:11px;font-weight:700;color:var(--accent-blue);margin-bottom:6px">Passo 3</div>
-        <input type="text" id="acmp-step3-title" class="form-control" placeholder="Título do passo 3" style="margin-bottom:6px;font-size:12px;padding:8px 10px">
-        <input type="text" id="acmp-step3-desc" class="form-control" placeholder="Descrição do passo 3" style="font-size:12px;padding:8px 10px">
-      </div>
-      <div style="margin-bottom:10px;padding:10px;background:var(--bg-elevated);border-radius:8px;border:1px solid var(--border)">
-        <div style="font-size:11px;font-weight:700;color:var(--accent-blue);margin-bottom:6px">Passo 4</div>
-        <input type="text" id="acmp-step4-title" class="form-control" placeholder="Título do passo 4" style="margin-bottom:6px;font-size:12px;padding:8px 10px">
-        <input type="text" id="acmp-step4-desc" class="form-control" placeholder="Descrição do passo 4" style="font-size:12px;padding:8px 10px">
-      </div>
+    <div class="form-group" style="margin-bottom:8px">
+      <label class="form-label">Cor de fundo dos cards</label>
+      <input type="color" id="acmp-step-card-bg" value="#ffffff" style="width:100%;height:32px;border:none;border-radius:6px;cursor:pointer;background:transparent">
     </div>
+    <div class="form-group" style="margin-bottom:8px">
+      <label class="form-label">Subtítulo</label>
+      <input type="text" id="acmp-steps-subtitle" class="form-control" placeholder="É simples participar. Siga os passos:">
+    </div>
+    <div id="acmp-steps-list"></div>
+    <button class="btn btn-ghost" onclick="addAcmpStep()" style="font-size:11px;padding:6px 12px;width:100%;margin-top:4px">+ Adicionar Passo</button>
 
     <!-- BANNERS -->
     <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px;padding-top:14px;border-top:1px solid var(--border)">Banners</p>
@@ -2085,36 +2073,19 @@
       <button class="btn btn-primary" onclick="addAcmpFaq()" style="font-size:11px;padding:7px 12px">＋</button>
     </div>
 
-    <!-- BOTÃO INDIQUE AQUI -->
-    <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px;padding-top:14px;border-top:1px solid var(--border)">Botão Indique Aqui</p>
-    <div class="form-group" style="margin-bottom:8px">
-      <label class="form-label">Texto do Botão</label>
-      <input type="text" id="acmp-cta-text" class="form-control" placeholder="INDIQUE AQUI">
-    </div>
-    <div class="form-group" style="margin-bottom:8px">
-      <label class="form-label">Link do Botão</label>
-      <input type="text" id="acmp-cta-link" class="form-control" placeholder="/indique.html">
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-      <div class="form-group">
-        <label class="form-label">Cor de Fundo</label>
-        <input type="color" id="acmp-cta-color" value="#f59e0b" style="width:100%;height:32px;border:none;border-radius:6px;cursor:pointer;background:transparent">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Cor do Texto</label>
-        <input type="color" id="acmp-cta-textcolor" value="#ffffff" style="width:100%;height:32px;border:none;border-radius:6px;cursor:pointer;background:transparent">
-      </div>
-    </div>
-
     <!-- RODAPÉ -->
     <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px;padding-top:14px;border-top:1px solid var(--border)">Rodapé</p>
+    <div class="form-group" style="margin-bottom:8px">
+      <label class="form-label">Cor de fundo do rodapé</label>
+      <input type="color" id="acmp-footer-bg" value="#1e293b" style="width:100%;height:32px;border:none;border-radius:6px;cursor:pointer;background:transparent">
+    </div>
     <div class="form-group" style="margin-bottom:8px">
       <label class="form-label">Nome da Campanha</label>
       <input type="text" id="acmp-footer-name" class="form-control" placeholder="Campanha de Indicação Mundonet">
     </div>
     <div class="form-group" style="margin-bottom:8px">
       <label class="form-label">Telefone / WhatsApp</label>
-      <input type="text" id="acmp-footer-phone" class="form-control" placeholder="(11) 99999-9999">
+      <input type="text" id="acmp-footer-phone" class="form-control" placeholder="(11) 99999-9999" oninput="maskPhone(this)">
     </div>
     <div class="form-group" style="margin-bottom:8px">
       <label class="form-label">E-mail</label>
@@ -2128,13 +2099,15 @@
       <label class="form-label">Link WhatsApp (botão redes)</label>
       <input type="text" id="acmp-footer-whatsapp" class="form-control" placeholder="https://wa.me/5511999999999">
     </div>
-    <div class="form-group" style="margin-bottom:8px">
-      <label class="form-label">Link Facebook</label>
-      <input type="text" id="acmp-footer-facebook" class="form-control" placeholder="https://facebook.com/mundonet">
-    </div>
+
     <div class="form-group" style="margin-bottom:8px">
       <label class="form-label">Texto do Copyright</label>
       <input type="text" id="acmp-footer-copy" class="form-control" placeholder="© 2026 Mundonet — Todos os direitos reservados">
+    </div>
+    <div class="form-group" style="margin-bottom:8px">
+      <label class="form-label">Links do Rodapé</label>
+      <div id="acmp-footer-links-list"></div>
+      <button class="btn btn-ghost" onclick="addAcmpFooterLink()" style="font-size:11px;padding:6px 12px;width:100%;margin-top:4px">+ Adicionar Link</button>
     </div>
 
     <!-- MEDALHA + BANNER SORTE -->
@@ -2183,6 +2156,27 @@
       <div class="form-group">
         <label class="form-label">Cor do texto</label>
         <input type="color" id="acmp-cta-text-color" value="#ffffff" style="width:100%;height:32px;border:none;border-radius:6px;cursor:pointer;background:transparent">
+      </div>
+    </div>
+
+    <!-- BOTÃO REGULAMENTO -->
+    <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px;padding-top:14px;border-top:1px solid var(--border)">Botão "Regulamento"</p>
+    <div class="form-group" style="margin-bottom:10px">
+      <label class="form-label">Texto do botão</label>
+      <input type="text" id="acmp-reg-text" class="form-control" value="Regulamento" placeholder="Regulamento">
+    </div>
+    <div class="form-group" style="margin-bottom:10px">
+      <label class="form-label">Link / URL</label>
+      <input type="text" id="acmp-reg-link" class="form-control" placeholder="https://exemplo.com/regulamento">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+      <div class="form-group">
+        <label class="form-label">Cor do botão</label>
+        <input type="color" id="acmp-reg-color" value="#6366f1" style="width:100%;height:32px;border:none;border-radius:6px;cursor:pointer;background:transparent">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Cor do texto</label>
+        <input type="color" id="acmp-reg-text-color" value="#ffffff" style="width:100%;height:32px;border:none;border-radius:6px;cursor:pointer;background:transparent">
       </div>
     </div>
 
@@ -4815,6 +4809,42 @@ function removeAcmpFaq(i){
   if(state.prefs.campanha.faq) state.prefs.campanha.faq.splice(i,1);
   renderAcmpFaqList(state.prefs.campanha.faq);
 }
+let acmpSteps=[];
+function renderAcmpStepsList(){
+  const el=document.getElementById('acmp-steps-list'); el.innerHTML='';
+  acmpSteps.forEach((s,i)=>{
+    const row=document.createElement('div');
+    row.style.cssText='margin-bottom:10px;padding:10px;background:var(--bg-elevated);border-radius:8px;border:1px solid var(--border)';
+    row.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div style="font-size:11px;font-weight:700;color:var(--accent-blue)">Passo '+(i+1)+'</div><button class="btn btn-danger" onclick="removeAcmpStep('+i+')" style="font-size:10px;padding:3px 8px">🗑</button></div><input type="text" class="form-control acmp-step-title" value="'+escHtml(s.title||'')+'" placeholder="Título do passo '+(i+1)+'" oninput="acmpSteps['+i+'].title=this.value" style="margin-bottom:6px;font-size:12px;padding:8px 10px"><input type="text" class="form-control acmp-step-desc" value="'+escHtml(s.desc||'')+'" placeholder="Descrição do passo '+(i+1)+'" oninput="acmpSteps['+i+'].desc=this.value" style="font-size:12px;padding:8px 10px">';
+    el.appendChild(row);
+  });
+}
+function addAcmpStep(){
+  acmpSteps.push({title:'',desc:''});
+  renderAcmpStepsList();
+}
+function removeAcmpStep(i){
+  acmpSteps.splice(i,1);
+  renderAcmpStepsList();
+}
+let acmpFooterLinks=[];
+function renderAcmpFooterLinksList(){
+  const el=document.getElementById('acmp-footer-links-list'); el.innerHTML='';
+  acmpFooterLinks.forEach((l,i)=>{
+    const row=document.createElement('div');
+    row.style.cssText='margin-bottom:8px;padding:10px;background:var(--bg-elevated);border-radius:8px;border:1px solid var(--border)';
+    row.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div style="font-size:11px;font-weight:700;color:var(--accent-blue)">Link '+(i+1)+'</div><button class="btn btn-danger" onclick="removeAcmpFooterLink('+i+')" style="font-size:10px;padding:3px 8px">🗑</button></div><input type="text" class="form-control acmp-link-text" value="'+escHtml(l.text||'')+'" placeholder="Texto do link" oninput="acmpFooterLinks['+i+'].text=this.value" style="margin-bottom:6px;font-size:12px;padding:8px 10px"><input type="text" class="form-control acmp-link-url" value="'+escHtml(l.url||'')+'" placeholder="https://..." oninput="acmpFooterLinks['+i+'].url=this.value" style="font-size:12px;padding:8px 10px">';
+    el.appendChild(row);
+  });
+}
+function addAcmpFooterLink(){
+  acmpFooterLinks.push({text:'',url:'#'});
+  renderAcmpFooterLinksList();
+}
+function removeAcmpFooterLink(i){
+  acmpFooterLinks.splice(i,1);
+  renderAcmpFooterLinksList();
+}
 function openPanelAdminCampanha(){
   const p=state.prefs||{};
   const cp=p.campanha||{};
@@ -4826,12 +4856,10 @@ function openPanelAdminCampanha(){
   if(hero){ document.getElementById('acmp-hero-preview').innerHTML='<img src="'+hero+'" style="width:100%;height:100%;object-fit:cover">'; document.getElementById('acmp-hero-remove-btn').style.display='inline-block'; }
   else { document.getElementById('acmp-hero-preview').textContent='Banner'; document.getElementById('acmp-hero-remove-btn').style.display='none'; }
   document.getElementById('acmp-steps-title').value=cp.stepsTitle||'Como Concorrer?';
-  const steps=cp.steps||[];
-  for(let i=1;i<=4;i++){
-    const s=steps[i-1]||{};
-    document.getElementById('acmp-step'+i+'-title').value=s.title||'';
-    document.getElementById('acmp-step'+i+'-desc').value=s.desc||'';
-  }
+  document.getElementById('acmp-steps-subtitle').value=cp.stepsSubtitle||'';
+  document.getElementById('acmp-step-card-bg').value=cp.stepCardBg||'#ffffff';
+  acmpSteps=(cp.steps||[]).slice();
+  renderAcmpStepsList();
   const side=cp.sideBannerImage||'';
   if(side){ document.getElementById('acmp-side-preview').innerHTML='<img src="'+side+'" style="width:100%;height:100%;object-fit:cover">'; document.getElementById('acmp-side-remove-btn').style.display='inline-block'; }
   else { document.getElementById('acmp-side-preview').textContent='Banner'; document.getElementById('acmp-side-remove-btn').style.display='none'; }
@@ -4855,17 +4883,19 @@ function openPanelAdminCampanha(){
   document.getElementById('acmp-cta-text-color').value=cp.ctaTextColor||'#ffffff';
   state.prefs.campanha.faq=cp.faq||[];
   renderAcmpFaqList(cp.faq||[]);
-  document.getElementById('acmp-cta-text').value=cp.ctaText||'INDIQUE AQUI';
-  document.getElementById('acmp-cta-link').value=cp.ctaLink||'/indique.html';
-  document.getElementById('acmp-cta-color').value=cp.ctaColor||'#f59e0b';
-  document.getElementById('acmp-cta-textcolor').value=cp.ctaTextColor||'#ffffff';
+  document.getElementById('acmp-reg-text').value=cp.regText||'Regulamento';
+  document.getElementById('acmp-reg-link').value=cp.regLink||'';
+  document.getElementById('acmp-reg-color').value=cp.regColor||'#6366f1';
+  document.getElementById('acmp-reg-text-color').value=cp.regTextColor||'#ffffff';
   document.getElementById('acmp-footer-name').value=cp.footerCampanhaName||'';
   document.getElementById('acmp-footer-phone').value=cp.footerPhone||'';
   document.getElementById('acmp-footer-email').value=cp.footerEmail||'';
   document.getElementById('acmp-footer-instagram').value=cp.footerInstagram||'';
   document.getElementById('acmp-footer-whatsapp').value=cp.footerWhatsapp||'';
-  document.getElementById('acmp-footer-facebook').value=cp.footerFacebook||'';
   document.getElementById('acmp-footer-copy').value=cp.footerCopy||'';
+  document.getElementById('acmp-footer-bg').value=cp.footerBg||'#1e293b';
+  acmpFooterLinks=(cp.footerLinks||[]).slice();
+  renderAcmpFooterLinksList();
   document.getElementById('acmp-primary-color').value=cp.primaryColor||'#1d4ed8';
   document.getElementById('acmp-bg-color').value=cp.bgColor||'#ffffff';
   document.getElementById('acmp-text-color2').value=cp.textColor||'#1e293b';
@@ -4948,20 +4978,12 @@ async function saveAdminCampanha(){
   cp.logoImage=state.prefs.campanha.logoImage||'';
   cp.heroImage=state.prefs.campanha.heroImage||'';
   cp.stepsTitle=document.getElementById('acmp-steps-title').value.trim();
-  cp.steps=[];
-  for(let i=1;i<=4;i++){
-    cp.steps.push({
-      title:document.getElementById('acmp-step'+i+'-title').value.trim(),
-      desc:document.getElementById('acmp-step'+i+'-desc').value.trim()
-    });
-  }
+  cp.stepsSubtitle=document.getElementById('acmp-steps-subtitle').value.trim();
+  cp.stepCardBg=document.getElementById('acmp-step-card-bg').value;
+  cp.steps=acmpSteps.map(s=>({title:s.title||'',desc:s.desc||''}));
   cp.sideBannerImage=state.prefs.campanha.sideBannerImage||'';
   cp.bannerPremioImage=state.prefs.campanha.bannerPremioImage||'';
   cp.faq=state.prefs.campanha.faq||[];
-  cp.ctaText=document.getElementById('acmp-cta-text').value.trim()||'INDIQUE AQUI';
-  cp.ctaLink=document.getElementById('acmp-cta-link').value.trim()||'/indique.html';
-  cp.ctaColor=document.getElementById('acmp-cta-color').value;
-  cp.ctaTextColor=document.getElementById('acmp-cta-textcolor').value;
   cp.medalImage=state.prefs.campanha.medalImage||'';
   cp.sorteColor1=document.getElementById('acmp-sorte-color1').value;
   cp.sorteColor2=document.getElementById('acmp-sorte-color2').value;
@@ -4975,13 +4997,18 @@ async function saveAdminCampanha(){
   cp.ctaLink=document.getElementById('acmp-cta-link').value.trim();
   cp.ctaColor=document.getElementById('acmp-cta-color').value;
   cp.ctaTextColor=document.getElementById('acmp-cta-text-color').value;
+  cp.regText=document.getElementById('acmp-reg-text').value.trim()||'Regulamento';
+  cp.regLink=document.getElementById('acmp-reg-link').value.trim();
+  cp.regColor=document.getElementById('acmp-reg-color').value;
+  cp.regTextColor=document.getElementById('acmp-reg-text-color').value;
   cp.footerCampanhaName=document.getElementById('acmp-footer-name').value.trim();
   cp.footerPhone=document.getElementById('acmp-footer-phone').value.trim();
   cp.footerEmail=document.getElementById('acmp-footer-email').value.trim();
   cp.footerInstagram=document.getElementById('acmp-footer-instagram').value.trim();
   cp.footerWhatsapp=document.getElementById('acmp-footer-whatsapp').value.trim();
-  cp.footerFacebook=document.getElementById('acmp-footer-facebook').value.trim();
   cp.footerCopy=document.getElementById('acmp-footer-copy').value.trim();
+  cp.footerBg=document.getElementById('acmp-footer-bg').value;
+  cp.footerLinks=acmpFooterLinks.map(l=>({text:l.text||'',url:l.url||''}));
   cp.primaryColor=document.getElementById('acmp-primary-color').value;
   cp.bgColor=document.getElementById('acmp-bg-color').value;
   cp.textColor=document.getElementById('acmp-text-color2').value;
