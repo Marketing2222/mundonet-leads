@@ -2664,6 +2664,9 @@ async function doLoginPage(){
     const resp = await api('POST','/api/login',{username:u,password:p});
     err.style.display='none';
     currentUser={id:resp.id,user:resp.username,nome:resp.display_name};
+    // Aplica prefs ANTES de mostrar o painel
+    applyPrefs();
+    applyLoginPagePrefs();
     enableAdmin();
     document.body.classList.add('ready');
     document.getElementById('login-screen').classList.add('hidden');
@@ -2756,6 +2759,9 @@ function enableAdmin(){
   if(indBtn) indBtn.style.display='flex';
   const acBtn=document.getElementById('btn-admin-campanha');
   if(acBtn) acBtn.style.display='flex';
+  // Aplica prefs ANTES do render para evitar piscada/default
+  applyPrefs();
+  applyLoginPagePrefs();
   if(typeof render==='function') render();
   if(typeof toast==='function') toast('Logado como '+getUserName()+'!','success');
 }
@@ -3188,13 +3194,21 @@ function handleLogoUpload(input){
     box.innerHTML=`<img src="${e.target.result}" alt="logo">`;
     state.prefs=state.prefs||{};
     state.prefs.logo=e.target.result;
+    // Sincroniza: mesma logo no painel e na tela de login
+    state.prefs.loginLogo=e.target.result;
+    document.getElementById('logo-remove-btn').style.display='inline-block';
+    document.getElementById('login-logo-remove-btn').style.display='inline-block';
   };
   reader.readAsDataURL(file);
 }
 
 function removeLogo(){
-  state.prefs=state.prefs||{}; delete state.prefs.logo;
+  state.prefs=state.prefs||{}; 
+  delete state.prefs.logo;
+  delete state.prefs.loginLogo; // Sincroniza: remove das duas
   document.getElementById('logo-preview-box').textContent='M';
+  document.getElementById('logo-remove-btn').style.display='none';
+  document.getElementById('login-logo-remove-btn').style.display='none';
 }
 
 function handleFaviconUpload(input){
