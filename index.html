@@ -2760,7 +2760,12 @@ function enableAdmin(){
   if(typeof toast==='function') toast('Logado como '+getUserName()+'!','success');
 }
 async function doLogout(){
-  try { await fetch('/api/logout', { method: 'POST', credentials: 'same-origin' }); } catch(e) {}
+  try {
+    await fetch('/api/logout', { method: 'POST', credentials: 'same-origin' });
+  } catch(e) {}
+  // Fallback: limpa cookie no cliente
+  document.cookie = 'session=; Path=/; Max-Age=0; SameSite=Lax';
+  // Limpa estado de sessão (MANTÉM prefs para tela de login customizada)
   isAdminMode=false; currentUser=null;
   const btn=document.getElementById('btn-admin-toggle');
   btn.classList.remove('active');
@@ -2770,7 +2775,7 @@ async function doLogout(){
   const acBtn=document.getElementById('btn-admin-campanha');
   if(acBtn) acBtn.style.display='none';
   document.body.classList.remove('ready');
-  showLoginPage();
+  await showLoginPage();
   render();
   toast('Sessão encerrada','info');
 }
@@ -5068,6 +5073,14 @@ async function init(){
     document.getElementById('login-screen').classList.add('hidden');
     enableAdmin();
   } else {
+    try {
+      const prfs = await api('GET', '/api/prefs');
+      state.prefs = toCamel(prfs);
+    } catch(e) {
+      state.prefs = {};
+    }
+    applyPrefs();
+    applyLoginPagePrefs();
     document.body.classList.add('ready');
     render();
   }
