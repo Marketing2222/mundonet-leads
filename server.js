@@ -847,18 +847,25 @@ app.post('/api/restore', (req, res) => {
   res.json({ ok: true });
 });
 
+function normalizeDigits(str) {
+  let d = String(str || '').replace(/\D/g, '');
+  if (d.startsWith('55') && d.length >= 12) d = d.slice(2);
+  if (d.startsWith('0') && d.length >= 10) d = d.slice(1);
+  return d;
+}
+
 // ---------- CAMPANHA ----------
 // Public campanha APIs (no auth required)
 app.post('/api/campanha/login', (req, res) => {
   const { cpf } = req.body || {};
-  if (!cpf) return res.status(400).json({ error: 'CPF obrigatório' });
-  const cleanCpf = String(cpf).replace(/\D/g, '');
+  if (!cpf) return res.status(400).json({ error: 'CPF, CNPJ ou celular obrigatório' });
+  const cleanInput = normalizeDigits(cpf);
   const clients = readStore('clients');
   const client = clients.find(c => {
-    const cCpf = String(c.cpf || '').replace(/\D/g, '');
-    if (cCpf === cleanCpf) return true;
-    const cWpp = String(c.whatsapp || '').replace(/\D/g, '');
-    if (cWpp && cWpp === cleanCpf) return true;
+    const cCpf = normalizeDigits(c.cpf);
+    if (cCpf && cCpf === cleanInput) return true;
+    const cPhone = normalizeDigits(c.whatsapp || c.telefone || c.celular || c.phone);
+    if (cPhone && (cPhone === cleanInput || cPhone.endsWith(cleanInput) || cleanInput.endsWith(cPhone))) return true;
     return false;
   });
   if (!client) return res.status(404).json({ error: 'Participante não encontrado. Cadastre-se abaixo.' });
@@ -867,11 +874,11 @@ app.post('/api/campanha/login', (req, res) => {
   const colMap = {};
   columns.forEach(c => { colMap[c.id] = c.name; });
   const indicacoes = leads.filter(l => {
-    const lCpf = String(l.cliente_cpf || '').replace(/\D/g, '');
-    const lNum = String(l.cliente_numero || l.clienteNumero || '').replace(/\D/g, '');
+    const lCpf = normalizeDigits(l.cliente_cpf);
+    const lNum = normalizeDigits(l.cliente_numero || l.clienteNumero || l.whatsapp || l.telefone);
     const lNome = String(l.cliente_nome || l.clienteNome || '').trim().toUpperCase();
     const cliNome = String(client.nome || '').trim().toUpperCase();
-    return lCpf === cleanCpf || lNum === cleanCpf || lNome === cliNome;
+    return (lCpf && lCpf === cleanInput) || (lNum && (lNum === cleanInput || lNum.endsWith(cleanInput) || cleanInput.endsWith(lNum))) || (lNome && lNome === cliNome);
   });
   function mapStatus(colId) {
     const name = (colMap[colId] || colId || '').toLowerCase();
@@ -951,18 +958,21 @@ app.get('/api/campanha/participants', requireAuth, (req, res) => {
 
 app.post('/api/campanha/auto-login', (req, res) => {
   const { cpf } = req.body || {};
-  if (!cpf) return res.status(400).json({ error: 'CPF obrigatório' });
-  const cleanCpf = String(cpf).replace(/\D/g, '');
+  if (!cpf) return res.status(400).json({ error: 'CPF ou celular obrigatório' });
+  const cleanInput = normalizeDigits(cpf);
   const clients = readStore('clients');
   const client = clients.find(c => {
-    const cCpf = String(c.cpf || '').replace(/\D/g, '');
-    return cCpf === cleanCpf;
+    const cCpf = normalizeDigits(c.cpf);
+    if (cCpf && cCpf === cleanInput) return true;
+    const cPhone = normalizeDigits(c.whatsapp || c.telefone || c.celular || c.phone);
+    if (cPhone && (cPhone === cleanInput || cPhone.endsWith(cleanInput) || cleanInput.endsWith(cPhone))) return true;
+    return false;
   });
   if (!client) return res.status(404).json({ error: 'Participante não encontrado. Cadastre-se abaixo.' });
   res.json({
     id: client.id,
     nome: client.nome || client.razao_social || 'Participante',
-    cpf: cleanCpf
+    cpf: cleanInput
   });
 });
 
