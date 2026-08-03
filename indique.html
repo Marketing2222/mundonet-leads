@@ -691,13 +691,14 @@
         clientValidated = true;
         setFieldsLocked(false);
       } else {
+        // Número não encontrado em nenhum lugar: mantém etapas liberadas
         nameInput.value = '';
         nameInput.placeholder = 'Digite seu nome completo';
         nameInput.readOnly = false;
         nameInput.style.opacity = '1';
         clientValidated = true;
         nameInput.focus();
-        setFieldsLocked(true);
+        setFieldsLocked(false);
       }
     }
 
