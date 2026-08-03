@@ -892,7 +892,7 @@ app.post('/api/campanha/login', (req, res) => {
   res.json({
     id: client.id,
     nome: client.nome || client.razao_social || 'Participante',
-    cpf: cleanCpf,
+    cpf: cleanInput,
     whatsapp: client.whatsapp || client.telefone || '',
     numeros_sorte: numerosSorte,
     indicacoes: indicacoes.map(l => {
