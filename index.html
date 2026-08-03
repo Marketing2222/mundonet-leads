@@ -2456,7 +2456,9 @@ function getLead(id) { return state.leads.find(l=>l.id===id); }
 function sortedCols(){ return [...state.columns].sort((a,b)=>(a.order||0)-(b.order||0)); }
 function escHtml(s)  { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function timeAgo(from,to){
+  if(!from) return '';
   const diff=Math.max(0,(to||Date.now())-new Date(from).getTime());
+  if(!isFinite(diff)) return '';
   const s=Math.floor(diff/1000), m=Math.floor(s/60), h=Math.floor(m/60), d=Math.floor(h/24);
   if(d>0) return d+'d';
   if(h>0) return h+'h';
@@ -2493,7 +2495,7 @@ function render(){
     if(filterCliente) leads=leads.filter(l=>(l.clienteNome||'').toLowerCase().includes(filterCliente));
     if(filterLead) leads=leads.filter(l=>(l.leadNome||'').toLowerCase().includes(filterLead));
     if(filterMonth && filterYear) leads=leads.filter(l=>(l.mesReferencia||'')===filterYear+'-'+filterMonth);
-    else if(filterMonth) leads=leads.filter(l=>(l.mesReferencia||'').endsWith('-'+filterMonth));
+    else if(filterMonth) leads=leads.filter(l=>(l.mesReferencia||'').split('-')[1]===filterMonth);
     else if(filterYear) leads=leads.filter(l=>(l.mesReferencia||'').startsWith(filterYear+'-'));
     tot+=leads.length;
     if(col.id==='ganho') ganhos+=leads.length;
@@ -4460,7 +4462,7 @@ function renderTrashList(){
     const sourceLabel=source==='client'?'Cliente':source==='template'?'Template':source==='column'?'Coluna':'Lead';
     const sourceIcon=source==='client'?'👤':source==='template'?'📝':source==='column'?'📊':'📌';
     const name=l.leadNome||l.nome||l.label||'Sem nome';
-    const detail=source==='client'?(l.whatsapp?' · WhatsApp: '+l.whatsapp:''):(l.clienteNome?' · Cliente: '+l.clienteNome:'')+(l.column_id?' · Coluna: '+(sortedCols().find(c=>c.id===l.column_id)||{}).name||'':'');
+    const detail=source==='client'?(l.whatsapp?' · WhatsApp: '+l.whatsapp:''):(l.clienteNome?' · Cliente: '+l.clienteNome:'')+(l.column_id?(function(){const col=sortedCols().find(c=>c.id===l.column_id); return col?' · Coluna: '+col.name:'';})():'');
     return `<div class="trash-item"><div class="trash-item-info"><div class="trash-item-name">${escHtml(name)}</div><div class="trash-item-meta">${sourceIcon} ${sourceLabel} · Excluído: ${escHtml(dt)}${escHtml(detail)}</div></div><div class="trash-item-btns"><button class="btn btn-success" style="padding:6px 8px;font-size:13px" onclick="restoreItem('${l.id}','${source}')" title="Recuperar">♻️</button><button class="btn btn-danger" style="padding:6px 8px;font-size:13px" onclick="permanentDelete('${l.id}')" title="Deletar permanentemente">🗑️</button></div></div>`;
   }).join('');
   if(end<total){
@@ -4848,6 +4850,8 @@ function removeAcmpFooterLink(i){
 function openPanelAdminCampanha(){
   const p=state.prefs||{};
   const cp=p.campanha||{};
+  // Garante que state.prefs.campanha existe para escritas posteriores
+  if(!state.prefs.campanha) state.prefs.campanha={};
   // Campaign page fields
   const logo=cp.logoImage||'';
   if(logo){ document.getElementById('acmp-logo-preview').innerHTML='<img src="'+logo+'" style="width:100%;height:100%;object-fit:cover">'; document.getElementById('acmp-logo-remove-btn').style.display='inline-block'; }
@@ -5033,10 +5037,7 @@ function hexToRgba(hex,a){
 }
 function applyAdminCampanhaBtn(){}
 
-// ===== INIT =====
 async function init(){
-  applyPrefs();
-  applyLoginPagePrefs();
   const loggedIn = await checkSession();
   if(loggedIn){
     try {
@@ -5055,6 +5056,9 @@ async function init(){
         apiConfig={ixc:{url:cfg.ixc_url||'',token:cfg.ixc_token||''},zapisp:{url:cfg.zapisp_url||'',token:cfg.zapisp_token||''},ixc_auto_sync:cfg.ixc_auto_sync||false,ixc_auto_sync_interval:cfg.ixc_auto_sync_interval||30};
       state.prefs=toCamel(prfs);
       if(!state.prefs.templates) state.prefs.templates=DEFAULT_TEMPLATES;
+      // Aplica prefs (logo, tema, login page) AGORA que temos as prefs do servidor
+      applyPrefs();
+      applyLoginPagePrefs();
     } catch(e) {
       console.error('Erro ao carregar dados:',e);
       toast('Erro ao carregar dados do servidor!','error');

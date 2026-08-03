@@ -116,10 +116,7 @@ function ensureAdminUser() {
   const usersList = readStore('users');
   const adminPassHash = hashPass('123456');
   const existingAdmin = usersList.find(u => u.username.toLowerCase() === 'admin');
-  if (existingAdmin) {
-    existingAdmin.password = adminPassHash;
-    writeStore('users', usersList);
-  } else {
+  if (!existingAdmin) {
     usersList.push({ id: uuid(), username: 'admin', password: adminPassHash, display_name: 'Administrador' });
     writeStore('users', usersList);
   }
